@@ -45,6 +45,13 @@ var modules = {
                 src: ['./src/controller/**/*.ts', './src/controller/**/*.tsx'],
                 dest: './src/.bin/controller'
             },
+            {
+                name: 'Common',
+                config: './src/common/tsconfig.json',
+                watch: ['./src/common/**/*.ts', './src/common/**/*.tsx'],
+                src: ['./src/common/**/*.ts', './src/common/**/*.tsx'],
+                dest: './src/.bin/common'
+            },
             
         ],
     },
