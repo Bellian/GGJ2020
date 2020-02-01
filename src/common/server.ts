@@ -7,9 +7,11 @@ import {
   PlayerData,
   ObjectData,
   ServerData,
-  PlayerUpdateData
+  PlayerUpdateData,
+  PlayerState
 } from "./index";
 
+export const OBJECTDATAMAXHEALTH: number = 10;
 export class Server {
   airConsole: any;
   serverData: ServerData;
@@ -85,10 +87,26 @@ export class Server {
     }, 1000);
   }
 
-  public updatePlayer(updateData: PlayerData) {
-    let player = this.playerData.filter(pD => pD.id === updateData.id)[0];
-    player = player;
-    this.sendPlayerData();
+  updatePlayer(updateData: PlayerData) {
+    let player = this.playerData.find(pD => pD.id === updateData.id);
+    if (player) {
+      let playerIndex = this.playerData.indexOf(player);
+      this.playerData[playerIndex] = updateData;
+      if (updateData.playerState === PlayerState.interacting) {
+        //JS find Item and damage/heal
+        let itemFound: ObjectData = { damage: 0, x: 0, y: 0, objectId: 0 };
+        if (itemFound) {
+          itemFound.damage += updateData.isAngryDad ? -1 : 1;
+          if (itemFound.damage > OBJECTDATAMAXHEALTH)
+            itemFound.damage = OBJECTDATAMAXHEALTH;
+          if (itemFound.damage < 0) itemFound.damage = 0;
+        }
+        if (updateData.isAngryDad) {
+          //check for wichtel
+        }
+      }
+      this.sendPlayerData();
+    }
   }
 
   private sendAllClients(data: any) {

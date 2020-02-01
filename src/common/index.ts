@@ -63,11 +63,14 @@ export enum CharacterAppearanceType {
 export interface TransactionTypeInterface {
   transactionType: TransactionType;
 }
-
 export class ObjectData {
-  constructor(public x: number = 0, public y: number = 0, public id: number) {}
+  constructor(
+    public x: number = 0,
+    public y: number = 0,
+    public damage: number = 0,
+    public objectId: number
+  ) {}
 }
-
 export interface PlayerUpdateData {
   transactionType: TransactionType;
   playerData: PlayerData[];
