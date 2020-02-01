@@ -20,15 +20,15 @@ export class Client {
   objectData: ObjectData[] = [];
   serverData: ServerData = new ServerData();
   constructor() {
-    if (!this.id) this.id = this.airconsole.getDeviceId() as number;
     this.airconsole = new AirConsole();
+    if (!this.id) this.id = this.airconsole.getDeviceId() as number;
     this.subscribeToAirConsole();
   }
 
   updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
   onUpdateServerData(cb: (serverData: ServerData) => void) {
     this.updateServerCallbacks.add(cb);
-  };
+  }
 
   updateServerData() {
     this.updateServerCallbacks.forEach(e => e(this.serverData));

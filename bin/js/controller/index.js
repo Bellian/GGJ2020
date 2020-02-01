@@ -4,24 +4,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
 var Client = /** @class */ (function () {
     function Client() {
+        var _this = this;
         this.id = 0;
         this.playerData = [];
         this.objectData = [];
         this.serverData = new index_1.ServerData();
-        this.updateServerCallbacks = new Set();
+        this.updateServerData = function () { return function (cb) {
+            cb(_this.serverData);
+        }; };
         if (!this.id)
             this.id = this.airconsole.getDeviceId();
         this.airconsole = new AirConsole();
         this.subscribeToAirConsole();
     }
-    Client.prototype.onUpdateServerData = function (cb) {
-        this.updateServerCallbacks.add(cb);
-    };
-    ;
-    Client.prototype.updateServerData = function () {
-        var _this = this;
-        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData); });
-    };
     Client.prototype.currentPlayerData = function () {
         var _this = this;
         return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
