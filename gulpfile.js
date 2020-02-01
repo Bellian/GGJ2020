@@ -60,13 +60,13 @@ var modules = {
         instances: [
             {
                 name: 'Screen',
-                watch: ['./src/.bin/screen/**/*.js'],
+                watch: ['./src/.bin/screen/**/*.js', './src/.bin/common/**/*.js'],
                 src: ['./src/.bin/screen/index.js'],
                 dest: './bin/js/screen'
             },
             {
                 name: 'Controller',
-                watch: ['./src/.bin/controller/**/*.js'],
+                watch: ['./src/.bin/controller/**/*.js', './src/.bin/common/**/*.js'],
                 src: ['./src/.bin/controller/index.js'],
                 dest: './bin/js/controller'
             },
