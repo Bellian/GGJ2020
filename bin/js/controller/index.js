@@ -51,6 +51,8 @@ var Client = /** @class */ (function () {
                         console.error("client onMessage switch", dataAsString);
                         break;
                 }
+            }
+            else {
                 console.error("client onMessage", dataAsString);
             }
         };
