@@ -2,80 +2,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Module = "common";
-var Server = /** @class */ (function () {
-    function Server() {
-        this.airConsole = new AirConsole();
-        this.playerData = [];
-    }
-    Server.prototype.sendPlayerData = function () {
-        this.sendAllClients(this.playerData);
-    };
-    Server.prototype.sendAllClients = function (data) {
-        this.airConsole.broadcast(data);
-    };
-    return Server;
-}());
-exports.Server = Server;
-var Client = /** @class */ (function () {
-    function Client() {
-        this.id = 0;
-        this.playerData = [];
-        if (!this.id)
-            this.id = this.airconsole.getDeviceId();
-        this.airconsole = new AirConsole();
-        this.subscribeToAirConsole();
-        this.getPlayers();
-    }
-    Client.prototype.getPlayers = function () {
-        var _this = this;
-        setInterval(function () {
-            (_this.playerData = _this.airconsole.getPlayerData()), 300;
-        });
-    };
-    Client.prototype.sendControllerData = function (controllerData) {
-        controllerData.id = this.id;
-        this.airconsole.message(AirConsole.SCREEN, JSON.stringify(controllerData));
-    };
-    Client.prototype.recive = function () {
-        this.playerData;
-    };
-    Client.prototype.subscribeToAirConsole = function () {
-        this.onMessage();
-    };
-    Client.prototype.onMessage = function () {
-        this.airconsole.onMessage = function (from, data) {
-            data.filter();
-        };
-    };
-    return Client;
-}());
-exports.Client = Client;
 var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId, isReady) {
         this.x = x;
         this.y = y;
-        this.type = TransactionType.PlayerData;
+        this.transactionType = TransactionType.PlayerData;
         this.playerState = PlayerState.idle;
-        this.isAngryDad = false;
-        this.isReady = false;
+        this.characterAppearanceType = CharacterAppearanceType.wichtel1;
+        this.isAngryDad = undefined;
         this.id = 0;
         this.id = deviceId;
-        this.isReady = isReady;
     }
     return PlayerData;
 }());
 exports.PlayerData = PlayerData;
 var TransactionType;
 (function (TransactionType) {
-    TransactionType[TransactionType["ServerState"] = 0] = "ServerState";
+    TransactionType[TransactionType["ServerData"] = 0] = "ServerData";
     TransactionType[TransactionType["PlayerData"] = 1] = "PlayerData";
     TransactionType[TransactionType["ControllerData"] = 2] = "ControllerData";
+    TransactionType[TransactionType["ObjectData"] = 3] = "ObjectData";
 })(TransactionType = exports.TransactionType || (exports.TransactionType = {}));
 var ServerState;
 (function (ServerState) {
-    ServerState[ServerState["joining"] = 0] = "joining";
-    ServerState[ServerState["running"] = 1] = "running";
-    ServerState[ServerState["final"] = 2] = "final";
+    ServerState[ServerState["initial"] = 0] = "initial";
+    ServerState[ServerState["lobby"] = 1] = "lobby";
+    ServerState[ServerState["characterSelection"] = 2] = "characterSelection";
+    ServerState[ServerState["starting"] = 3] = "starting";
+    ServerState[ServerState["running"] = 4] = "running";
+    ServerState[ServerState["final"] = 5] = "final";
 })(ServerState = exports.ServerState || (exports.ServerState = {}));
 var ControllerData = /** @class */ (function () {
     function ControllerData(x, y) {
@@ -83,11 +38,19 @@ var ControllerData = /** @class */ (function () {
         if (y === void 0) { y = 0; }
         this.x = x;
         this.y = y;
+        this.transactionType = TransactionType.ControllerData;
         this.id = 0;
     }
     return ControllerData;
 }());
 exports.ControllerData = ControllerData;
+var ServerData = /** @class */ (function () {
+    function ServerData(timerValueInSeconds) {
+        this.timerValueInSeconds = timerValueInSeconds;
+    }
+    return ServerData;
+}());
+exports.ServerData = ServerData;
 var PlayerState;
 (function (PlayerState) {
     PlayerState[PlayerState["idle"] = 0] = "idle";
@@ -95,6 +58,24 @@ var PlayerState;
     PlayerState[PlayerState["running"] = 2] = "running";
     PlayerState[PlayerState["interacting"] = 3] = "interacting";
 })(PlayerState = exports.PlayerState || (exports.PlayerState = {}));
+var CharacterAppearanceType;
+(function (CharacterAppearanceType) {
+    CharacterAppearanceType[CharacterAppearanceType["wichtel1"] = 0] = "wichtel1";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel2"] = 1] = "wichtel2";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel3"] = 2] = "wichtel3";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel4"] = 3] = "wichtel4";
+})(CharacterAppearanceType = exports.CharacterAppearanceType || (exports.CharacterAppearanceType = {}));
+var ObjectData = /** @class */ (function () {
+    function ObjectData(x, y, id) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = x;
+        this.y = y;
+        this.id = id;
+    }
+    return ObjectData;
+}());
+exports.ObjectData = ObjectData;
 
 
 
@@ -102,6 +83,13 @@ var PlayerState;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../common/index");
+var Views;
+(function (Views) {
+    Views[Views["splashscreen"] = 0] = "splashscreen";
+    Views[Views["characterselection"] = 1] = "characterselection";
+    Views[Views["playscreen"] = 2] = "playscreen";
+    Views[Views["endscreen"] = 3] = "endscreen";
+})(Views || (Views = {}));
 var Controller = /** @class */ (function () {
     function Controller(client) {
         var _this = this;
@@ -112,9 +100,28 @@ var Controller = /** @class */ (function () {
             _this.client.updateServerState(_this.updateView);
         });
     }
+    Controller.prototype.showView = function (view) {
+        document.querySelectorAll(Views[view])[0].classList.add('visible');
+    };
+    Controller.prototype.hideView = function (view) {
+        document.querySelectorAll(Views[view])[0].classList.remove('visible');
+    };
     Controller.prototype.updateView = function (serverState) {
         switch (serverState) {
-            case ser:
+            case index_1.ServerState.lobby:
+                this.showView(Views.splashscreen);
+                break;
+            case index_1.ServerState.characterSelection:
+                this.showView(Views.characterselection);
+                break;
+            case index_1.ServerState.running:
+                this.showView(Views.playscreen);
+                break;
+            case index_1.ServerState.final:
+                this.showView(Views.endscreen);
+                break;
+            default:
+                console.error('not implemented', serverState);
         }
     };
     Controller.prototype.virtualController = function () {
@@ -145,7 +152,7 @@ var Controller = /** @class */ (function () {
             }
         });
         var timeUntilStartInterval = setInterval(function () {
-            var timeUntilStart = _this.client.getTimeUntilStart();
+            var timeUntilStart = _this.client.getTime();
             document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart;
             if (timeUntilStart === 0) {
                 clearInterval(timeUntilStartInterval);
