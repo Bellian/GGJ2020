@@ -1,6 +1,9 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+<<<<<<< HEAD
+exports.Module = "common";
+=======
 var index_1 = require("./index");
 var Client = /** @class */ (function () {
     function Client() {
@@ -92,6 +95,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./client"));
 __export(require("./server"));
+>>>>>>> master
 var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
@@ -118,8 +122,14 @@ var ServerState;
     ServerState[ServerState["initial"] = 0] = "initial";
     ServerState[ServerState["lobby"] = 1] = "lobby";
     ServerState[ServerState["characterSelection"] = 2] = "characterSelection";
+<<<<<<< HEAD
+    ServerState[ServerState["starting"] = 3] = "starting";
+    ServerState[ServerState["running"] = 4] = "running";
+    ServerState[ServerState["final"] = 5] = "final";
+=======
     ServerState[ServerState["running"] = 3] = "running";
     ServerState[ServerState["final"] = 4] = "final";
+>>>>>>> master
 })(ServerState = exports.ServerState || (exports.ServerState = {}));
 var ControllerData = /** @class */ (function () {
     function ControllerData(x, y) {
@@ -347,7 +357,7 @@ var Controller = /** @class */ (function () {
             }
         });
         var timeUntilStartInterval = setInterval(function () {
-            var timeUntilStart = _this.client.getTimeUntilStart();
+            var timeUntilStart = _this.client.getTime();
             document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart;
             if (timeUntilStart === 0) {
                 clearInterval(timeUntilStartInterval);

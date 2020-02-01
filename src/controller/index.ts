@@ -69,7 +69,7 @@ class Controller{
             }
         });
         let timeUntilStartInterval = setInterval(() => {
-            let timeUntilStart = this.client.getTimeUntilStart();
+            let timeUntilStart = this.client.getTime();
             document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart;
             if(timeUntilStart === 0){
                 clearInterval(timeUntilStartInterval);
