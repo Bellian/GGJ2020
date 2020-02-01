@@ -1,6 +1,7 @@
 &.wall {
     $wallHeight: 50px;
     background: #aaa;
+    $scale: 0.2;
 
     // front
     &::before{
@@ -11,9 +12,14 @@
         height: $wallHeight;
         bottom:0;
         transform: translateY(50%) rotateX(90deg) translateY(50%);
-        background: rgb(192, 189, 153);
-        background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(2,0,36,1) 50%, rgb(199, 196, 255) 50%, rgb(199, 196, 255) 100%);
-        background-size: 10px;
+
+        background-color: #026873;
+        background-image: linear-gradient(90deg, rgba(255,255,255,.07) 50%, transparent 50%),
+        linear-gradient(90deg, rgba(255,255,255,.13) 50%, transparent 50%),
+        linear-gradient(90deg, transparent 50%, rgba(255,255,255,.17) 50%),
+        linear-gradient(90deg, transparent 50%, rgba(255,255,255,.19) 50%);
+        background-size: 13px, 29px, 37px, 53px;
+
     }
     // top
     &::after{
@@ -42,14 +48,59 @@
             top:0;
             left:0;
             transform: translateX(-50%) rotateY(90deg) translateX(-50%);
-            background: rgb(192, 189, 153);
-            background: linear-gradient(0deg, rgb(1, 0, 17) 0%, rgb(1, 0, 17) 50%, rgb(117, 116, 151) 50%, rgb(117, 116, 151) 100%);
-            background-size: 10px 10px;
+            
+            background-color: #026873;
+            background-image:   linear-gradient(0deg, rgba(255,255,255,.07) 50%, transparent 50%),
+                                linear-gradient(0deg, rgba(255,255,255,.13) 50%, transparent 50%),
+                                linear-gradient(0deg, transparent 50%, rgba(255,255,255,.17) 50%),
+                                linear-gradient(0deg, transparent 50%, rgba(255,255,255,.19) 50%);
+            background-size: 1px 13px, 1px 29px, 1px 37px, 1px 53px;
         }
         &::after {
             right:0;
             left:initial;
             transform: translateX(50%) rotateY(90deg) translateX(-50%);
+
+            background-color: #026873;
+            background-image:   linear-gradient(0deg, rgba(255,255,255,.07) 50%, transparent 50%),
+                                linear-gradient(0deg, rgba(255,255,255,.13) 50%, transparent 50%),
+                                linear-gradient(0deg, transparent 50%, rgba(255,255,255,.17) 50%),
+                                linear-gradient(0deg, transparent 50%, rgba(255,255,255,.19) 50%);
+            background-size: 1px 13px, 1px 29px, 1px 37px, 1px 53px;
+        }
+    }
+
+    &.outer {
+        &::before {
+            background-color: silver;
+            background-image:   linear-gradient(335deg, #b00 23px*$scale, transparent 23px*$scale),
+                                linear-gradient(155deg, #d00 23px*$scale, transparent 23px*$scale),
+                                linear-gradient(335deg, #b00 23px*$scale, transparent 23px*$scale),
+                                linear-gradient(155deg, #d00 23px*$scale, transparent 23px*$scale);
+            background-size: 58px*$scale 58px*$scale;
+            background-position: 0px*$scale 2px*$scale, 4px*$scale 35px*$scale, 29px*$scale 31px*$scale, 34px*$scale 6px*$scale;
+        }
+
+        .side {
+            
+            &::before, &::after{
+                background-color: silver;
+                background-image:   linear-gradient(335deg, #b00 23px*$scale, transparent 23px*$scale),
+                                    linear-gradient(155deg, #d00 23px*$scale, transparent 23px*$scale),
+                                    linear-gradient(335deg, #b00 23px*$scale, transparent 23px*$scale),
+                                    linear-gradient(155deg, #d00 23px*$scale, transparent 23px*$scale);
+                background-size: 58px*$scale 58px*$scale;
+                background-position: 0px*$scale 2px*$scale, 4px*$scale 35px*$scale, 29px*$scale 31px*$scale, 34px*$scale 6px*$scale;
+            }
+            &::after {
+                background-color: silver;
+                background-image:   linear-gradient(335deg, #b00 23px*$scale, transparent 23px*$scale),
+                                    linear-gradient(155deg, #d00 23px*$scale, transparent 23px*$scale),
+                                    linear-gradient(335deg, #b00 23px*$scale, transparent 23px*$scale),
+                                    linear-gradient(155deg, #d00 23px*$scale, transparent 23px*$scale);
+                background-size: 58px*$scale 58px*$scale;
+                background-position: 0px*$scale 2px*$scale, 4px*$scale 35px*$scale, 29px*$scale 31px*$scale, 34px*$scale 6px*$scale;
+            }
         }
     }
 }

@@ -4,25 +4,25 @@
     {
       "type": "wall", "pos": [250, -5], "meta": {
         "size": [500, 10],
-        "style": "outer"
+        "class": ["outer"]
       }
     },
     {
       "type": "wall", "pos": [250, 505], "meta": {
         "size": [500, 10],
-        "style": "outer"
+        "class": ["outer"]
       }
     },
     {
       "type": "wall", "pos": [-5, 250], "meta": {
         "size": [10, 520],
-        "style": "outer"
+        "class": ["outer"]
       }
     },
     {
       "type": "wall", "pos": [505, 250], "meta": {
         "size": [10, 520],
-        "style": "outer"
+        "class": ["outer"]
       }
     },
 
@@ -64,11 +64,39 @@
       }
     }
 
-    ,
-    {
-      "type": "wall", "pos": [450, 205], "meta": {
-        "size": [100, 10]
+    ,{
+      "type": "floor", "pos": [125, 50], "meta": {
+        "size": [250, 110],
+        "class": ["checker"]
       }
     }
+
+    ,{
+      "type": "floor", "pos": [50, 50], "meta": {
+        "size": [50, 50],
+        "class": ["weave", "round", "carpet"]
+      }
+    }
+
+
+    ,{
+      "type": "floor", "pos": [100, 250], "meta": {
+        "size": [50, 50],
+        "class": ["weave", "round", "carpet"]
+      }
+    }
+    ,{
+      "type": "floor", "pos": [150, 250], "meta": {
+        "size": [50, 50],
+        "class": ["checker"]
+      }
+    }
+    ,{
+      "type": "floor", "pos": [200, 250], "meta": {
+        "size": [50, 50],
+        "class": ["checker-diagonal", "base-red"]
+      }
+    }
+
   ]
 }
