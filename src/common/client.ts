@@ -26,7 +26,7 @@ export class Client {
     this.airConsole.onConnect = this.onAirConReady;
   }
 
-  onAirConReady(code:string){
+  onAirConReady(device_id:number){
     if (!this.id) this.id = this.airConsole.getDeviceId() as number;
     this.subscribeToAirConsole();
   }

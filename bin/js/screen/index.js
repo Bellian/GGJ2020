@@ -18407,7 +18407,7 @@ var Client = /** @class */ (function () {
         this.airConsole = new AirConsole();
         this.airConsole.onConnect = this.onAirConReady;
     }
-    Client.prototype.onAirConReady = function (code) {
+    Client.prototype.onAirConReady = function (device_id) {
         if (!this.id)
             this.id = this.airConsole.getDeviceId();
         this.subscribeToAirConsole();
