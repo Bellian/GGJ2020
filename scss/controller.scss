@@ -4,6 +4,9 @@
     box-sizing: border-box;
     background-color: black;
 }
+
+@import "common/game.scss";
+
 splashscreen{
     display: none;
     justify-content: space-around;
