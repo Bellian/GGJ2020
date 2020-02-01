@@ -23,13 +23,7 @@ export class Client {
   constructor() {
     this.serverData = new ServerData();
     this.airConsole = new AirConsole();
-    this.airConsole.onConnect = this.onAirConReady;
-  }
-
-  onAirConReady(device_id:number){
-    console.log(device_id);
-    /*if (!this.id) this.id = this.airConsole.getDeviceId() as number;
-    this.subscribeToAirConsole();*/
+    this.subscribeToAirConsole();
   }
 
   updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
@@ -67,6 +61,9 @@ export class Client {
           console.error("not implemented", data);
           break;
       }
+    };
+    this.airConsole.getDeviceId = (id: number) => {
+      this.id = id;
     };
   }
 

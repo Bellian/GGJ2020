@@ -10,13 +10,8 @@ var Client = /** @class */ (function () {
         this.updateServerCallbacks = new Set();
         this.serverData = new index_1.ServerData();
         this.airConsole = new AirConsole();
-        this.airConsole.onConnect = this.onAirConReady;
+        this.subscribeToAirConsole();
     }
-    Client.prototype.onAirConReady = function (device_id) {
-        console.log(device_id);
-        /*if (!this.id) this.id = this.airConsole.getDeviceId() as number;
-        this.subscribeToAirConsole();*/
-    };
     Client.prototype.onUpdateServerData = function (cb) {
         this.updateServerCallbacks.add(cb);
     };
@@ -50,6 +45,9 @@ var Client = /** @class */ (function () {
                     console.error("not implemented", data);
                     break;
             }
+        };
+        this.airConsole.getDeviceId = function (id) {
+            _this.id = id;
         };
     };
     Client.prototype.toggleAngryDad = function () {
