@@ -40,12 +40,15 @@ var Client = /** @class */ (function () {
                 var data = JSON.parse(dataAsString);
                 switch (data.transactionType) {
                     case index_1.TransactionType.PlayerData:
+                        console.log("received player data", data);
                         _this.playerData = data.playerData;
                         break;
                     case index_1.TransactionType.ObjectData:
+                        console.log("received object data", data);
                         _this.objectData = data.objectData;
                         break;
                     case index_1.TransactionType.ServerData:
+                        console.log("received server data", data);
                         _this.serverData = data.serverData;
                         _this.updateServerData();
                         break;
@@ -229,6 +232,7 @@ var Server = /** @class */ (function () {
             this.serverData.serverState = index_1.ServerState.lobby;
             this.updateServerState();
             this.serverStateUpdate(30, index_1.ServerState.characterSelection, function () {
+                console.log("changed server state to character selection");
                 _this.serverStateUpdate(15, index_1.ServerState.running, function () {
                     _this.serverStateUpdate(300, index_1.ServerState.final, function () { });
                 });
@@ -242,7 +246,7 @@ var Server = /** @class */ (function () {
             clearInterval(timer);
             _this.serverData.serverState = serverState;
             _this.updateServerState();
-            _this.sendServerData();
+            // this.sendServerData();
             if (_this.serverData.serverState === index_1.ServerState.running) {
                 _this.setAngryDad();
             }
@@ -275,9 +279,9 @@ var Server = /** @class */ (function () {
         return setInterval(function () {
             if (_this.serverData.timerValueInSeconds) {
                 _this.serverData.timerValueInSeconds--;
-                _this.sendServerData();
+                // this.sendServerData();
             }
-        }, 500);
+        }, 1000);
     };
     Server.prototype.updatePlayer = function (updateData) {
         var player = this.playerData.find(function (pD) { return pD.id === updateData.id; });
@@ -329,12 +333,12 @@ var Server = /** @class */ (function () {
         this.onMessage();
         this.airConsole.onConnect = function (id) {
             _this.createAndUpdatePlayer({ id: id });
-            _this.sendObjectData();
-            _this.sendServerData();
             if (!_this.sendPlayerToClient) {
                 _this.sendPlayerToClient = setInterval(function () {
                     _this.sendPlayerData();
-                }, 300);
+                    _this.sendServerData();
+                    _this.sendObjectData();
+                }, 3000);
             }
         };
         this.airConsole.onDisconnect = function (id) {
@@ -385,12 +389,13 @@ var Controller = /** @class */ (function () {
         this.client.onUpdateServerData(this.updateView.bind(this));
     }
     Controller.prototype.showView = function (view) {
-        document.querySelectorAll(Views[view])[0].classList.add('visible');
+        document.querySelectorAll(Views[view])[0].classList.add("visible");
     };
     Controller.prototype.hideView = function (view) {
-        document.querySelectorAll(Views[view])[0].classList.remove('visible');
+        document.querySelectorAll(Views[view])[0].classList.remove("visible");
     };
     Controller.prototype.updateView = function (serverData) {
+        console.log("new server state received", index_1.ServerState[serverData.serverState]);
         switch (serverData.serverState) {
             case index_1.ServerState.lobby:
                 this.showView(Views.splashscreen);
@@ -408,20 +413,29 @@ var Controller = /** @class */ (function () {
                 this.showView(Views.endscreen);
                 break;
             default:
-                console.error('not implemented', serverData);
+                console.error("not implemented", serverData);
         }
     };
     Controller.prototype.virtualController = function () {
         var _this = this;
-        document.querySelectorAll('playscreen > controller')[0].addEventListener('touchstart', function (ev) {
-            _this.startPos = [ev.targetTouches[0].clientX, ev.targetTouches[0].clientY];
+        document
+            .querySelectorAll("playscreen > controller")[0]
+            .addEventListener("touchstart", function (ev) {
+            _this.startPos = [
+                ev.targetTouches[0].clientX,
+                ev.targetTouches[0].clientY
+            ];
         });
-        document.querySelectorAll('playscreen > controller')[0].addEventListener('touchmove', function (ev) {
+        document
+            .querySelectorAll("playscreen > controller")[0]
+            .addEventListener("touchmove", function (ev) {
             if (_this.startPos !== undefined) {
                 _this.client.sendControllerData(new index_1.ControllerData(ev.targetTouches[0].clientX - _this.startPos[0], ev.targetTouches[0].clientY - _this.startPos[1]));
             }
         });
-        document.querySelectorAll('playscreen > controller')[0].addEventListener('touchend', function (ev) {
+        document
+            .querySelectorAll("playscreen > controller")[0]
+            .addEventListener("touchend", function (ev) {
             _this.startPos = undefined;
         });
     };
@@ -430,15 +444,19 @@ var Controller = /** @class */ (function () {
     };
     Controller.prototype.characterselection = function () {
         var _this = this;
-        document.querySelectorAll('characterselection > button').forEach(function (btn) {
+        document.querySelectorAll("characterselection > button").forEach(function (btn) {
             var isPlayerAngryDad = _this.client.toggleAngryDad();
             if (isPlayerAngryDad) {
-                document.querySelectorAll('characterselection')[0].classList.add('isAngryDad');
-                console.log('You would like to be angry dad!');
+                document
+                    .querySelectorAll("characterselection")[0]
+                    .classList.add("isAngryDad");
+                console.log("You would like to be angry dad!");
             }
             else {
-                document.querySelectorAll('characterselection')[0].classList.remove('isAngryDad');
-                console.log('You would like to be a wichtel!');
+                document
+                    .querySelectorAll("characterselection")[0]
+                    .classList.remove("isAngryDad");
+                console.log("You would like to be a wichtel!");
             }
         });
         this.setTime(Views.characterselection);
@@ -447,7 +465,7 @@ var Controller = /** @class */ (function () {
         var _this = this;
         var timeUntilInterval = setInterval(function () {
             var timeUntil = _this.client.getTime();
-            document.querySelectorAll(Views[view] + ' > time')[0].innerHTML = timeUntil.toString();
+            document.querySelectorAll(Views[view] + " > time")[0].innerHTML = timeUntil.toString();
             if (timeUntil === 0) {
                 clearInterval(timeUntilInterval);
             }
@@ -455,11 +473,11 @@ var Controller = /** @class */ (function () {
     };
     return Controller;
 }());
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
     var client = new index_1.Client();
     var controller = new Controller(client);
-    var test = new index_1.ServerData(30, index_1.ServerState.lobby);
-    controller.updateView(test);
+    //let test = new ServerData(30, ServerState.lobby);
+    //controller.updateView(test);
 });
 
 

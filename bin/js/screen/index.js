@@ -18435,12 +18435,15 @@ var Client = /** @class */ (function () {
                 var data = JSON.parse(dataAsString);
                 switch (data.transactionType) {
                     case index_1.TransactionType.PlayerData:
+                        console.log("received player data", data);
                         _this.playerData = data.playerData;
                         break;
                     case index_1.TransactionType.ObjectData:
+                        console.log("received object data", data);
                         _this.objectData = data.objectData;
                         break;
                     case index_1.TransactionType.ServerData:
+                        console.log("received server data", data);
                         _this.serverData = data.serverData;
                         _this.updateServerData();
                         break;
@@ -18637,6 +18640,7 @@ var Server = /** @class */ (function () {
             this.serverData.serverState = index_1.ServerState.lobby;
             this.updateServerState();
             this.serverStateUpdate(30, index_1.ServerState.characterSelection, function () {
+                console.log("changed server state to character selection");
                 _this.serverStateUpdate(15, index_1.ServerState.running, function () {
                     _this.serverStateUpdate(300, index_1.ServerState.final, function () { });
                 });
@@ -18650,7 +18654,7 @@ var Server = /** @class */ (function () {
             clearInterval(timer);
             _this.serverData.serverState = serverState;
             _this.updateServerState();
-            _this.sendServerData();
+            // this.sendServerData();
             if (_this.serverData.serverState === index_1.ServerState.running) {
                 _this.setAngryDad();
             }
@@ -18683,9 +18687,9 @@ var Server = /** @class */ (function () {
         return setInterval(function () {
             if (_this.serverData.timerValueInSeconds) {
                 _this.serverData.timerValueInSeconds--;
-                _this.sendServerData();
+                // this.sendServerData();
             }
-        }, 500);
+        }, 1000);
     };
     Server.prototype.updatePlayer = function (updateData) {
         var player = this.playerData.find(function (pD) { return pD.id === updateData.id; });
@@ -18737,12 +18741,12 @@ var Server = /** @class */ (function () {
         this.onMessage();
         this.airConsole.onConnect = function (id) {
             _this.createAndUpdatePlayer({ id: id });
-            _this.sendObjectData();
-            _this.sendServerData();
             if (!_this.sendPlayerToClient) {
                 _this.sendPlayerToClient = setInterval(function () {
                     _this.sendPlayerData();
-                }, 300);
+                    _this.sendServerData();
+                    _this.sendObjectData();
+                }, 3000);
             }
         };
         this.airConsole.onDisconnect = function (id) {

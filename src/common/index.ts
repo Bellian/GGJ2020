@@ -42,13 +42,10 @@ export class ControllerData implements TransactionTypeInterface {
 }
 
 export class ServerData {
-  serverState: ServerState;
   constructor(
     public timerValueInSeconds: number = 30,
-    serverState: ServerState
-  ) {
-    this.serverState = serverState;
-  }
+    public serverState: ServerState
+  ) {}
 }
 
 export enum PlayerState {

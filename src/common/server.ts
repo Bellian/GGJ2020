@@ -60,6 +60,7 @@ export class Server {
       this.serverData.serverState = ServerState.lobby;
       this.updateServerState();
       this.serverStateUpdate(30, ServerState.characterSelection, () => {
+        console.log("changed server state to character selection");
         this.serverStateUpdate(15, ServerState.running, () => {
           this.serverStateUpdate(300, ServerState.final, () => {});
         });
@@ -77,7 +78,7 @@ export class Server {
       clearInterval(timer);
       this.serverData.serverState = serverState;
       this.updateServerState();
-      this.sendServerData();
+      // this.sendServerData();
       if (this.serverData.serverState === ServerState.running) {
         this.setAngryDad();
       }
@@ -114,9 +115,9 @@ export class Server {
     return setInterval(() => {
       if (this.serverData.timerValueInSeconds) {
         this.serverData.timerValueInSeconds--;
-        this.sendServerData();
+        // this.sendServerData();
       }
-    }, 500);
+    }, 1000);
   }
 
   updatePlayer(updateData: PlayerData) {
@@ -169,12 +170,12 @@ export class Server {
     this.onMessage();
     this.airConsole.onConnect = (id: number) => {
       this.createAndUpdatePlayer({ id } as PlayerData);
-      this.sendObjectData();
-      this.sendServerData();
       if (!this.sendPlayerToClient) {
         this.sendPlayerToClient = setInterval(() => {
           this.sendPlayerData();
-        }, 300);
+          this.sendServerData();
+          this.sendObjectData();
+        }, 3000);
       }
     };
     this.airConsole.onDisconnect = (id: number) => {

@@ -55,12 +55,15 @@ export class Client {
         let data = JSON.parse(dataAsString) as TransactionTypeInterface;
         switch (data.transactionType) {
           case TransactionType.PlayerData:
+            console.log("received player data", data);
             this.playerData = (data as PlayerUpdateData).playerData;
             break;
           case TransactionType.ObjectData:
+            console.log("received object data", data);
             this.objectData = (data as ObjectUpdateData).objectData;
             break;
           case TransactionType.ServerData:
+            console.log("received server data", data);
             this.serverData = (data as ServerUpdateData).serverData;
             this.updateServerData();
             break;
