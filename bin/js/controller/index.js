@@ -320,7 +320,7 @@ var Controller = /** @class */ (function () {
                 this.showView(Views.endscreen);
                 break;
             default:
-                console.error('not implemented', serverState);
+                console.error('not implemented', serverData);
         }
     };
     Controller.prototype.virtualController = function () {
@@ -352,7 +352,7 @@ var Controller = /** @class */ (function () {
         });
         var timeUntilStartInterval = setInterval(function () {
             var timeUntilStart = _this.client.getTime();
-            document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart;
+            document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart.toString();
             if (timeUntilStart === 0) {
                 clearInterval(timeUntilStartInterval);
             }
