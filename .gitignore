@@ -3,7 +3,6 @@ node_modules
 src/.bin
 bin/**/*.css
 bin/**/*.css.map
-bin/**/*.js
 bin/**/*.js.map
 bin/**/*.min.js
 bin/**/*.min.js.map
