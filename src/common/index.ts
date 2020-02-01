@@ -3,42 +3,68 @@ export const Module = "common";
 
 export class Server {
   airConsole = new AirConsole();
+  playerData: PlayerData[] = [];
+  sendPlayerData() {
+    this.sendAllClients(this.playerData);
+  }
+
+  private sendAllClients(data: any) {
+    this.airConsole.broadcast(data);
+  }
 }
 
 export class Client {
+  id: number = 0;
   airconsole: AirConsole;
-  playerData: PlayerData;
-  constructor(data: { id: number }) {
+  playerData: PlayerData[] = [];
+  constructor() {
+    if (!this.id) this.id = this.airconsole.getDeviceId() as number;
     this.airconsole = new AirConsole();
-    this.playerData = new PlayerData();
     this.subscribeToAirConsole();
+    this.getPlayers();
   }
 
-  send() {
-    data.id = this.airconsole.getDeviceId() as number;
-    this.airconsole.message(AirConsole.SCREEN, JSON.stringify(data));
+  getPlayers() {
+    setInterval(() => {
+      (this.playerData = this.airconsole.getPlayerData()), 300;
+    });
   }
 
-  recive() {}
+  sendControllerData(controllerData: ControllerData) {
+    controllerData.id = this.id;
+    this.airconsole.message(AirConsole.SCREEN, JSON.stringify(controllerData));
+  }
+
+  recive() {
+    this.playerData;
+  }
 
   subscribeToAirConsole() {
-    //  this.onMessage();
+    this.onMessage();
   }
 
-  // onMessage(){
-  // this.airconsole.onMessage =>(from, data) {
-  //   var info = document.createElement('DIV');
-  //   info.innerHTML = data;
-  //   document.body.appendChild(info);
-  // };}
+  onMessage() {
+    this.airconsole.onMessage = (from: any, data: any) => {
+      data.filter();
+    };
+  }
 }
 
 export class PlayerData {
+  constructor(
+    public x: number,
+    public y: number,
+    deviceId: number,
+    isReady: boolean
+  ) {
+    this.id = deviceId;
+    this.isReady = isReady;
+  }
   type: TransactionType = TransactionType.PlayerData;
-  x: number = 0;
-  y: number = 0;
   playerState: PlayerState = PlayerState.idle;
   isAngryDad: boolean = false;
+  isReady: boolean = false;
+  id: number = 0;
 }
 
 export enum TransactionType {
@@ -54,8 +80,8 @@ export enum ServerState {
 }
 
 export class ControllerData {
-  x: number = 0;
-  y: number = 0;
+  constructor(public x: number = 0, public y: number = 0) {}
+  id: number = 0;
 }
 
 export enum PlayerState {
