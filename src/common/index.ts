@@ -6,12 +6,15 @@ export * from "./server";
 export class PlayerData implements TransactionTypeInterface {
   constructor(public x: number, public y: number, deviceId: number) {
     this.id = deviceId;
+    this.transactionType = TransactionType.PlayerData;
+    this.playerState = PlayerState.idle;
+    this.isAngryDad = undefined;
+    this.characterAppearanceType = CharacterAppearanceType.wichtel1;
   }
-  transactionType: TransactionType = TransactionType.PlayerData;
-  playerState: PlayerState = PlayerState.idle;
-  characterAppearanceType: CharacterAppearanceType =
-    CharacterAppearanceType.wichtel1;
-  isAngryDad: boolean | undefined = undefined;
+  transactionType: TransactionType;
+  playerState: PlayerState;
+  characterAppearanceType: CharacterAppearanceType;
+  isAngryDad: boolean | undefined;
   id: number = 0;
 }
 
@@ -40,7 +43,7 @@ export class ServerData {
   serverState: ServerState;
   constructor(
     public timerValueInSeconds: number = 30,
-    serverState: ServerState 
+    serverState: ServerState
   ) {
     this.serverState = serverState;
   }

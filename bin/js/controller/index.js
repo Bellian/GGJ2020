@@ -98,12 +98,12 @@ var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
         this.y = y;
-        this.transactionType = TransactionType.PlayerData;
-        this.playerState = PlayerState.idle;
-        this.characterAppearanceType = CharacterAppearanceType.wichtel1;
-        this.isAngryDad = undefined;
         this.id = 0;
         this.id = deviceId;
+        this.transactionType = TransactionType.PlayerData;
+        this.playerState = PlayerState.idle;
+        this.isAngryDad = undefined;
+        this.characterAppearanceType = CharacterAppearanceType.wichtel1;
     }
     return PlayerData;
 }());
