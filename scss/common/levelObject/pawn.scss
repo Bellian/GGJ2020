@@ -1,0 +1,68 @@
+&.pawn {
+    width: 20px;
+    height: 20px;
+    transform: translate3d(-50%, -50%, 2px);
+    background: rgba(0,0,0,0.2);
+    border-radius: 50%;
+
+    
+    &::before{
+        content: '';
+        position: absolute;
+        width:20px;
+        height: 30px;
+        border-radius: 50%;
+
+        transform: translate(-50%, -50%) rotateX(-90deg) translateY(-50%);
+        top: 50%;
+        left: 50%;
+        background: #fff;
+    }
+    &::after{
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+
+        transform: translate(-50%, -50%) rotateX(270deg) translateY(35px);
+        top: 50%;
+        left: 50%;
+        background: #555;
+    }
+    
+
+    &.heinzel {
+        width: 15px;
+        height: 15px;
+        
+        &::before{
+            width:40px;
+            height: 40px;
+            border-radius: 0;
+            background: url(../assets/heinzel1_front.svg);
+            transform: translate(-50%, -50%) rotateX(-90deg) translateY(-44%);
+        }
+        &::after{
+            content: none;
+        }
+
+        &.up {
+            &::before{
+                background: url(../assets/heinzel1_back.svg);
+            }
+        }
+
+        &.left {
+            &::before{
+                background: url(../assets/heinzel1_right.svg);
+            }
+        }
+
+        &.right {
+            &::before{
+                background: url(../assets/heinzel1_left.svg);
+            }
+        }
+    }
+}

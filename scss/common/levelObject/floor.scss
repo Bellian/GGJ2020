@@ -31,6 +31,15 @@
         background-position: 0 0, 7.5px 7.5px;
     }
 
+    &.waves {
+        $scale: 0.5;
+        background:
+            radial-gradient(circle at 100% 50%, transparent 20%, rgba(255,255,255,.3) 21%, rgba(255,255,255,.3) 34%, transparent 35%, transparent),
+            radial-gradient(circle at 0% 50%, transparent 20%, rgba(255,255,255,.3) 21%, rgba(255,255,255,.3) 34%, transparent 35%, transparent) 0 -50px*$scale;
+        background-color: slategray;
+        background-size:75px*$scale 100px*$scale;
+    }
+
     &.base-red{
         --primary-color: red;
     }

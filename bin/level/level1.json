@@ -65,9 +65,21 @@
     }
 
     ,{
+      "type": "floor", "pos": [250, 250], "meta": {
+        "size": [500, 500],
+        "class": []
+      }
+    }
+    ,{
       "type": "floor", "pos": [125, 50], "meta": {
         "size": [250, 110],
         "class": ["checker"]
+      }
+    }
+    ,{
+      "type": "floor", "pos": [380, 100], "meta": {
+        "size": [270, 210],
+        "class": ["waves"]
       }
     }
 
@@ -95,6 +107,34 @@
       "type": "floor", "pos": [200, 250], "meta": {
         "size": [50, 50],
         "class": ["checker-diagonal", "base-red"]
+      }
+    }
+
+
+    ,{
+      "type": "asset", "pos": [50, 5], "meta": {
+        "size": [20, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["sink"]
+      }
+    }
+
+    
+    ,{
+      "type": "asset", "pos": [130, 5], "meta": {
+        "size": [40, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["kommode"]
+      }
+    }
+    ,{
+      "type": "asset", "pos": [330, 5], "meta": {
+        "size": [40, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["kommode"]
       }
     }
 

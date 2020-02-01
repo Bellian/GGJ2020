@@ -18800,7 +18800,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-},{"../common/authority":13,"../common/server":17,"./map/levelMap":20,"./physicsEngine":26}],19:[function(require,module,exports){
+},{"../common/authority":13,"../common/server":17,"./map/levelMap":21,"./physicsEngine":27}],19:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
+var Asset = /** @class */ (function (_super) {
+    __extends(Asset, _super);
+    function Asset() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Asset.prototype.createPysics = function () {
+        this.hitBox = matter_js_1.Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
+            isStatic: true,
+        });
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
+    };
+    ;
+    Asset.prototype.render = function () {
+        var _a;
+        var classes = this.meta.class ? this.meta.class : [];
+        var view = _super.prototype.render.call(this);
+        (_a = view.classList).add.apply(_a, __spreadArrays(['asset'], classes));
+        return view;
+    };
+    Object.defineProperty(Asset.prototype, "isDestructable", {
+        get: function () {
+            return !!this.meta.destructible;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Asset;
+}(levelObject_1.default));
+exports.Asset = Asset;
+exports.default = Asset;
+
+
+
+},{"../physicsEngine":27,"./levelObject":22,"matter-js":12}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18844,7 +18903,7 @@ exports.default = Floor;
 
 
 
-},{"./levelObject":21}],20:[function(require,module,exports){
+},{"./levelObject":22}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var gl_matrix_1 = require("gl-matrix");
@@ -18856,6 +18915,7 @@ var player_1 = require("./player");
 var wall_1 = require("./wall");
 var floor_1 = require("./floor");
 var placeholder_1 = require("./placeholder");
+var asset_1 = require("./asset");
 var LevelMap = /** @class */ (function () {
     function LevelMap(url, mainContainer) {
         var _this = this;
@@ -18882,6 +18942,9 @@ var LevelMap = /** @class */ (function () {
                     break;
                 case 'floor':
                     new floor_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos), data.meta);
+                    break;
+                case 'asset':
+                    new asset_1.Asset(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos), data.meta);
                     break;
                 default:
                     new placeholder_1.Placeholder(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos));
@@ -18951,7 +19014,7 @@ exports.LevelMap = LevelMap;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":26,"./floor":19,"./pawn":22,"./placeholder":23,"./player":24,"./wall":25,"gl-matrix":2,"matter-js":12}],21:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":27,"./asset":19,"./floor":20,"./pawn":23,"./placeholder":24,"./player":25,"./wall":26,"gl-matrix":2,"matter-js":12}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var authority_1 = require("../../common/authority");
@@ -19001,7 +19064,7 @@ exports.default = LevelObject;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":26,"matter-js":12}],22:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":27,"matter-js":12}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19051,7 +19114,7 @@ exports.default = Pawn;
 
 
 
-},{"../physicsEngine":26,"./levelObject":21,"matter-js":12}],23:[function(require,module,exports){
+},{"../physicsEngine":27,"./levelObject":22,"matter-js":12}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19085,7 +19148,7 @@ exports.default = Placeholder;
 
 
 
-},{"./levelObject":21}],24:[function(require,module,exports){
+},{"./levelObject":22}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19195,7 +19258,7 @@ exports.default = Player;
 
 
 
-},{"../../common/enums":15,"./levelObject":21,"gl-matrix":2,"matter-js":12}],25:[function(require,module,exports){
+},{"../../common/enums":15,"./levelObject":22,"gl-matrix":2,"matter-js":12}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19252,7 +19315,7 @@ exports.default = Wall;
 
 
 
-},{"../physicsEngine":26,"./levelObject":21,"matter-js":12}],26:[function(require,module,exports){
+},{"../physicsEngine":27,"./levelObject":22,"matter-js":12}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
