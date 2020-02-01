@@ -47,6 +47,7 @@ export class Server {
     if (!playerFound) {
       playerFound = new PlayerData(0, 0, data.id);
       this.playerData.push(playerFound);
+      this.sendPlayerData();
       this.startAfterFirstPlayerJoined();
     } else {
       this.updatePlayer(data);
@@ -70,12 +71,13 @@ export class Server {
     serverState: ServerState,
     cb: () => void
   ) {
+    timerValueInSeconds * 1000;
     let timer = this.setAndStartTimer(timerValueInSeconds);
     setTimeout(() => {
+      clearInterval(timer);
       this.serverData.serverState = serverState;
       this.updateServerState();
       cb();
-      clearInterval(timer);
     }, timerValueInSeconds);
   }
 

@@ -18616,7 +18616,9 @@ var Server = /** @class */ (function () {
             this.playerData.push(playerFound);
             this.startAfterFirstPlayerJoined();
         }
-        this.updatePlayer(data);
+        else {
+            this.updatePlayer(data);
+        }
     };
     Server.prototype.startAfterFirstPlayerJoined = function () {
         var _this = this;
