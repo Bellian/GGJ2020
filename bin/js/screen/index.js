@@ -18624,7 +18624,7 @@ var Server = /** @class */ (function () {
         if (!playerFound) {
             playerFound = new index_1.PlayerData(0, 0, data.id);
             this.playerData.push(playerFound);
-            this.sendPlayerData();
+            // this.sendPlayerData();
             this.startAfterFirstPlayerJoined();
         }
         else {
@@ -18662,6 +18662,9 @@ var Server = /** @class */ (function () {
             pD.isAngryDad;
         });
         var countAngryDads = wantAngryDads.length;
+        console.log("wantAngryDads", wantAngryDads);
+        console.log("countAngryDads", countAngryDads);
+        console.table("playerData", this.playerData);
         if (countAngryDads === 0) {
             var angryDadIndex = Math.floor(Math.random() * this.playerData.length);
             this.playerData.map(function (pD) { return (pD.isAngryDad = false); });
@@ -18672,16 +18675,17 @@ var Server = /** @class */ (function () {
             this.playerData.map(function (pD) { return (pD.isAngryDad = false); });
             this.playerData.filter(function (pD) { return pD.id === angryDadPlayerId_1; })[0].isAngryDad = true;
         }
-        this.sendPlayerData();
+        // this.sendPlayerData();
     };
     Server.prototype.setAndStartTimer = function (timerValueInSeconds) {
         var _this = this;
         this.serverData.timerValueInSeconds = timerValueInSeconds;
         return setInterval(function () {
-            if (_this.serverData.timerValueInSeconds)
+            if (_this.serverData.timerValueInSeconds) {
                 _this.serverData.timerValueInSeconds--;
-            _this.sendServerData();
-        }, 1000);
+                _this.sendServerData();
+            }
+        }, 500);
     };
     Server.prototype.updatePlayer = function (updateData) {
         var player = this.playerData.find(function (pD) { return pD.id === updateData.id; });
@@ -18702,7 +18706,7 @@ var Server = /** @class */ (function () {
                     //check for wichtel
                 }
             }
-            this.sendPlayerData();
+            // this.sendPlayerData();
         }
     };
     Server.prototype.sendAllClients = function (data) {
@@ -18735,14 +18739,19 @@ var Server = /** @class */ (function () {
             _this.createAndUpdatePlayer({ id: id });
             _this.sendObjectData();
             _this.sendServerData();
+            if (!_this.sendPlayerToClient) {
+                _this.sendPlayerToClient = setInterval(function () {
+                    _this.sendPlayerData();
+                }, 300);
+            }
         };
         this.airConsole.onDisconnect = function (id) {
             _this.playerData.splice(_this.playerData.indexOf(_this.playerData.filter(function (pD) { return pD.id === id; })[0]), 1);
-            _this.sendPlayerData();
+            // this.sendPlayerData();
         };
     };
     Server.prototype.sendPlayerData = function () {
-        console.table(this.playerData);
+        // console.table(this.playerData);
         this.sendAllClients({
             transactionType: index_1.TransactionType.PlayerData,
             playerData: this.playerData

@@ -17,6 +17,7 @@ export class Server {
   serverData: ServerData;
   playerData: PlayerData[] = [];
   objectData: ObjectData[] = [];
+  sendPlayerToClient: any;
   constructor() {
     this.airConsole = new AirConsole();
     this.serverData = new ServerData(30, ServerState.initial);
@@ -47,7 +48,7 @@ export class Server {
     if (!playerFound) {
       playerFound = new PlayerData(0, 0, data.id);
       this.playerData.push(playerFound);
-      this.sendPlayerData();
+      // this.sendPlayerData();
       this.startAfterFirstPlayerJoined();
     } else {
       this.updatePlayer(data);
@@ -89,6 +90,9 @@ export class Server {
       pD.isAngryDad;
     });
     let countAngryDads = wantAngryDads.length;
+    console.log("wantAngryDads", wantAngryDads);
+    console.log("countAngryDads", countAngryDads);
+    console.table("playerData", this.playerData);
     if (countAngryDads === 0) {
       let angryDadIndex = Math.floor(Math.random() * this.playerData.length);
       this.playerData.map(pD => (pD.isAngryDad = false));
@@ -102,16 +106,17 @@ export class Server {
         pD => pD.id === angryDadPlayerId
       )[0].isAngryDad = true;
     }
-    this.sendPlayerData();
+    // this.sendPlayerData();
   }
 
   private setAndStartTimer(timerValueInSeconds: number) {
     this.serverData.timerValueInSeconds = timerValueInSeconds;
     return setInterval(() => {
-      if (this.serverData.timerValueInSeconds)
+      if (this.serverData.timerValueInSeconds) {
         this.serverData.timerValueInSeconds--;
-      this.sendServerData();
-    }, 1000);
+        this.sendServerData();
+      }
+    }, 500);
   }
 
   updatePlayer(updateData: PlayerData) {
@@ -132,7 +137,7 @@ export class Server {
           //check for wichtel
         }
       }
-      this.sendPlayerData();
+      // this.sendPlayerData();
     }
   }
 
@@ -166,18 +171,23 @@ export class Server {
       this.createAndUpdatePlayer({ id } as PlayerData);
       this.sendObjectData();
       this.sendServerData();
+      if (!this.sendPlayerToClient) {
+        this.sendPlayerToClient = setInterval(() => {
+          this.sendPlayerData();
+        }, 300);
+      }
     };
     this.airConsole.onDisconnect = (id: number) => {
       this.playerData.splice(
         this.playerData.indexOf(this.playerData.filter(pD => pD.id === id)[0]),
         1
       );
-      this.sendPlayerData();
+      // this.sendPlayerData();
     };
   }
 
   sendPlayerData() {
-    console.table(this.playerData);
+    // console.table(this.playerData);
     this.sendAllClients({
       transactionType: TransactionType.PlayerData,
       playerData: this.playerData
