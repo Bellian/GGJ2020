@@ -23,7 +23,9 @@ export class Client {
   constructor() {
     this.serverData = new ServerData(30, ServerState.initial);
     this.airConsole = new AirConsole();
-    this.subscribeToAirConsole();
+    this.airConsole.onDeviceStateChange = (id: number) => {
+      this.subscribeToAirConsole();
+    }
   }
 
   updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
@@ -62,9 +64,12 @@ export class Client {
           break;
       }
     };
+<<<<<<< Updated upstream
     this.airConsole.onDeviceStateChange = (id: number) => {
       this.id = id;
     };
+=======
+>>>>>>> Stashed changes
   }
 
   toggleAngryDad(): boolean {
