@@ -64,12 +64,6 @@ export class Client {
           break;
       }
     };
-<<<<<<< Updated upstream
-    this.airConsole.onDeviceStateChange = (id: number) => {
-      this.id = id;
-    };
-=======
->>>>>>> Stashed changes
   }
 
   toggleAngryDad(): boolean {
