@@ -71,14 +71,13 @@ export class Server {
     serverState: ServerState,
     cb: () => void
   ) {
-    timerValueInSeconds *= 1000;
     let timer = this.setAndStartTimer(timerValueInSeconds);
     setTimeout(() => {
       clearInterval(timer);
       this.serverData.serverState = serverState;
       this.updateServerState();
       cb();
-    }, timerValueInSeconds);
+    }, timerValueInSeconds * 1000);
   }
 
   private setAndStartTimer(timerValueInSeconds: number) {

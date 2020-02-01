@@ -18635,14 +18635,13 @@ var Server = /** @class */ (function () {
     };
     Server.prototype.serverStateUpdate = function (timerValueInSeconds, serverState, cb) {
         var _this = this;
-        timerValueInSeconds *= 1000;
         var timer = this.setAndStartTimer(timerValueInSeconds);
         setTimeout(function () {
             clearInterval(timer);
             _this.serverData.serverState = serverState;
             _this.updateServerState();
             cb();
-        }, timerValueInSeconds);
+        }, timerValueInSeconds * 1000);
     };
     Server.prototype.setAndStartTimer = function (timerValueInSeconds) {
         var _this = this;
