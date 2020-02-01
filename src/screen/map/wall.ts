@@ -5,6 +5,7 @@ import PhysicsEngine from "../physicsEngine";
 
 interface WallMeta {
     size: vec2;
+    class: string[];
 }
 
 export class Wall extends LevelObject {
@@ -18,8 +19,9 @@ export class Wall extends LevelObject {
     };
 
     render(): HTMLElement {
+        const classes = this.meta.class ? this.meta.class : [];
         const view = super.render();
-        view.classList.add('wall', 'center');
+        view.classList.add('wall', 'center', ... classes);
 
         const side = document.createElement('div');
         side.classList.add('side');

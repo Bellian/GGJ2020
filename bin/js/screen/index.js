@@ -18756,7 +18756,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-},{"../common/authority":13,"../common/server":17,"./map/levelMap":19,"./physicsEngine":25}],19:[function(require,module,exports){
+},{"../common/authority":13,"../common/server":17,"./map/levelMap":20,"./physicsEngine":26}],19:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var Floor = /** @class */ (function (_super) {
+    __extends(Floor, _super);
+    function Floor() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Floor.prototype.render = function () {
+        var _a;
+        var view = _super.prototype.render.call(this);
+        (_a = view.classList).add.apply(_a, __spreadArrays(['floor', 'center'], this.meta.class));
+        view.style.width = this.meta.size[0] + 'px';
+        view.style.height = this.meta.size[1] + 'px';
+        return view;
+    };
+    return Floor;
+}(levelObject_1.default));
+exports.Floor = Floor;
+exports.default = Floor;
+
+
+
+},{"./levelObject":21}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var gl_matrix_1 = require("gl-matrix");
@@ -18766,6 +18810,7 @@ var matter_js_1 = require("matter-js");
 var pawn_1 = require("./pawn");
 var player_1 = require("./player");
 var wall_1 = require("./wall");
+var floor_1 = require("./floor");
 var placeholder_1 = require("./placeholder");
 var LevelMap = /** @class */ (function () {
     function LevelMap(url, mainContainer) {
@@ -18790,6 +18835,9 @@ var LevelMap = /** @class */ (function () {
             switch (data.type) {
                 case 'wall':
                     new wall_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos), data.meta);
+                    break;
+                case 'floor':
+                    new floor_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos), data.meta);
                     break;
                 default:
                     new placeholder_1.Placeholder(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos));
@@ -18859,7 +18907,7 @@ exports.LevelMap = LevelMap;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":25,"./pawn":21,"./placeholder":22,"./player":23,"./wall":24,"gl-matrix":2,"matter-js":12}],20:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":26,"./floor":19,"./pawn":22,"./placeholder":23,"./player":24,"./wall":25,"gl-matrix":2,"matter-js":12}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var authority_1 = require("../../common/authority");
@@ -18909,7 +18957,7 @@ exports.default = LevelObject;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":25,"matter-js":12}],21:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":26,"matter-js":12}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18955,7 +19003,7 @@ exports.default = Pawn;
 
 
 
-},{"../physicsEngine":25,"./levelObject":20,"matter-js":12}],22:[function(require,module,exports){
+},{"../physicsEngine":26,"./levelObject":21,"matter-js":12}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18989,7 +19037,7 @@ exports.default = Placeholder;
 
 
 
-},{"./levelObject":20}],23:[function(require,module,exports){
+},{"./levelObject":21}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19094,7 +19142,7 @@ exports.default = Player;
 
 
 
-},{"../../common/enums":15,"./levelObject":20,"gl-matrix":2,"matter-js":12}],24:[function(require,module,exports){
+},{"../../common/enums":15,"./levelObject":21,"gl-matrix":2,"matter-js":12}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19109,6 +19157,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var levelObject_1 = require("./levelObject");
 var matter_js_1 = require("matter-js");
@@ -19126,8 +19181,10 @@ var Wall = /** @class */ (function (_super) {
     };
     ;
     Wall.prototype.render = function () {
+        var _a;
+        var classes = this.meta.class ? this.meta.class : [];
         var view = _super.prototype.render.call(this);
-        view.classList.add('wall', 'center');
+        (_a = view.classList).add.apply(_a, __spreadArrays(['wall', 'center'], classes));
         var side = document.createElement('div');
         side.classList.add('side');
         view.append(side);
@@ -19142,7 +19199,7 @@ exports.default = Wall;
 
 
 
-},{"../physicsEngine":25,"./levelObject":20,"matter-js":12}],25:[function(require,module,exports){
+},{"../physicsEngine":26,"./levelObject":21,"matter-js":12}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
