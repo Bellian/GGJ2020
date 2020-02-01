@@ -18614,6 +18614,7 @@ var Server = /** @class */ (function () {
         if (!playerFound) {
             playerFound = new index_1.PlayerData(0, 0, data.id);
             this.playerData.push(playerFound);
+            this.sendPlayerData();
             this.startAfterFirstPlayerJoined();
         }
         else {
@@ -18634,12 +18635,13 @@ var Server = /** @class */ (function () {
     };
     Server.prototype.serverStateUpdate = function (timerValueInSeconds, serverState, cb) {
         var _this = this;
+        timerValueInSeconds *= 1000;
         var timer = this.setAndStartTimer(timerValueInSeconds);
         setTimeout(function () {
+            clearInterval(timer);
             _this.serverData.serverState = serverState;
             _this.updateServerState();
             cb();
-            clearInterval(timer);
         }, timerValueInSeconds);
     };
     Server.prototype.setAndStartTimer = function (timerValueInSeconds) {
