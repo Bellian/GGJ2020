@@ -18404,10 +18404,10 @@ var Client = /** @class */ (function () {
         this.objectData = [];
         this.updateServerCallbacks = new Set();
         this.serverData = new index_1.ServerData();
+        this.airConsole = new AirConsole();
         this.airConsole.onReady(this.onAirConReady);
     }
     Client.prototype.onAirConReady = function () {
-        this.airConsole = new AirConsole();
         if (!this.id)
             this.id = this.airConsole.getDeviceId();
         this.subscribeToAirConsole();
