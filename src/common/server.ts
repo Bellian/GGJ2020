@@ -113,7 +113,7 @@ export class Server {
   }
 
   private sendAllClients(data: any) {
-    this.airConsole.broadcast(data);
+    this.airConsole.broadcast(JSON.stringify(data));
   }
 
   private onMessage() {

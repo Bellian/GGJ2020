@@ -10,12 +10,13 @@ export class PlayerData implements TransactionTypeInterface {
     this.playerState = PlayerState.idle;
     this.isAngryDad = undefined;
     this.characterAppearanceType = CharacterAppearanceType.wichtel1;
+    this.id = 0;
   }
   transactionType: TransactionType;
   playerState: PlayerState;
   characterAppearanceType: CharacterAppearanceType;
   isAngryDad: boolean | undefined;
-  id: number = 0;
+  id: number;
 }
 
 export enum TransactionType {
@@ -34,8 +35,10 @@ export enum ServerState {
 }
 
 export class ControllerData implements TransactionTypeInterface {
-  constructor(public x: number = 0, public y: number = 0) {}
-  transactionType: TransactionType = TransactionType.ControllerData;
+  constructor(public x: number = 0, public y: number = 0) {
+    this.transactionType = TransactionType.ControllerData;
+  }
+  transactionType: TransactionType;
   id: number = 0;
 }
 

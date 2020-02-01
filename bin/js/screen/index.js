@@ -18506,12 +18506,12 @@ var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
         this.y = y;
-        this.id = 0;
         this.id = deviceId;
         this.transactionType = TransactionType.PlayerData;
         this.playerState = PlayerState.idle;
         this.isAngryDad = undefined;
         this.characterAppearanceType = CharacterAppearanceType.wichtel1;
+        this.id = 0;
     }
     return PlayerData;
 }());
@@ -18537,8 +18537,8 @@ var ControllerData = /** @class */ (function () {
         if (y === void 0) { y = 0; }
         this.x = x;
         this.y = y;
-        this.transactionType = TransactionType.ControllerData;
         this.id = 0;
+        this.transactionType = TransactionType.ControllerData;
     }
     return ControllerData;
 }());
@@ -18677,7 +18677,7 @@ var Server = /** @class */ (function () {
         }
     };
     Server.prototype.sendAllClients = function (data) {
-        this.airConsole.broadcast(data);
+        this.airConsole.broadcast(JSON.stringify(data));
     };
     Server.prototype.onMessage = function () {
         var _this = this;
