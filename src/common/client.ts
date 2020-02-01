@@ -15,13 +15,14 @@ import {
 
 export class Client {
   id: number = 0;
-  airconsole: any;
+  airConsole: any;
   playerData: PlayerData[] = [];
   objectData: ObjectData[] = [];
-  serverData: ServerData = new ServerData();
+  serverData: ServerData;
   constructor() {
-    this.airconsole = new AirConsole();
-    if (!this.id) this.id = this.airconsole.getDeviceId() as number;
+    this.airConsole = new AirConsole();
+    this.serverData = new ServerData();
+    if (!this.id) this.id = this.airConsole.getDeviceId() as number;
     this.subscribeToAirConsole();
   }
 
@@ -44,7 +45,7 @@ export class Client {
   }
 
   subscribeToAirConsole() {
-    this.airconsole.onMessage = (from: any, data: TransactionTypeInterface) => {
+    this.airConsole.onMessage = (from: any, data: TransactionTypeInterface) => {
       switch (data.transactionType) {
         case TransactionType.PlayerData:
           this.playerData = (data as PlayerUpdateData).playerData;
@@ -84,7 +85,7 @@ export class Client {
   }
 
   private notifyServer(data: any) {
-    this.airconsole.message(AirConsole.SCREEN, JSON.stringify(data));
+    this.airConsole.message(AirConsole.SCREEN, JSON.stringify(data));
   }
 
   getTime(): number {
