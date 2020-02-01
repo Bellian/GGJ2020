@@ -39,7 +39,7 @@ class Controller{
                 this.showView(Views.endscreen)
                 break;
             default:
-                console.error('not implemented', serverState);
+                console.error('not implemented', serverData);
         }
     }
 
@@ -70,7 +70,7 @@ class Controller{
         });
         let timeUntilStartInterval = setInterval(() => {
             let timeUntilStart = this.client.getTime();
-            document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart;
+            document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart.toString();
             if(timeUntilStart === 0){
                 clearInterval(timeUntilStartInterval);
             }
