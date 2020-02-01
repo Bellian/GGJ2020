@@ -39,6 +39,8 @@ export class Client {
   }
 
   currentPlayerData() {
+    console.table("currentPlayerData playerData", this.playerData);
+    console.table("currentPlayerData id", this.id);
     return this.playerData.filter(pD => pD.id === this.id)[0];
   }
 
@@ -66,13 +68,15 @@ export class Client {
             console.error("client onMessage switch", dataAsString);
             break;
         }
-      }else{
+      } else {
         console.error("client onMessage", dataAsString);
       }
     };
   }
 
   toggleAngryDad(): boolean {
+    console.table("toggleAngryDad playerData", this.playerData);
+    console.table("toggleAngryDad id", this.id);
     let currentPlayer = this.currentPlayerData();
     if (currentPlayer.isAngryDad === undefined) {
       currentPlayer.isAngryDad = false;

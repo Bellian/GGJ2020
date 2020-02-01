@@ -10,7 +10,6 @@ export class PlayerData implements TransactionTypeInterface {
     this.playerState = PlayerState.idle;
     this.isAngryDad = undefined;
     this.characterAppearanceType = CharacterAppearanceType.wichtel1;
-    this.id = 0;
   }
   transactionType: TransactionType;
   playerState: PlayerState;

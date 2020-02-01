@@ -25,6 +25,8 @@ var Client = /** @class */ (function () {
     };
     Client.prototype.currentPlayerData = function () {
         var _this = this;
+        console.table("currentPlayerData playerData", this.playerData);
+        console.table("currentPlayerData id", this.id);
         return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
     };
     Client.prototype.sendControllerData = function (controllerData) {
@@ -58,6 +60,8 @@ var Client = /** @class */ (function () {
         };
     };
     Client.prototype.toggleAngryDad = function () {
+        console.table("toggleAngryDad playerData", this.playerData);
+        console.table("toggleAngryDad id", this.id);
         var currentPlayer = this.currentPlayerData();
         if (currentPlayer.isAngryDad === undefined) {
             currentPlayer.isAngryDad = false;
@@ -109,7 +113,6 @@ var PlayerData = /** @class */ (function () {
         this.playerState = PlayerState.idle;
         this.isAngryDad = undefined;
         this.characterAppearanceType = CharacterAppearanceType.wichtel1;
-        this.id = 0;
     }
     return PlayerData;
 }());
@@ -240,8 +243,28 @@ var Server = /** @class */ (function () {
             _this.serverData.serverState = serverState;
             _this.updateServerState();
             _this.sendServerData();
+            if (_this.serverData.serverState === index_1.ServerState.running) {
+                _this.setAngryDad();
+            }
             cb();
         }, timerValueInSeconds * 1000);
+    };
+    Server.prototype.setAngryDad = function () {
+        var wantAngryDads = this.playerData.filter(function (pD) {
+            pD.isAngryDad;
+        });
+        var countAngryDads = wantAngryDads.length;
+        if (countAngryDads === 0) {
+            var angryDadIndex = Math.floor(Math.random() * this.playerData.length);
+            this.playerData.map(function (pD) { return (pD.isAngryDad = false); });
+            this.playerData[angryDadIndex].isAngryDad = true;
+        }
+        if (countAngryDads > 1) {
+            var angryDadPlayerId_1 = wantAngryDads[Math.floor(Math.random() * countAngryDads)].id;
+            this.playerData.map(function (pD) { return (pD.isAngryDad = false); });
+            this.playerData.filter(function (pD) { return pD.id === angryDadPlayerId_1; })[0].isAngryDad = true;
+        }
+        this.sendPlayerData();
     };
     Server.prototype.setAndStartTimer = function (timerValueInSeconds) {
         var _this = this;
@@ -279,20 +302,22 @@ var Server = /** @class */ (function () {
     };
     Server.prototype.onMessage = function () {
         var _this = this;
-        this.airConsole.onMessage = function (from, data) {
-            switch (data.transactionType) {
-                case index_1.TransactionType.PlayerData:
-                    _this.createAndUpdatePlayer(data);
-                    break;
-                case index_1.TransactionType.ControllerData:
-                    _this.updateControllerData(data);
-                    //JS after change   this.updatePlayer()
-                    break;
-                default:
-                    console.error("not implemented", data);
-                    break;
+        this.airConsole.onMessage = function (from, dataAsString) {
+            if (dataAsString) {
+                var data = JSON.parse(dataAsString);
+                switch (data.transactionType) {
+                    case index_1.TransactionType.PlayerData:
+                        _this.createAndUpdatePlayer(data);
+                        break;
+                    case index_1.TransactionType.ControllerData:
+                        _this.updateControllerData(data);
+                        //JS after change   this.updatePlayer()
+                        break;
+                    default:
+                        console.error("server onMessage", dataAsString);
+                        break;
+                }
             }
-            _this.sendPlayerData();
         };
     };
     Server.prototype.subscribeToAirConsole = function () {
@@ -302,6 +327,10 @@ var Server = /** @class */ (function () {
             _this.createAndUpdatePlayer({ id: id });
             _this.sendObjectData();
             _this.sendServerData();
+        };
+        this.airConsole.onDisconnect = function (id) {
+            _this.playerData.splice(_this.playerData.indexOf(_this.playerData.filter(function (pD) { return pD.id === id; })[0]), 1);
+            _this.sendPlayerData();
         };
     };
     Server.prototype.sendPlayerData = function () {

@@ -77,8 +77,32 @@ export class Server {
       this.serverData.serverState = serverState;
       this.updateServerState();
       this.sendServerData();
+      if (this.serverData.serverState === ServerState.running) {
+        this.setAngryDad();
+      }
       cb();
     }, timerValueInSeconds * 1000);
+  }
+
+  private setAngryDad() {
+    let wantAngryDads = this.playerData.filter(pD => {
+      pD.isAngryDad;
+    });
+    let countAngryDads = wantAngryDads.length;
+    if (countAngryDads === 0) {
+      let angryDadIndex = Math.floor(Math.random() * this.playerData.length);
+      this.playerData.map(pD => (pD.isAngryDad = false));
+      this.playerData[angryDadIndex].isAngryDad = true;
+    }
+    if (countAngryDads > 1) {
+      let angryDadPlayerId =
+        wantAngryDads[Math.floor(Math.random() * countAngryDads)].id;
+      this.playerData.map(pD => (pD.isAngryDad = false));
+      this.playerData.filter(
+        pD => pD.id === angryDadPlayerId
+      )[0].isAngryDad = true;
+    }
+    this.sendPlayerData();
   }
 
   private setAndStartTimer(timerValueInSeconds: number) {
@@ -117,29 +141,38 @@ export class Server {
   }
 
   private onMessage() {
-    this.airConsole.onMessage = (from: any, data: TransactionTypeInterface) => {
-      switch (data.transactionType) {
-        case TransactionType.PlayerData:
-          this.createAndUpdatePlayer(data as PlayerData);
-          break;
-        case TransactionType.ControllerData:
-          this.updateControllerData(data as ControllerData);
-          //JS after change   this.updatePlayer()
-          break;
-        default:
-          console.error("not implemented", data);
-          break;
+    this.airConsole.onMessage = (from: any, dataAsString: string) => {
+      if (dataAsString) {
+        let data = JSON.parse(dataAsString);
+        switch (data.transactionType) {
+          case TransactionType.PlayerData:
+            this.createAndUpdatePlayer(data as PlayerData);
+            break;
+          case TransactionType.ControllerData:
+            this.updateControllerData(data as ControllerData);
+            //JS after change   this.updatePlayer()
+            break;
+          default:
+            console.error("server onMessage", dataAsString);
+            break;
+        }
       }
-      this.sendPlayerData();
     };
   }
 
   subscribeToAirConsole() {
     this.onMessage();
     this.airConsole.onConnect = (id: number) => {
-      this.createAndUpdatePlayer({ id: id } as PlayerData);
+      this.createAndUpdatePlayer({ id } as PlayerData);
       this.sendObjectData();
       this.sendServerData();
+    };
+    this.airConsole.onDisconnect = (id: number) => {
+      this.playerData.splice(
+        this.playerData.indexOf(this.playerData.filter(pD => pD.id === id)[0]),
+        1
+      );
+      this.sendPlayerData();
     };
   }
 
