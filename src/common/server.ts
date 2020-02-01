@@ -11,13 +11,11 @@ import {
 } from "./index";
 
 export class Server {
-  airConsole: any;
-  serverData: ServerData;
+  airConsole = new AirConsole();
+  serverData: ServerData = new ServerData();
   playerData: PlayerData[] = [];
   objectData: ObjectData[] = [];
   constructor() {
-    this.airConsole = new AirConsole();
-    this.serverData = new ServerData();
     this.subscribeToAirConsole();
   }
 
