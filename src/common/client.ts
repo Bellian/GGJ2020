@@ -21,8 +21,12 @@ export class Client {
   objectData: ObjectData[] = [];
   serverData: ServerData;
   constructor() {
-    this.airConsole = new AirConsole();
     this.serverData = new ServerData();
+    this.airConsole.onReady(this.onAirConReady);
+  }
+
+  onAirConReady(){
+    this.airConsole = new AirConsole();
     if (!this.id) this.id = this.airConsole.getDeviceId() as number;
     this.subscribeToAirConsole();
   }
