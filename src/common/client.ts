@@ -48,21 +48,25 @@ export class Client {
   }
 
   subscribeToAirConsole() {
-    this.airConsole.onMessage = (from: any, data: TransactionTypeInterface) => {
-      switch (data.transactionType) {
-        case TransactionType.PlayerData:
-          this.playerData = (data as PlayerUpdateData).playerData;
-          break;
-        case TransactionType.ObjectData:
-          this.objectData = (data as ObjectUpdateData).objectData;
-          break;
-        case TransactionType.ServerData:
-          this.serverData = (data as ServerUpdateData).serverData;
-          this.updateServerData();
-          break;
-        default:
-          console.error("not implemented", data);
-          break;
+    this.airConsole.onMessage = (from: any, dataAsString: string) => {
+      if (dataAsString) {
+        let data = JSON.parse(dataAsString) as TransactionTypeInterface;
+        switch (data.transactionType) {
+          case TransactionType.PlayerData:
+            this.playerData = (data as PlayerUpdateData).playerData;
+            break;
+          case TransactionType.ObjectData:
+            this.objectData = (data as ObjectUpdateData).objectData;
+            break;
+          case TransactionType.ServerData:
+            this.serverData = (data as ServerUpdateData).serverData;
+            this.updateServerData();
+            break;
+          default:
+            console.error("client onMessage switch", dataAsString);
+            break;
+        }
+        console.error("client onMessage", dataAsString);
       }
     };
   }

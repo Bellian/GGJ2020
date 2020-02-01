@@ -18428,21 +18428,25 @@ var Client = /** @class */ (function () {
     };
     Client.prototype.subscribeToAirConsole = function () {
         var _this = this;
-        this.airConsole.onMessage = function (from, data) {
-            switch (data.transactionType) {
-                case index_1.TransactionType.PlayerData:
-                    _this.playerData = data.playerData;
-                    break;
-                case index_1.TransactionType.ObjectData:
-                    _this.objectData = data.objectData;
-                    break;
-                case index_1.TransactionType.ServerData:
-                    _this.serverData = data.serverData;
-                    _this.updateServerData();
-                    break;
-                default:
-                    console.error("not implemented", data);
-                    break;
+        this.airConsole.onMessage = function (from, dataAsString) {
+            if (dataAsString) {
+                var data = JSON.parse(dataAsString);
+                switch (data.transactionType) {
+                    case index_1.TransactionType.PlayerData:
+                        _this.playerData = data.playerData;
+                        break;
+                    case index_1.TransactionType.ObjectData:
+                        _this.objectData = data.objectData;
+                        break;
+                    case index_1.TransactionType.ServerData:
+                        _this.serverData = data.serverData;
+                        _this.updateServerData();
+                        break;
+                    default:
+                        console.error("client onMessage switch", dataAsString);
+                        break;
+                }
+                console.error("client onMessage", dataAsString);
             }
         };
     };
