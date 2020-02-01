@@ -14,7 +14,6 @@ import {
 } from "./index";
 
 export class Client {
-  serverState: ServerState = ServerState.initial;
   id: number = 0;
   airconsole: any;
   playerData: PlayerData[] = [];
@@ -26,6 +25,10 @@ export class Client {
     this.subscribeToAirConsole();
   }
 
+  updateServerData = () => (cb: (serverData: ServerData) => void) => {
+    cb(this.serverData);
+  };
+
   currentPlayerData() {
     return this.playerData.filter(pD => pD.id === this.id)[0];
   }
@@ -33,10 +36,6 @@ export class Client {
   sendControllerData(controllerData: ControllerData) {
     controllerData.id = this.id;
     this.notifyServer(controllerData);
-  }
-
-  recive() {
-    this.playerData;
   }
 
   subscribeToAirConsole() {
@@ -50,6 +49,7 @@ export class Client {
           break;
         case TransactionType.ServerData:
           this.serverData = (data as ServerUpdateData).serverData;
+          this.updateServerData();
           break;
         default:
           console.error("not implemented", data);
