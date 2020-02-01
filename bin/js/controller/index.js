@@ -1,36 +1,22 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-<<<<<<< HEAD
-exports.Module = "common";
-=======
 var index_1 = require("./index");
 var Client = /** @class */ (function () {
     function Client() {
-        this.serverState = index_1.ServerState.joining;
+        this.serverState = index_1.ServerState.initial;
         this.id = 0;
+        this.playerData = [];
+        this.objectData = [];
+        this.serverData = new index_1.ServerData();
         if (!this.id)
             this.id = this.airconsole.getDeviceId();
         this.airconsole = new AirConsole();
         this.subscribeToAirConsole();
-        this.playerData = this.airconsole.getPlayerData();
-        this.getPlayers();
     }
     Client.prototype.currentPlayerData = function () {
         var _this = this;
         return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
-    };
-    Client.prototype.getPlayers = function () {
-        var _this = this;
-        setInterval(function () {
-            (_this.playerData = _this.airconsole.getControllerDeviceIds), 300;
-        });
-    };
-    Client.prototype.getObjectData = function () {
-        var _this = this;
-        setInterval(function () {
-            (_this.objectData = _this.airconsole.getControllerDeviceIds), 300;
-        });
     };
     Client.prototype.sendControllerData = function (controllerData) {
         controllerData.id = this.id;
@@ -40,9 +26,6 @@ var Client = /** @class */ (function () {
         this.playerData;
     };
     Client.prototype.subscribeToAirConsole = function () {
-        this.onMessage();
-    };
-    Client.prototype.onMessage = function () {
         var _this = this;
         this.airconsole.onMessage = function (from, data) {
             switch (data.transactionType) {
@@ -81,6 +64,9 @@ var Client = /** @class */ (function () {
     Client.prototype.notifyServer = function (data) {
         this.airconsole.message(AirConsole.SCREEN, JSON.stringify(data));
     };
+    Client.prototype.getTime = function () {
+        return this.serverData.timerValueInSeconds;
+    };
     return Client;
 }());
 exports.Client = Client;
@@ -95,7 +81,6 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./client"));
 __export(require("./server"));
->>>>>>> master
 var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
@@ -122,14 +107,8 @@ var ServerState;
     ServerState[ServerState["initial"] = 0] = "initial";
     ServerState[ServerState["lobby"] = 1] = "lobby";
     ServerState[ServerState["characterSelection"] = 2] = "characterSelection";
-<<<<<<< HEAD
-    ServerState[ServerState["starting"] = 3] = "starting";
-    ServerState[ServerState["running"] = 4] = "running";
-    ServerState[ServerState["final"] = 5] = "final";
-=======
     ServerState[ServerState["running"] = 3] = "running";
     ServerState[ServerState["final"] = 4] = "final";
->>>>>>> master
 })(ServerState = exports.ServerState || (exports.ServerState = {}));
 var ControllerData = /** @class */ (function () {
     function ControllerData(x, y) {
@@ -145,6 +124,7 @@ var ControllerData = /** @class */ (function () {
 exports.ControllerData = ControllerData;
 var ServerData = /** @class */ (function () {
     function ServerData(timerValueInSeconds) {
+        if (timerValueInSeconds === void 0) { timerValueInSeconds = 30; }
         this.timerValueInSeconds = timerValueInSeconds;
     }
     return ServerData;
@@ -186,18 +166,22 @@ var Server = /** @class */ (function () {
     function Server() {
         var _this = this;
         this.serverState = index_1.ServerState.initial;
-        this.timerValueInSeconds = 0;
         this.airConsole = new AirConsole();
+        this.serverData = new index_1.ServerData();
         this.playerData = [];
         this.objectData = [];
         this.updateServerState = function () { return function (cb) {
             cb(_this.serverState);
         }; };
+        this.updateControllerData = function (controllerData) { return function (cb) {
+            cb(controllerData);
+        }; };
+        this.subscribeToAirConsole();
     }
     Server.prototype.createAndUpdatePlayer = function (data) {
         var playerFound = this.playerData.find(function (pD) { return pD.id === data.id; });
         if (!playerFound) {
-            playerFound = new index_1.PlayerData(0, 0, data.id, false);
+            playerFound = new index_1.PlayerData(0, 0, data.id);
             this.playerData.push(playerFound);
             this.startAfterFirstPlayerJoined();
         }
@@ -217,25 +201,56 @@ var Server = /** @class */ (function () {
     };
     Server.prototype.serverStateUpdate = function (timerValueInSeconds, serverState, cb) {
         var _this = this;
-        this.setAndStartTimer(timerValueInSeconds);
+        var timer = this.setAndStartTimer(timerValueInSeconds);
         setTimeout(function () {
             _this.serverState = serverState;
             _this.updateServerState();
             cb();
+            clearInterval(timer);
         }, timerValueInSeconds);
     };
     Server.prototype.setAndStartTimer = function (timerValueInSeconds) {
         var _this = this;
-        this.timerValueInSeconds = timerValueInSeconds;
-        setInterval(function () {
-            if (_this.timerValueInSeconds)
-                _this.timerValueInSeconds--;
+        this.serverData.timerValueInSeconds = timerValueInSeconds;
+        return setInterval(function () {
+            if (_this.serverData.timerValueInSeconds)
+                _this.serverData.timerValueInSeconds--;
+            _this.sendServerData();
         }, 1000);
     };
     Server.prototype.updatePlayer = function (updateData) {
         var player = this.playerData.filter(function (pD) { return pD.id === updateData.id; })[0];
         player = player;
         this.sendPlayerData();
+    };
+    Server.prototype.sendAllClients = function (data) {
+        this.airConsole.broadcast(data);
+    };
+    Server.prototype.onMessage = function () {
+        var _this = this;
+        this.airConsole.onMessage = function (from, data) {
+            switch (data.transactionType) {
+                case index_1.TransactionType.PlayerData:
+                    _this.createAndUpdatePlayer(data);
+                    break;
+                case index_1.TransactionType.ControllerData:
+                    _this.updateControllerData(data);
+                    //JS after change   this.updatePlayer()
+                    break;
+                default:
+                    console.error("not implemented", data);
+                    break;
+            }
+            _this.sendPlayerData();
+        };
+    };
+    Server.prototype.subscribeToAirConsole = function () {
+        var _this = this;
+        this.airConsole.onConnect = function (id) {
+            _this.createAndUpdatePlayer({ id: id });
+            _this.sendObjectData();
+            _this.sendServerData();
+        };
     };
     Server.prototype.sendPlayerData = function () {
         this.sendAllClients({
@@ -252,31 +267,8 @@ var Server = /** @class */ (function () {
     Server.prototype.sendServerData = function () {
         this.sendAllClients({
             transactionType: index_1.TransactionType.ServerData,
-            serverData: new index_1.ServerData(this.timerValueInSeconds)
+            serverData: this.serverData
         });
-    };
-    Server.prototype.sendAllClients = function (data) {
-        this.airConsole.broadcast(data);
-    };
-    Server.prototype.onMessage = function () {
-        var _this = this;
-        this.airconsole.onMessage = function (from, data) {
-            switch (data.transactionType) {
-                case index_1.TransactionType.PlayerData:
-                    _this.createAndUpdatePlayer(data);
-                    break;
-                case index_1.TransactionType.ControllerData:
-                    var controllerData = data;
-                    // let currentPlayerData = this.getOrCreatePlayer(data);
-                    // ///TODO: calculate player position
-                    _this.updatePlayer(data);
-                    break;
-                default:
-                    console.error("not implemented", data);
-                    break;
-            }
-            _this.sendPlayerData();
-        };
     };
     return Server;
 }());
@@ -302,7 +294,7 @@ var Controller = /** @class */ (function () {
         this.startPos = undefined;
         document.addEventListener('DOMContentLoaded', function () {
             _this.virtualController();
-            _this.client.updateServerState(_this.updateView);
+            (new index_1.Server).updateServerState(_this.updateView);
         });
     }
     Controller.prototype.showView = function (view) {

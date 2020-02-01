@@ -12,7 +12,7 @@ class Controller{
     constructor(private client:Client){
         document.addEventListener('DOMContentLoaded', () => {
             this.virtualController();
-            this.client.updateServerState(this.updateView);
+            (new Server).updateServerState(this.updateView);
         });
     }
 
