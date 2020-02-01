@@ -17,6 +17,15 @@ splashscreen{
     &.visible{
         display: flex;
     }
+    time{
+        padding: 20px;
+        height: auto;
+        display: block;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+    }
 }
 playscreen{
     display: none;
@@ -49,5 +58,19 @@ characterselection{
     background: turquoise;
     &.visible{
         display: block;
+    }
+    &.isAngryDad{
+        button:nth-child(1){
+            background: gray;
+        }
+        button:nth-child(2){
+            background: red;
+        }
+    }
+    button:nth-child(1){
+        background: green;
+    }
+    button:nth-child(2){
+        background: gray;
     }
 }

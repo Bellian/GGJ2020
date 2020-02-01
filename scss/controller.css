@@ -22,6 +22,16 @@ splashscreen.visible {
   display: flex;
 }
 
+splashscreen time {
+  padding: 20px;
+  height: auto;
+  display: block;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+}
+
 playscreen {
   display: none;
   width: 100vw;
@@ -60,4 +70,20 @@ characterselection {
 
 characterselection.visible {
   display: block;
+}
+
+characterselection.isAngryDad button:nth-child(1) {
+  background: gray;
+}
+
+characterselection.isAngryDad button:nth-child(2) {
+  background: red;
+}
+
+characterselection button:nth-child(1) {
+  background: green;
+}
+
+characterselection button:nth-child(2) {
+  background: gray;
 }
