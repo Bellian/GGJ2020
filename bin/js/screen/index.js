@@ -18396,32 +18396,374 @@ exports.default = Authority;
 },{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var index_1 = require("./index");
+var Client = /** @class */ (function () {
+    function Client() {
+        this.id = 0;
+        this.playerData = [];
+        this.objectData = [];
+        this.updateServerCallbacks = new Set();
+        this.airConsole = new AirConsole();
+        this.serverData = new index_1.ServerData();
+        if (!this.id)
+            this.id = this.airConsole.getDeviceId();
+        this.subscribeToAirConsole();
+    }
+    Client.prototype.onUpdateServerData = function (cb) {
+        this.updateServerCallbacks.add(cb);
+    };
+    Client.prototype.updateServerData = function () {
+        var _this = this;
+        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData); });
+    };
+    Client.prototype.currentPlayerData = function () {
+        var _this = this;
+        return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
+    };
+    Client.prototype.sendControllerData = function (controllerData) {
+        controllerData.id = this.id;
+        this.notifyServer(controllerData);
+    };
+    Client.prototype.subscribeToAirConsole = function () {
+        var _this = this;
+        this.airConsole.onMessage = function (from, data) {
+            switch (data.transactionType) {
+                case index_1.TransactionType.PlayerData:
+                    _this.playerData = data.playerData;
+                    break;
+                case index_1.TransactionType.ObjectData:
+                    _this.objectData = data.objectData;
+                    break;
+                case index_1.TransactionType.ServerData:
+                    _this.serverData = data.serverData;
+                    _this.updateServerData();
+                    break;
+                default:
+                    console.error("not implemented", data);
+                    break;
+            }
+        };
+    };
+    Client.prototype.toggleAngryDad = function () {
+        var currentPlayer = this.currentPlayerData();
+        if (currentPlayer.isAngryDad === undefined) {
+            currentPlayer.isAngryDad = false;
+        }
+        else {
+            currentPlayer.isAngryDad = !currentPlayer.isAngryDad;
+        }
+        this.notifyServer(currentPlayer);
+        return currentPlayer.isAngryDad;
+    };
+    Client.prototype.changeAppearance = function (appearance) {
+        var currentPlayer = this.currentPlayerData();
+        currentPlayer.characterAppearanceType = appearance;
+        this.notifyServer(currentPlayer);
+        return currentPlayer.characterAppearanceType;
+    };
+    Client.prototype.interacting = function (playerState) {
+        var currentPlayer = this.currentPlayerData();
+        currentPlayer.playerState = playerState;
+        this.notifyServer(currentPlayer);
+        return currentPlayer.playerState;
+    };
+    Client.prototype.notifyServer = function (data) {
+        this.airConsole.message(AirConsole.SCREEN, JSON.stringify(data));
+    };
+    Client.prototype.getTime = function () {
+        return this.serverData.timerValueInSeconds;
+    };
+    return Client;
+}());
+exports.Client = Client;
+
+
+
+},{"./index":16}],15:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Directions;
+(function (Directions) {
+    Directions[Directions["UP"] = 0] = "UP";
+    Directions[Directions["DOWN"] = 1] = "DOWN";
+    Directions[Directions["LEFT"] = 2] = "LEFT";
+    Directions[Directions["RIGHT"] = 3] = "RIGHT";
+})(Directions = exports.Directions || (exports.Directions = {}));
+
+
+
+},{}],16:[function(require,module,exports){
+"use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(require("./client"));
+__export(require("./server"));
+var PlayerData = /** @class */ (function () {
+    function PlayerData(x, y, deviceId) {
+        this.x = x;
+        this.y = y;
+        this.transactionType = TransactionType.PlayerData;
+        this.playerState = PlayerState.idle;
+        this.characterAppearanceType = CharacterAppearanceType.wichtel1;
+        this.isAngryDad = undefined;
+        this.id = 0;
+        this.id = deviceId;
+    }
+    return PlayerData;
+}());
+exports.PlayerData = PlayerData;
+var TransactionType;
+(function (TransactionType) {
+    TransactionType[TransactionType["ServerData"] = 0] = "ServerData";
+    TransactionType[TransactionType["PlayerData"] = 1] = "PlayerData";
+    TransactionType[TransactionType["ControllerData"] = 2] = "ControllerData";
+    TransactionType[TransactionType["ObjectData"] = 3] = "ObjectData";
+})(TransactionType = exports.TransactionType || (exports.TransactionType = {}));
+var ServerState;
+(function (ServerState) {
+    ServerState[ServerState["initial"] = 0] = "initial";
+    ServerState[ServerState["lobby"] = 1] = "lobby";
+    ServerState[ServerState["characterSelection"] = 2] = "characterSelection";
+    ServerState[ServerState["running"] = 3] = "running";
+    ServerState[ServerState["final"] = 4] = "final";
+})(ServerState = exports.ServerState || (exports.ServerState = {}));
+var ControllerData = /** @class */ (function () {
+    function ControllerData(x, y) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = x;
+        this.y = y;
+        this.transactionType = TransactionType.ControllerData;
+        this.id = 0;
+    }
+    return ControllerData;
+}());
+exports.ControllerData = ControllerData;
+var ServerData = /** @class */ (function () {
+    function ServerData(timerValueInSeconds, serverState) {
+        if (timerValueInSeconds === void 0) { timerValueInSeconds = 30; }
+        if (serverState === void 0) { serverState = ServerState.initial; }
+        this.timerValueInSeconds = timerValueInSeconds;
+        this.serverState = serverState;
+    }
+    return ServerData;
+}());
+exports.ServerData = ServerData;
+var PlayerState;
+(function (PlayerState) {
+    PlayerState[PlayerState["idle"] = 0] = "idle";
+    PlayerState[PlayerState["dead"] = 1] = "dead";
+    PlayerState[PlayerState["running"] = 2] = "running";
+    PlayerState[PlayerState["interacting"] = 3] = "interacting";
+})(PlayerState = exports.PlayerState || (exports.PlayerState = {}));
+var CharacterAppearanceType;
+(function (CharacterAppearanceType) {
+    CharacterAppearanceType[CharacterAppearanceType["wichtel1"] = 0] = "wichtel1";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel2"] = 1] = "wichtel2";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel3"] = 2] = "wichtel3";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel4"] = 3] = "wichtel4";
+})(CharacterAppearanceType = exports.CharacterAppearanceType || (exports.CharacterAppearanceType = {}));
+var ObjectData = /** @class */ (function () {
+    function ObjectData(x, y, damage, objectId) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        if (damage === void 0) { damage = 0; }
+        this.x = x;
+        this.y = y;
+        this.damage = damage;
+        this.objectId = objectId;
+    }
+    return ObjectData;
+}());
+exports.ObjectData = ObjectData;
+
+
+
+},{"./client":14,"./server":17}],17:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var index_1 = require("./index");
+exports.OBJECTDATAMAXHEALTH = 10;
+var Server = /** @class */ (function () {
+    function Server() {
+        this.playerData = [];
+        this.objectData = [];
+        this.updateServerCallbacks = new Set();
+        this.updateControllerCallbacks = new Set();
+        this.airConsole = new AirConsole();
+        this.serverData = new index_1.ServerData();
+        this.subscribeToAirConsole();
+    }
+    Server.prototype.onUpdateServerState = function (cb) {
+        this.updateControllerCallbacks.add(cb);
+    };
+    Server.prototype.updateServerState = function () {
+        var _this = this;
+        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData.serverState); });
+    };
+    Server.prototype.onUpdateControllerData = function (cb) {
+        this.updateControllerCallbacks.add(cb);
+    };
+    Server.prototype.updateControllerData = function (controllerData) {
+        this.updateControllerCallbacks.forEach(function (e) { return e(controllerData); });
+    };
+    Server.prototype.createAndUpdatePlayer = function (data) {
+        var playerFound = this.playerData.find(function (pD) { return pD.id === data.id; });
+        if (!playerFound) {
+            playerFound = new index_1.PlayerData(0, 0, data.id);
+            this.playerData.push(playerFound);
+            this.startAfterFirstPlayerJoined();
+        }
+        this.updatePlayer(data);
+    };
+    Server.prototype.startAfterFirstPlayerJoined = function () {
+        var _this = this;
+        if (this.playerData.length == 1) {
+            this.serverData.serverState = index_1.ServerState.lobby;
+            this.updateServerState();
+            this.serverStateUpdate(30, index_1.ServerState.characterSelection, function () {
+                _this.serverStateUpdate(15, index_1.ServerState.running, function () {
+                    _this.serverStateUpdate(300, index_1.ServerState.final, function () { });
+                });
+            });
+        }
+    };
+    Server.prototype.serverStateUpdate = function (timerValueInSeconds, serverState, cb) {
+        var _this = this;
+        var timer = this.setAndStartTimer(timerValueInSeconds);
+        setTimeout(function () {
+            _this.serverData.serverState = serverState;
+            _this.updateServerState();
+            cb();
+            clearInterval(timer);
+        }, timerValueInSeconds);
+    };
+    Server.prototype.setAndStartTimer = function (timerValueInSeconds) {
+        var _this = this;
+        this.serverData.timerValueInSeconds = timerValueInSeconds;
+        return setInterval(function () {
+            if (_this.serverData.timerValueInSeconds)
+                _this.serverData.timerValueInSeconds--;
+            _this.sendServerData();
+        }, 1000);
+    };
+    Server.prototype.updatePlayer = function (updateData) {
+        var player = this.playerData.find(function (pD) { return pD.id === updateData.id; });
+        if (player) {
+            var playerIndex = this.playerData.indexOf(player);
+            this.playerData[playerIndex] = updateData;
+            if (updateData.playerState === index_1.PlayerState.interacting) {
+                //JS find Item and damage/heal
+                var itemFound = { damage: 0, x: 0, y: 0, objectId: 0 };
+                if (itemFound) {
+                    itemFound.damage += updateData.isAngryDad ? -1 : 1;
+                    if (itemFound.damage > exports.OBJECTDATAMAXHEALTH)
+                        itemFound.damage = exports.OBJECTDATAMAXHEALTH;
+                    if (itemFound.damage < 0)
+                        itemFound.damage = 0;
+                }
+                if (updateData.isAngryDad) {
+                    //check for wichtel
+                }
+            }
+            this.sendPlayerData();
+        }
+    };
+    Server.prototype.sendAllClients = function (data) {
+        this.airConsole.broadcast(data);
+    };
+    Server.prototype.onMessage = function () {
+        var _this = this;
+        this.airConsole.onMessage = function (from, data) {
+            switch (data.transactionType) {
+                case index_1.TransactionType.PlayerData:
+                    _this.createAndUpdatePlayer(data);
+                    break;
+                case index_1.TransactionType.ControllerData:
+                    _this.updateControllerData(data);
+                    //JS after change   this.updatePlayer()
+                    break;
+                default:
+                    console.error("not implemented", data);
+                    break;
+            }
+            _this.sendPlayerData();
+        };
+    };
+    Server.prototype.subscribeToAirConsole = function () {
+        var _this = this;
+        this.onMessage();
+        this.airConsole.onConnect = function (id) {
+            _this.createAndUpdatePlayer({ id: id });
+            _this.sendObjectData();
+            _this.sendServerData();
+        };
+    };
+    Server.prototype.sendPlayerData = function () {
+        this.sendAllClients({
+            transactionType: index_1.TransactionType.PlayerData,
+            playerData: this.playerData
+        });
+    };
+    Server.prototype.sendObjectData = function () {
+        this.sendAllClients({
+            transactionType: index_1.TransactionType.ObjectData,
+            objectData: this.objectData
+        });
+    };
+    Server.prototype.sendServerData = function () {
+        this.sendAllClients({
+            transactionType: index_1.TransactionType.ServerData,
+            serverData: this.serverData
+        });
+    };
+    return Server;
+}());
+exports.Server = Server;
+
+
+
+},{"./index":16}],18:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var levelMap_1 = require("./map/levelMap");
 var physicsEngine_1 = require("./physicsEngine");
+var authority_1 = require("../common/authority");
+var server_1 = require("../common/server");
+authority_1.default.get().requestAuthority();
 document.addEventListener('DOMContentLoaded', function () {
     physicsEngine_1.default.init();
-    var level = new levelMap_1.LevelMap('/level/level1.json');
+    var level = new levelMap_1.LevelMap('../level/level1.json', document.body);
     level.wait.then(function () {
-        physicsEngine_1.default.showDebugPlayer();
+        // Engine.showDebugPlayer();
         physicsEngine_1.default.showDebugRenderer(level);
         physicsEngine_1.default.start();
+        var server = new server_1.Server();
     });
 });
 
 
 
-},{"./map/levelMap":15,"./physicsEngine":16}],15:[function(require,module,exports){
+},{"../common/authority":13,"../common/server":17,"./map/levelMap":19,"./physicsEngine":25}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var gl_matrix_1 = require("gl-matrix");
 var authority_1 = require("../../common/authority");
 var physicsEngine_1 = require("../physicsEngine");
 var matter_js_1 = require("matter-js");
+var pawn_1 = require("./pawn");
+var player_1 = require("./player");
+var wall_1 = require("./wall");
+var placeholder_1 = require("./placeholder");
 var LevelMap = /** @class */ (function () {
-    function LevelMap(url) {
+    function LevelMap(url, mainContainer) {
         var _this = this;
         this.url = url;
+        this.mainContainer = mainContainer;
         this.objects = [];
+        this.lastTimestamp = 0;
         this.wait = fetch(url).then(function (result) {
             return result.json();
         }).then(function (json) {
@@ -18429,12 +18771,38 @@ var LevelMap = /** @class */ (function () {
         });
     }
     LevelMap.prototype.parse = function (json) {
+        var _this = this;
         this.size = gl_matrix_1.vec2.fromValues(json.size[0], json.size[1]);
         this.createBounds();
+        this.createContainer();
         // parse levelObjects
+        json.objectData.forEach(function (data) {
+            switch (data.type) {
+                case 'wall':
+                    new wall_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos), data.meta);
+                    break;
+                default:
+                    new placeholder_1.Placeholder(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, data.pos));
+                    break;
+            }
+        });
+        matter_js_1.Events.on(physicsEngine_1.default.engine, 'beforeUpdate', function (event) {
+            // console.log('tick');
+            var delta = (event.timestamp - _this.lastTimestamp) / 1000; // convert to sec
+            _this.lastTimestamp = event.timestamp;
+            for (var _i = 0, _a = _this.objects; _i < _a.length; _i++) {
+                var object = _a[_i];
+                if (object.canTick) {
+                    object.tick(delta);
+                }
+            }
+            // console.debug(event.timestamp);
+        });
+        // create player
+        new player_1.default(this, gl_matrix_1.vec2.fromValues(10, 10), pawn_1.default);
     };
     LevelMap.prototype.createBounds = function () {
-        if (authority_1.default.get().hasAuthority()) {
+        if (!authority_1.default.get().hasAuthority()) {
             return;
         }
         var width = this.size[0];
@@ -18445,6 +18813,26 @@ var LevelMap = /** @class */ (function () {
             matter_js_1.Bodies.rectangle(width + 50, height / 2, 100, height + 200, { isStatic: true }),
             matter_js_1.Bodies.rectangle(-50, height / 2, 100, height + 200, { isStatic: true })
         ]);
+    };
+    LevelMap.prototype.createContainer = function () {
+        this.gameContainer = document.createElement('div');
+        this.gameContainer.classList.add('game-container');
+        this.cameraElement = document.createElement('div');
+        this.cameraElement.classList.add('camera');
+        this.sceneContainer = document.createElement('div');
+        this.sceneContainer.classList.add('scene');
+        this.mapContainer = document.createElement('div');
+        this.mapContainer.classList.add('map');
+        this.mapContainer.style.width = this.size[0] + 'px';
+        this.mapContainer.style.height = this.size[1] + 'px';
+        this.mainContainer.append(this.gameContainer);
+        this.gameContainer.append(this.cameraElement);
+        this.cameraElement.append(this.sceneContainer);
+        this.sceneContainer.append(this.mapContainer);
+        this.setCameraPosition(gl_matrix_1.vec2.scale(gl_matrix_1.vec2.create(), this.size, 0.5));
+    };
+    LevelMap.prototype.setCameraPosition = function (position) {
+        this.mapContainer.style.transform = "translateX(" + -position[0] + "px) translateY(" + -position[1] + "px)";
     };
     LevelMap.prototype.addLevelObject = function (object) {
         this.objects.push(object);
@@ -18458,35 +18846,298 @@ var LevelMap = /** @class */ (function () {
     return LevelMap;
 }());
 exports.LevelMap = LevelMap;
+
+
+
+},{"../../common/authority":13,"../physicsEngine":25,"./pawn":21,"./placeholder":22,"./player":23,"./wall":24,"gl-matrix":2,"matter-js":12}],20:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var authority_1 = require("../../common/authority");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
 var LevelObject = /** @class */ (function () {
-    function LevelObject(LevelMap, position, meta) {
-        this.LevelMap = LevelMap;
+    function LevelObject(levelMap, position, meta) {
+        this.levelMap = levelMap;
         this.position = position;
         this.meta = meta;
-        LevelMap.addLevelObject(this);
+        this.canTick = false;
+        levelMap.addLevelObject(this);
         this.gateCreatePhysics();
+        this.render();
     }
     LevelObject.prototype.gateCreatePhysics = function () {
-        if (authority_1.default.get().hasAuthority()) {
+        console.log('init physics', authority_1.default.get().hasAuthority());
+        if (!authority_1.default.get().hasAuthority()) {
             return;
         }
         this.createPysics();
     };
+    LevelObject.prototype.tick = function (delta) {
+    };
     LevelObject.prototype.createPysics = function () { };
     ;
+    LevelObject.prototype.destroy = function () {
+        if (this.hitBox) {
+            matter_js_1.World.remove(physicsEngine_1.default.world, this.hitBox);
+        }
+    };
+    LevelObject.prototype.viewUpdate = function () {
+        this.view.style.left = this.position[0] + 'px';
+        this.view.style.top = this.position[1] + 'px';
+    };
     LevelObject.prototype.render = function () {
-        return document.createElement('div');
+        this.view = document.createElement('div');
+        this.levelMap.mapContainer.append(this.view);
+        this.viewUpdate();
+        this.view.classList.add('level-object');
+        return this.view;
     };
     return LevelObject;
 }());
+exports.LevelObject = LevelObject;
+exports.default = LevelObject;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":16,"gl-matrix":2,"matter-js":12}],16:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":25,"matter-js":12}],21:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
+var Pawn = /** @class */ (function (_super) {
+    __extends(Pawn, _super);
+    function Pawn() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.radius = 10;
+        return _this;
+    }
+    Pawn.prototype.createPysics = function () {
+        this.hitBox = matter_js_1.Bodies.circle(5, 5, 10, {
+            frictionStatic: 1,
+            frictionAir: 0.4
+        });
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
+    };
+    ;
+    Pawn.prototype.render = function () {
+        var view = _super.prototype.render.call(this);
+        view.classList.add('pawn');
+        return view;
+    };
+    return Pawn;
+}(levelObject_1.default));
+exports.Pawn = Pawn;
+exports.default = Pawn;
+
+
+
+},{"../physicsEngine":25,"./levelObject":20,"matter-js":12}],22:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var Placeholder = /** @class */ (function (_super) {
+    __extends(Placeholder, _super);
+    function Placeholder() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Placeholder.prototype.render = function () {
+        var view = _super.prototype.render.call(this);
+        view.classList.add('placeholder');
+        return view;
+    };
+    return Placeholder;
+}(levelObject_1.default));
+exports.Placeholder = Placeholder;
+exports.default = Placeholder;
+
+
+
+},{"./levelObject":20}],23:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var enums_1 = require("../../common/enums");
+var gl_matrix_1 = require("gl-matrix");
+var matter_js_1 = require("matter-js");
+var tmp = gl_matrix_1.vec2.create();
+var forceDefault = 0.001;
+var Player = /** @class */ (function (_super) {
+    __extends(Player, _super);
+    function Player(levelMap, position, pawnClass) {
+        var _this = _super.call(this, levelMap, position) || this;
+        _this.pawnClass = pawnClass;
+        _this.move = new Set();
+        _this.canTick = true;
+        _this.pawn = new pawnClass(levelMap, position);
+        _this.registerInput();
+        return _this;
+    }
+    Player.prototype.tick = function (delta) {
+        if (this.move.size !== 0) {
+            gl_matrix_1.vec2.set(tmp, 0, 0);
+            this.move.forEach(function (e) {
+                switch (e) {
+                    case enums_1.Directions.UP:
+                        gl_matrix_1.vec2.add(tmp, tmp, [0, -1]);
+                        break;
+                    case enums_1.Directions.DOWN:
+                        gl_matrix_1.vec2.add(tmp, tmp, [0, 1]);
+                        break;
+                    case enums_1.Directions.LEFT:
+                        gl_matrix_1.vec2.add(tmp, tmp, [-1, 0]);
+                        break;
+                    case enums_1.Directions.RIGHT:
+                        gl_matrix_1.vec2.add(tmp, tmp, [1, 0]);
+                        break;
+                }
+            });
+            gl_matrix_1.vec2.normalize(tmp, tmp);
+            matter_js_1.Body.applyForce(this.pawn.hitBox, this.pawn.hitBox.position, {
+                x: tmp[0] * forceDefault,
+                y: tmp[1] * forceDefault
+            });
+        }
+        this.position = gl_matrix_1.vec2.fromValues(this.pawn.hitBox.position.x, this.pawn.hitBox.position.y);
+        gl_matrix_1.vec2.copy(this.pawn.position, this.position);
+        this.levelMap.setCameraPosition(this.position);
+        this.pawn.viewUpdate();
+    };
+    Player.prototype.registerInput = function () {
+        var _this = this;
+        window.addEventListener('keydown', function (e) {
+            switch (e.key) {
+                case 'w':
+                    _this.move.add(enums_1.Directions.UP);
+                    break;
+                case 's':
+                    _this.move.add(enums_1.Directions.DOWN);
+                    break;
+                case 'a':
+                    _this.move.add(enums_1.Directions.LEFT);
+                    break;
+                case 'd':
+                    _this.move.add(enums_1.Directions.RIGHT);
+                    break;
+            }
+        });
+        window.addEventListener('keyup', function (e) {
+            switch (e.key) {
+                case 'w':
+                    _this.move.delete(enums_1.Directions.UP);
+                    break;
+                case 's':
+                    _this.move.delete(enums_1.Directions.DOWN);
+                    break;
+                case 'a':
+                    _this.move.delete(enums_1.Directions.LEFT);
+                    break;
+                case 'd':
+                    _this.move.delete(enums_1.Directions.RIGHT);
+                    break;
+            }
+        });
+    };
+    return Player;
+}(levelObject_1.default));
+exports.Player = Player;
+exports.default = Player;
+
+
+
+},{"../../common/enums":15,"./levelObject":20,"gl-matrix":2,"matter-js":12}],24:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
+var Wall = /** @class */ (function (_super) {
+    __extends(Wall, _super);
+    function Wall() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Wall.prototype.createPysics = function () {
+        this.hitBox = matter_js_1.Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
+            isStatic: true,
+        });
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
+    };
+    ;
+    Wall.prototype.render = function () {
+        var view = _super.prototype.render.call(this);
+        view.classList.add('wall', 'center');
+        var side = document.createElement('div');
+        side.classList.add('side');
+        view.append(side);
+        view.style.width = this.meta.size[0] + 'px';
+        view.style.height = this.meta.size[1] + 'px';
+        return view;
+    };
+    return Wall;
+}(levelObject_1.default));
+exports.Wall = Wall;
+exports.default = Wall;
+
+
+
+},{"../physicsEngine":25,"./levelObject":20,"matter-js":12}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
 var gl_matrix_1 = require("gl-matrix");
+var enums_1 = require("../common/enums");
 var maxDebugMapSize = 250;
 var PhysicsEngine = /** @class */ (function () {
     function PhysicsEngine() {
@@ -18551,16 +19202,16 @@ var PhysicsEngine = /** @class */ (function () {
             }
             move.forEach(function (e) {
                 switch (e) {
-                    case Directions.UP:
+                    case enums_1.Directions.UP:
                         gl_matrix_1.vec2.add(dir, dir, [0, -1]);
                         break;
-                    case Directions.DOWN:
+                    case enums_1.Directions.DOWN:
                         gl_matrix_1.vec2.add(dir, dir, [0, 1]);
                         break;
-                    case Directions.LEFT:
+                    case enums_1.Directions.LEFT:
                         gl_matrix_1.vec2.add(dir, dir, [-1, 0]);
                         break;
-                    case Directions.RIGHT:
+                    case enums_1.Directions.RIGHT:
                         gl_matrix_1.vec2.add(dir, dir, [1, 0]);
                         break;
                 }
@@ -18575,32 +19226,32 @@ var PhysicsEngine = /** @class */ (function () {
         window.addEventListener('keydown', function (e) {
             switch (e.key) {
                 case 'w':
-                    move.add(Directions.UP);
+                    move.add(enums_1.Directions.UP);
                     break;
                 case 's':
-                    move.add(Directions.DOWN);
+                    move.add(enums_1.Directions.DOWN);
                     break;
                 case 'a':
-                    move.add(Directions.LEFT);
+                    move.add(enums_1.Directions.LEFT);
                     break;
                 case 'd':
-                    move.add(Directions.RIGHT);
+                    move.add(enums_1.Directions.RIGHT);
                     break;
             }
         });
         window.addEventListener('keyup', function (e) {
             switch (e.key) {
                 case 'w':
-                    move.delete(Directions.UP);
+                    move.delete(enums_1.Directions.UP);
                     break;
                 case 's':
-                    move.delete(Directions.DOWN);
+                    move.delete(enums_1.Directions.DOWN);
                     break;
                 case 'a':
-                    move.delete(Directions.LEFT);
+                    move.delete(enums_1.Directions.LEFT);
                     break;
                 case 'd':
-                    move.delete(Directions.RIGHT);
+                    move.delete(enums_1.Directions.RIGHT);
                     break;
             }
         });
@@ -18609,16 +19260,9 @@ var PhysicsEngine = /** @class */ (function () {
 }());
 exports.PhysicsEngine = PhysicsEngine;
 exports.default = PhysicsEngine;
-var Directions;
-(function (Directions) {
-    Directions[Directions["UP"] = 0] = "UP";
-    Directions[Directions["DOWN"] = 1] = "DOWN";
-    Directions[Directions["LEFT"] = 2] = "LEFT";
-    Directions[Directions["RIGHT"] = 3] = "RIGHT";
-})(Directions || (Directions = {}));
 
 
 
-},{"gl-matrix":2,"matter-js":12}]},{},[14]);
+},{"../common/enums":15,"gl-matrix":2,"matter-js":12}]},{},[18]);
 
 //# sourceMappingURL=index.js.map
