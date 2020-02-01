@@ -14,34 +14,20 @@ import {
 } from "./index";
 
 export class Client {
-  serverState: ServerState = ServerState.joining;
+  serverState: ServerState = ServerState.initial;
   id: number = 0;
-  airconsole: AirConsole;
-  playerData: PlayerData[];
-  objectData: ObjectData[];
-  serverData: ServerData;
+  airconsole: any;
+  playerData: PlayerData[] = [];
+  objectData: ObjectData[] = [];
+  serverData: ServerData = new ServerData();
   constructor() {
     if (!this.id) this.id = this.airconsole.getDeviceId() as number;
     this.airconsole = new AirConsole();
     this.subscribeToAirConsole();
-    this.playerData = this.airconsole.getPlayerData();
-    this.getPlayers();
   }
 
   currentPlayerData() {
     return this.playerData.filter(pD => pD.id === this.id)[0];
-  }
-
-  getPlayers() {
-    setInterval(() => {
-      (this.playerData = this.airconsole.getControllerDeviceIds), 300;
-    });
-  }
-
-  getObjectData() {
-    setInterval(() => {
-      (this.objectData = this.airconsole.getControllerDeviceIds), 300;
-    });
   }
 
   sendControllerData(controllerData: ControllerData) {
@@ -54,10 +40,6 @@ export class Client {
   }
 
   subscribeToAirConsole() {
-    this.onMessage();
-  }
-
-  onMessage() {
     this.airconsole.onMessage = (from: any, data: TransactionTypeInterface) => {
       switch (data.transactionType) {
         case TransactionType.PlayerData:
@@ -98,5 +80,9 @@ export class Client {
 
   private notifyServer(data: any) {
     this.airconsole.message(AirConsole.SCREEN, JSON.stringify(data));
+  }
+
+  getTime(): number {
+    return this.serverData.timerValueInSeconds;
   }
 }
