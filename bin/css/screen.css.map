@@ -1,1 +1,1 @@
-{"version":3,"file":"screen.css","sources":["screen.scss"],"sourcesContent":["body {\n    height: 100vh;\n    width:100vw;\n    margin:0;\n}"],"names":[],"mappings":"AAAA,AAAA,IAAI,AAAC,CACD,MAAM,CAAE,KAAK,CACb,KAAK,CAAC,KAAK,CACX,MAAM,CAAC,CAAC,CACX"}
+{"version":3,"file":"screen.css","sources":["screen.scss"],"sourcesContent":["body {\r\n    height: 100vh;\r\n    width:100vw;\r\n    margin:0;\r\n}"],"names":[],"mappings":"AAAA,AAAA,IAAI,AAAC,CACD,MAAM,CAAE,KAAK,CACb,KAAK,CAAC,KAAK,CACX,MAAM,CAAC,CAAC,CACX"}

@@ -1,13 +1,10 @@
 declare const AirConsole: any;
-export const Module = "common";
+
+export * from "./client";
+export * from "./server";
 
 export class PlayerData implements TransactionTypeInterface {
-  constructor(
-    public x: number,
-    public y: number,
-    deviceId: number,
-    isReady: boolean
-  ) {
+  constructor(public x: number, public y: number, deviceId: number) {
     this.id = deviceId;
   }
   transactionType: TransactionType = TransactionType.PlayerData;
@@ -26,11 +23,10 @@ export enum TransactionType {
 }
 
 export enum ServerState {
-  initial,
-  lobby,
-  characterSelection,
-  starting,
-  running,
+  initial, //initial state nothing selected
+  lobby, //wichtelskin selection & timer started
+  characterSelection, //wichtel or angryDad
+  running, //gamerunning
   final
 }
 
@@ -41,7 +37,7 @@ export class ControllerData implements TransactionTypeInterface {
 }
 
 export class ServerData {
-  constructor(public timerValueInSeconds: number) {}
+  constructor(public timerValueInSeconds: number = 30) {}
 }
 
 export enum PlayerState {
@@ -66,15 +62,15 @@ export class ObjectData {
   constructor(public x: number = 0, public y: number = 0, public id: number) {}
 }
 
-export interface PlayerUpdateData{
+export interface PlayerUpdateData {
   transactionType: TransactionType;
-            playerData: PlayerData[];
+  playerData: PlayerData[];
 }
-export interface ObjectUpdateData{
+export interface ObjectUpdateData {
   transactionType: TransactionType;
   objectData: ObjectData[];
 }
-export interface ServerUpdateData{
-    transactionType: TransactionType;
-    serverData: ServerData;
+export interface ServerUpdateData {
+  transactionType: TransactionType;
+  serverData: ServerData;
 }
