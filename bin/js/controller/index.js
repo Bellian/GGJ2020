@@ -66,6 +66,12 @@ var Client = /** @class */ (function () {
         this.notifyServer(currentPlayer);
         return currentPlayer.characterAppearanceType;
     };
+    Client.prototype.interacting = function (playerState) {
+        var currentPlayer = this.currentPlayerData();
+        currentPlayer.playerState = playerState;
+        this.notifyServer(currentPlayer);
+        return currentPlayer.playerState;
+    };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, JSON.stringify(data));
     };
@@ -174,19 +180,27 @@ var index_1 = require("./index");
 exports.OBJECTDATAMAXHEALTH = 10;
 var Server = /** @class */ (function () {
     function Server() {
-        var _this = this;
         this.playerData = [];
         this.objectData = [];
-        this.updateServerState = function () { return function (cb) {
-            cb(_this.serverData.serverState);
-        }; };
-        this.updateControllerData = function (controllerData) { return function (cb) {
-            cb(controllerData);
-        }; };
+        this.updateServerCallbacks = new Set();
+        this.updateControllerCallbacks = new Set();
         this.airConsole = new AirConsole();
         this.serverData = new index_1.ServerData();
         this.subscribeToAirConsole();
     }
+    Server.prototype.onUpdateServerState = function (cb) {
+        this.updateControllerCallbacks.add(cb);
+    };
+    Server.prototype.updateServerState = function () {
+        var _this = this;
+        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData.serverState); });
+    };
+    Server.prototype.onUpdateControllerData = function (cb) {
+        this.updateControllerCallbacks.add(cb);
+    };
+    Server.prototype.updateControllerData = function (controllerData) {
+        this.updateControllerCallbacks.forEach(function (e) { return e(controllerData); });
+    };
     Server.prototype.createAndUpdatePlayer = function (data) {
         var playerFound = this.playerData.find(function (pD) { return pD.id === data.id; });
         if (!playerFound) {
@@ -272,6 +286,7 @@ var Server = /** @class */ (function () {
     };
     Server.prototype.subscribeToAirConsole = function () {
         var _this = this;
+        this.onMessage();
         this.airConsole.onConnect = function (id) {
             _this.createAndUpdatePlayer({ id: id });
             _this.sendObjectData();
