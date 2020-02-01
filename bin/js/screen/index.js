@@ -18396,6 +18396,92 @@ exports.default = Authority;
 },{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var index_1 = require("./index");
+var Client = /** @class */ (function () {
+    function Client() {
+        this.id = 0;
+        this.playerData = [];
+        this.objectData = [];
+        this.updateServerCallbacks = new Set();
+        this.airConsole = new AirConsole();
+        this.serverData = new index_1.ServerData();
+        if (!this.id)
+            this.id = this.airConsole.getDeviceId();
+        this.subscribeToAirConsole();
+    }
+    Client.prototype.onUpdateServerData = function (cb) {
+        this.updateServerCallbacks.add(cb);
+    };
+    Client.prototype.updateServerData = function () {
+        var _this = this;
+        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData); });
+    };
+    Client.prototype.currentPlayerData = function () {
+        var _this = this;
+        return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
+    };
+    Client.prototype.sendControllerData = function (controllerData) {
+        controllerData.id = this.id;
+        this.notifyServer(controllerData);
+    };
+    Client.prototype.subscribeToAirConsole = function () {
+        var _this = this;
+        this.airConsole.onMessage = function (from, data) {
+            switch (data.transactionType) {
+                case index_1.TransactionType.PlayerData:
+                    _this.playerData = data.playerData;
+                    break;
+                case index_1.TransactionType.ObjectData:
+                    _this.objectData = data.objectData;
+                    break;
+                case index_1.TransactionType.ServerData:
+                    _this.serverData = data.serverData;
+                    _this.updateServerData();
+                    break;
+                default:
+                    console.error("not implemented", data);
+                    break;
+            }
+        };
+    };
+    Client.prototype.toggleAngryDad = function () {
+        var currentPlayer = this.currentPlayerData();
+        if (currentPlayer.isAngryDad === undefined) {
+            currentPlayer.isAngryDad = false;
+        }
+        else {
+            currentPlayer.isAngryDad = !currentPlayer.isAngryDad;
+        }
+        this.notifyServer(currentPlayer);
+        return currentPlayer.isAngryDad;
+    };
+    Client.prototype.changeAppearance = function (appearance) {
+        var currentPlayer = this.currentPlayerData();
+        currentPlayer.characterAppearanceType = appearance;
+        this.notifyServer(currentPlayer);
+        return currentPlayer.characterAppearanceType;
+    };
+    Client.prototype.interacting = function (playerState) {
+        var currentPlayer = this.currentPlayerData();
+        currentPlayer.playerState = playerState;
+        this.notifyServer(currentPlayer);
+        return currentPlayer.playerState;
+    };
+    Client.prototype.notifyServer = function (data) {
+        this.airConsole.message(AirConsole.SCREEN, JSON.stringify(data));
+    };
+    Client.prototype.getTime = function () {
+        return this.serverData.timerValueInSeconds;
+    };
+    return Client;
+}());
+exports.Client = Client;
+
+
+
+},{"./index":16}],15:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var Directions;
 (function (Directions) {
     Directions[Directions["UP"] = 0] = "UP";
@@ -18406,12 +18492,246 @@ var Directions;
 
 
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
+"use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(require("./client"));
+__export(require("./server"));
+var PlayerData = /** @class */ (function () {
+    function PlayerData(x, y, deviceId) {
+        this.x = x;
+        this.y = y;
+        this.transactionType = TransactionType.PlayerData;
+        this.playerState = PlayerState.idle;
+        this.characterAppearanceType = CharacterAppearanceType.wichtel1;
+        this.isAngryDad = undefined;
+        this.id = 0;
+        this.id = deviceId;
+    }
+    return PlayerData;
+}());
+exports.PlayerData = PlayerData;
+var TransactionType;
+(function (TransactionType) {
+    TransactionType[TransactionType["ServerData"] = 0] = "ServerData";
+    TransactionType[TransactionType["PlayerData"] = 1] = "PlayerData";
+    TransactionType[TransactionType["ControllerData"] = 2] = "ControllerData";
+    TransactionType[TransactionType["ObjectData"] = 3] = "ObjectData";
+})(TransactionType = exports.TransactionType || (exports.TransactionType = {}));
+var ServerState;
+(function (ServerState) {
+    ServerState[ServerState["initial"] = 0] = "initial";
+    ServerState[ServerState["lobby"] = 1] = "lobby";
+    ServerState[ServerState["characterSelection"] = 2] = "characterSelection";
+    ServerState[ServerState["running"] = 3] = "running";
+    ServerState[ServerState["final"] = 4] = "final";
+})(ServerState = exports.ServerState || (exports.ServerState = {}));
+var ControllerData = /** @class */ (function () {
+    function ControllerData(x, y) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = x;
+        this.y = y;
+        this.transactionType = TransactionType.ControllerData;
+        this.id = 0;
+    }
+    return ControllerData;
+}());
+exports.ControllerData = ControllerData;
+var ServerData = /** @class */ (function () {
+    function ServerData(timerValueInSeconds, serverState) {
+        if (timerValueInSeconds === void 0) { timerValueInSeconds = 30; }
+        if (serverState === void 0) { serverState = ServerState.initial; }
+        this.timerValueInSeconds = timerValueInSeconds;
+        this.serverState = serverState;
+    }
+    return ServerData;
+}());
+exports.ServerData = ServerData;
+var PlayerState;
+(function (PlayerState) {
+    PlayerState[PlayerState["idle"] = 0] = "idle";
+    PlayerState[PlayerState["dead"] = 1] = "dead";
+    PlayerState[PlayerState["running"] = 2] = "running";
+    PlayerState[PlayerState["interacting"] = 3] = "interacting";
+})(PlayerState = exports.PlayerState || (exports.PlayerState = {}));
+var CharacterAppearanceType;
+(function (CharacterAppearanceType) {
+    CharacterAppearanceType[CharacterAppearanceType["wichtel1"] = 0] = "wichtel1";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel2"] = 1] = "wichtel2";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel3"] = 2] = "wichtel3";
+    CharacterAppearanceType[CharacterAppearanceType["wichtel4"] = 3] = "wichtel4";
+})(CharacterAppearanceType = exports.CharacterAppearanceType || (exports.CharacterAppearanceType = {}));
+var ObjectData = /** @class */ (function () {
+    function ObjectData(x, y, damage, objectId) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        if (damage === void 0) { damage = 0; }
+        this.x = x;
+        this.y = y;
+        this.damage = damage;
+        this.objectId = objectId;
+    }
+    return ObjectData;
+}());
+exports.ObjectData = ObjectData;
+
+
+
+},{"./client":14,"./server":17}],17:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var index_1 = require("./index");
+exports.OBJECTDATAMAXHEALTH = 10;
+var Server = /** @class */ (function () {
+    function Server() {
+        this.playerData = [];
+        this.objectData = [];
+        this.updateServerCallbacks = new Set();
+        this.updateControllerCallbacks = new Set();
+        this.airConsole = new AirConsole();
+        this.serverData = new index_1.ServerData();
+        this.subscribeToAirConsole();
+    }
+    Server.prototype.onUpdateServerState = function (cb) {
+        this.updateControllerCallbacks.add(cb);
+    };
+    Server.prototype.updateServerState = function () {
+        var _this = this;
+        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData.serverState); });
+    };
+    Server.prototype.onUpdateControllerData = function (cb) {
+        this.updateControllerCallbacks.add(cb);
+    };
+    Server.prototype.updateControllerData = function (controllerData) {
+        this.updateControllerCallbacks.forEach(function (e) { return e(controllerData); });
+    };
+    Server.prototype.createAndUpdatePlayer = function (data) {
+        var playerFound = this.playerData.find(function (pD) { return pD.id === data.id; });
+        if (!playerFound) {
+            playerFound = new index_1.PlayerData(0, 0, data.id);
+            this.playerData.push(playerFound);
+            this.startAfterFirstPlayerJoined();
+        }
+        this.updatePlayer(data);
+    };
+    Server.prototype.startAfterFirstPlayerJoined = function () {
+        var _this = this;
+        if (this.playerData.length == 1) {
+            this.serverData.serverState = index_1.ServerState.lobby;
+            this.updateServerState();
+            this.serverStateUpdate(30, index_1.ServerState.characterSelection, function () {
+                _this.serverStateUpdate(15, index_1.ServerState.running, function () {
+                    _this.serverStateUpdate(300, index_1.ServerState.final, function () { });
+                });
+            });
+        }
+    };
+    Server.prototype.serverStateUpdate = function (timerValueInSeconds, serverState, cb) {
+        var _this = this;
+        var timer = this.setAndStartTimer(timerValueInSeconds);
+        setTimeout(function () {
+            _this.serverData.serverState = serverState;
+            _this.updateServerState();
+            cb();
+            clearInterval(timer);
+        }, timerValueInSeconds);
+    };
+    Server.prototype.setAndStartTimer = function (timerValueInSeconds) {
+        var _this = this;
+        this.serverData.timerValueInSeconds = timerValueInSeconds;
+        return setInterval(function () {
+            if (_this.serverData.timerValueInSeconds)
+                _this.serverData.timerValueInSeconds--;
+            _this.sendServerData();
+        }, 1000);
+    };
+    Server.prototype.updatePlayer = function (updateData) {
+        var player = this.playerData.find(function (pD) { return pD.id === updateData.id; });
+        if (player) {
+            var playerIndex = this.playerData.indexOf(player);
+            this.playerData[playerIndex] = updateData;
+            if (updateData.playerState === index_1.PlayerState.interacting) {
+                //JS find Item and damage/heal
+                var itemFound = { damage: 0, x: 0, y: 0, objectId: 0 };
+                if (itemFound) {
+                    itemFound.damage += updateData.isAngryDad ? -1 : 1;
+                    if (itemFound.damage > exports.OBJECTDATAMAXHEALTH)
+                        itemFound.damage = exports.OBJECTDATAMAXHEALTH;
+                    if (itemFound.damage < 0)
+                        itemFound.damage = 0;
+                }
+                if (updateData.isAngryDad) {
+                    //check for wichtel
+                }
+            }
+            this.sendPlayerData();
+        }
+    };
+    Server.prototype.sendAllClients = function (data) {
+        this.airConsole.broadcast(data);
+    };
+    Server.prototype.onMessage = function () {
+        var _this = this;
+        this.airConsole.onMessage = function (from, data) {
+            switch (data.transactionType) {
+                case index_1.TransactionType.PlayerData:
+                    _this.createAndUpdatePlayer(data);
+                    break;
+                case index_1.TransactionType.ControllerData:
+                    _this.updateControllerData(data);
+                    //JS after change   this.updatePlayer()
+                    break;
+                default:
+                    console.error("not implemented", data);
+                    break;
+            }
+            _this.sendPlayerData();
+        };
+    };
+    Server.prototype.subscribeToAirConsole = function () {
+        var _this = this;
+        this.onMessage();
+        this.airConsole.onConnect = function (id) {
+            _this.createAndUpdatePlayer({ id: id });
+            _this.sendObjectData();
+            _this.sendServerData();
+        };
+    };
+    Server.prototype.sendPlayerData = function () {
+        this.sendAllClients({
+            transactionType: index_1.TransactionType.PlayerData,
+            playerData: this.playerData
+        });
+    };
+    Server.prototype.sendObjectData = function () {
+        this.sendAllClients({
+            transactionType: index_1.TransactionType.ObjectData,
+            objectData: this.objectData
+        });
+    };
+    Server.prototype.sendServerData = function () {
+        this.sendAllClients({
+            transactionType: index_1.TransactionType.ServerData,
+            serverData: this.serverData
+        });
+    };
+    return Server;
+}());
+exports.Server = Server;
+
+
+
+},{"./index":16}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var levelMap_1 = require("./map/levelMap");
 var physicsEngine_1 = require("./physicsEngine");
 var authority_1 = require("../common/authority");
+var server_1 = require("../common/server");
 authority_1.default.get().requestAuthority();
 document.addEventListener('DOMContentLoaded', function () {
     physicsEngine_1.default.init();
@@ -18420,12 +18740,13 @@ document.addEventListener('DOMContentLoaded', function () {
         // Engine.showDebugPlayer();
         physicsEngine_1.default.showDebugRenderer(level);
         physicsEngine_1.default.start();
+        var server = new server_1.Server();
     });
 });
 
 
 
-},{"../common/authority":13,"./map/levelMap":16,"./physicsEngine":22}],16:[function(require,module,exports){
+},{"../common/authority":13,"../common/server":17,"./map/levelMap":19,"./physicsEngine":25}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var gl_matrix_1 = require("gl-matrix");
@@ -18528,7 +18849,7 @@ exports.LevelMap = LevelMap;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":22,"./pawn":18,"./placeholder":19,"./player":20,"./wall":21,"gl-matrix":2,"matter-js":12}],17:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":25,"./pawn":21,"./placeholder":22,"./player":23,"./wall":24,"gl-matrix":2,"matter-js":12}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var authority_1 = require("../../common/authority");
@@ -18578,7 +18899,7 @@ exports.default = LevelObject;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":22,"matter-js":12}],18:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":25,"matter-js":12}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18624,7 +18945,7 @@ exports.default = Pawn;
 
 
 
-},{"../physicsEngine":22,"./levelObject":17,"matter-js":12}],19:[function(require,module,exports){
+},{"../physicsEngine":25,"./levelObject":20,"matter-js":12}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18658,7 +18979,7 @@ exports.default = Placeholder;
 
 
 
-},{"./levelObject":17}],20:[function(require,module,exports){
+},{"./levelObject":20}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18763,7 +19084,7 @@ exports.default = Player;
 
 
 
-},{"../../common/enums":14,"./levelObject":17,"gl-matrix":2,"matter-js":12}],21:[function(require,module,exports){
+},{"../../common/enums":15,"./levelObject":20,"gl-matrix":2,"matter-js":12}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18811,7 +19132,7 @@ exports.default = Wall;
 
 
 
-},{"../physicsEngine":22,"./levelObject":17,"matter-js":12}],22:[function(require,module,exports){
+},{"../physicsEngine":25,"./levelObject":20,"matter-js":12}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
@@ -18942,6 +19263,6 @@ exports.default = PhysicsEngine;
 
 
 
-},{"../common/enums":14,"gl-matrix":2,"matter-js":12}]},{},[15]);
+},{"../common/enums":15,"gl-matrix":2,"matter-js":12}]},{},[18]);
 
 //# sourceMappingURL=index.js.map

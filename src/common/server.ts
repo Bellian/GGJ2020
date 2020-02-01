@@ -48,8 +48,9 @@ export class Server {
       playerFound = new PlayerData(0, 0, data.id);
       this.playerData.push(playerFound);
       this.startAfterFirstPlayerJoined();
+    } else {
+      this.updatePlayer(data);
     }
-    this.updatePlayer(data);
   }
 
   private startAfterFirstPlayerJoined() {
