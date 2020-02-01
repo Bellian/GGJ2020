@@ -137,7 +137,6 @@ exports.ControllerData = ControllerData;
 var ServerData = /** @class */ (function () {
     function ServerData(timerValueInSeconds, serverState) {
         if (timerValueInSeconds === void 0) { timerValueInSeconds = 30; }
-        if (serverState === void 0) { serverState = ServerState.initial; }
         this.timerValueInSeconds = timerValueInSeconds;
         this.serverState = serverState;
     }
@@ -186,7 +185,7 @@ var Server = /** @class */ (function () {
         this.updateServerCallbacks = new Set();
         this.updateControllerCallbacks = new Set();
         this.airConsole = new AirConsole();
-        this.serverData = new index_1.ServerData();
+        this.serverData = new index_1.ServerData(30, index_1.ServerState.initial);
         this.subscribeToAirConsole();
     }
     Server.prototype.onUpdateServerState = function (cb) {
@@ -233,6 +232,7 @@ var Server = /** @class */ (function () {
             clearInterval(timer);
             _this.serverData.serverState = serverState;
             _this.updateServerState();
+            _this.sendServerData();
             cb();
         }, timerValueInSeconds * 1000);
     };

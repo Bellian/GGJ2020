@@ -19,7 +19,7 @@ export class Server {
   objectData: ObjectData[] = [];
   constructor() {
     this.airConsole = new AirConsole();
-    this.serverData = new ServerData();
+    this.serverData = new ServerData(30, ServerState.initial);
     this.subscribeToAirConsole();
   }
   updateServerCallbacks: Set<(serverState: ServerState) => void> = new Set();
@@ -76,6 +76,7 @@ export class Server {
       clearInterval(timer);
       this.serverData.serverState = serverState;
       this.updateServerState();
+      this.sendServerData();
       cb();
     }, timerValueInSeconds * 1000);
   }
