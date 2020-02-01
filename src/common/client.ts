@@ -23,7 +23,7 @@ export class Client {
   constructor() {
     this.serverData = new ServerData();
     this.airConsole = new AirConsole();
-    this.airConsole.onReady = this.onAirConReady;
+    this.airConsole.onConnect = this.onAirConReady;
   }
 
   onAirConReady(code:string){

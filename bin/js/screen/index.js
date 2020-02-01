@@ -18405,7 +18405,7 @@ var Client = /** @class */ (function () {
         this.updateServerCallbacks = new Set();
         this.serverData = new index_1.ServerData();
         this.airConsole = new AirConsole();
-        this.airConsole.onReady = this.onAirConReady;
+        this.airConsole.onConnect = this.onAirConReady;
     }
     Client.prototype.onAirConReady = function (code) {
         if (!this.id)
