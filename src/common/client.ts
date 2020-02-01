@@ -21,7 +21,7 @@ export class Client {
   objectData: ObjectData[] = [];
   serverData: ServerData;
   constructor() {
-    this.serverData = new ServerData();
+    this.serverData = new ServerData(30, ServerState.initial);
     this.airConsole = new AirConsole();
     this.subscribeToAirConsole();
   }

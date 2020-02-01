@@ -8,7 +8,7 @@ var Client = /** @class */ (function () {
         this.playerData = [];
         this.objectData = [];
         this.updateServerCallbacks = new Set();
-        this.serverData = new index_1.ServerData();
+        this.serverData = new index_1.ServerData(30, index_1.ServerState.initial);
         this.airConsole = new AirConsole();
         this.subscribeToAirConsole();
     }
