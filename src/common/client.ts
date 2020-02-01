@@ -25,9 +25,14 @@ export class Client {
     this.subscribeToAirConsole();
   }
 
-  updateServerData = () => (cb: (serverData: ServerData) => void) => {
-    cb(this.serverData);
+  updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
+  onUpdateServerData(cb: (serverData: ServerData) => void) {
+    this.updateServerCallbacks.add(cb);
   };
+
+  updateServerData() {
+    this.updateServerCallbacks.forEach(e => e(this.serverData));
+  }
 
   currentPlayerData() {
     return this.playerData.filter(pD => pD.id === this.id)[0];

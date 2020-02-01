@@ -1,4 +1,4 @@
-import { ControllerData, Client, ServerState, Server } from '../common/index';
+import { ControllerData, Client, ServerState, Server, ServerData } from '../common/index';
 
 enum Views {
     splashscreen,
@@ -12,7 +12,7 @@ class Controller{
     constructor(private client:Client){
         document.addEventListener('DOMContentLoaded', () => {
             this.virtualController();
-            (new Server).updateServerState(this.updateView);
+            this.client.onUpdateServerData(this.updateView.bind(this));
         });
     }
 
@@ -24,8 +24,8 @@ class Controller{
         (document.querySelectorAll(Views[view])[0] as HTMLElement).classList.remove('visible');
     }
 
-    updateView(serverState:ServerState){
-        switch(serverState){
+    updateView(serverData:ServerData){
+        switch(serverData.serverState){
             case ServerState.lobby:
                 this.showView(Views.splashscreen);
                 break;

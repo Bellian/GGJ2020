@@ -4,16 +4,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
 var Client = /** @class */ (function () {
     function Client() {
-        this.serverState = index_1.ServerState.initial;
         this.id = 0;
         this.playerData = [];
         this.objectData = [];
         this.serverData = new index_1.ServerData();
+        this.updateServerCallbacks = new Set();
         if (!this.id)
             this.id = this.airconsole.getDeviceId();
         this.airconsole = new AirConsole();
         this.subscribeToAirConsole();
     }
+    Client.prototype.onUpdateServerData = function (cb) {
+        this.updateServerCallbacks.add(cb);
+    };
+    ;
+    Client.prototype.updateServerData = function () {
+        var _this = this;
+        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData); });
+    };
     Client.prototype.currentPlayerData = function () {
         var _this = this;
         return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
@@ -21,9 +29,6 @@ var Client = /** @class */ (function () {
     Client.prototype.sendControllerData = function (controllerData) {
         controllerData.id = this.id;
         this.notifyServer(controllerData);
-    };
-    Client.prototype.recive = function () {
-        this.playerData;
     };
     Client.prototype.subscribeToAirConsole = function () {
         var _this = this;
@@ -37,6 +42,7 @@ var Client = /** @class */ (function () {
                     break;
                 case index_1.TransactionType.ServerData:
                     _this.serverData = data.serverData;
+                    _this.updateServerData();
                     break;
                 default:
                     console.error("not implemented", data);
@@ -123,9 +129,11 @@ var ControllerData = /** @class */ (function () {
 }());
 exports.ControllerData = ControllerData;
 var ServerData = /** @class */ (function () {
-    function ServerData(timerValueInSeconds) {
+    function ServerData(timerValueInSeconds, serverState) {
         if (timerValueInSeconds === void 0) { timerValueInSeconds = 30; }
+        if (serverState === void 0) { serverState = ServerState.initial; }
         this.timerValueInSeconds = timerValueInSeconds;
+        this.serverState = serverState;
     }
     return ServerData;
 }());
@@ -165,13 +173,12 @@ var index_1 = require("./index");
 var Server = /** @class */ (function () {
     function Server() {
         var _this = this;
-        this.serverState = index_1.ServerState.initial;
         this.airConsole = new AirConsole();
         this.serverData = new index_1.ServerData();
         this.playerData = [];
         this.objectData = [];
         this.updateServerState = function () { return function (cb) {
-            cb(_this.serverState);
+            cb(_this.serverData.serverState);
         }; };
         this.updateControllerData = function (controllerData) { return function (cb) {
             cb(controllerData);
@@ -190,7 +197,7 @@ var Server = /** @class */ (function () {
     Server.prototype.startAfterFirstPlayerJoined = function () {
         var _this = this;
         if (this.playerData.length == 1) {
-            this.serverState = index_1.ServerState.lobby;
+            this.serverData.serverState = index_1.ServerState.lobby;
             this.updateServerState();
             this.serverStateUpdate(30, index_1.ServerState.characterSelection, function () {
                 _this.serverStateUpdate(15, index_1.ServerState.running, function () {
@@ -203,7 +210,7 @@ var Server = /** @class */ (function () {
         var _this = this;
         var timer = this.setAndStartTimer(timerValueInSeconds);
         setTimeout(function () {
-            _this.serverState = serverState;
+            _this.serverData.serverState = serverState;
             _this.updateServerState();
             cb();
             clearInterval(timer);
@@ -294,7 +301,7 @@ var Controller = /** @class */ (function () {
         this.startPos = undefined;
         document.addEventListener('DOMContentLoaded', function () {
             _this.virtualController();
-            (new index_1.Server).updateServerState(_this.updateView);
+            _this.client.onUpdateServerData(_this.updateView.bind(_this));
         });
     }
     Controller.prototype.showView = function (view) {
@@ -303,8 +310,8 @@ var Controller = /** @class */ (function () {
     Controller.prototype.hideView = function (view) {
         document.querySelectorAll(Views[view])[0].classList.remove('visible');
     };
-    Controller.prototype.updateView = function (serverState) {
-        switch (serverState) {
+    Controller.prototype.updateView = function (serverData) {
+        switch (serverData.serverState) {
             case index_1.ServerState.lobby:
                 this.showView(Views.splashscreen);
                 break;
