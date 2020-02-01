@@ -175,7 +175,7 @@ export class Server {
           this.sendPlayerData();
           this.sendServerData();
           this.sendObjectData();
-        }, 3000);
+        }, 500);
       }
     };
     this.airConsole.onDisconnect = (id: number) => {

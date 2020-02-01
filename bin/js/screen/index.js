@@ -18522,7 +18522,7 @@ var PlayerData = /** @class */ (function () {
         this.id = deviceId;
         this.transactionType = TransactionType.PlayerData;
         this.playerState = PlayerState.idle;
-        this.isAngryDad = undefined;
+        this.isAngryDad = false;
         this.characterAppearanceType = CharacterAppearanceType.wichtel1;
     }
     return PlayerData;
@@ -18746,7 +18746,7 @@ var Server = /** @class */ (function () {
                     _this.sendPlayerData();
                     _this.sendServerData();
                     _this.sendObjectData();
-                }, 3000);
+                }, 500);
             }
         };
         this.airConsole.onDisconnect = function (id) {
