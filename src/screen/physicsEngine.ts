@@ -1,6 +1,7 @@
 import { Engine, Gravity, Runner, Render, Bodies, World, Events, Body } from "matter-js";
 import { vec2 } from "gl-matrix";
 import { LevelMap } from "./map/levelMap";
+import { Directions } from "../common/enums";
 
 const maxDebugMapSize = 250;
 
@@ -144,9 +145,3 @@ export class PhysicsEngine {
 
 export default PhysicsEngine;
 
-enum Directions {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-}
