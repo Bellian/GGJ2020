@@ -12,7 +12,7 @@ var Client = /** @class */ (function () {
         this.serverData = new index_1.ServerData(30, index_1.ServerState.initial);
         this.airConsole = new AirConsole();
         this.airConsole.onDeviceStateChange = function (id) {
-            _this.subscribeToAirConsole();
+            _this.id = id;
         };
     }
     Client.prototype.onUpdateServerData = function (cb) {

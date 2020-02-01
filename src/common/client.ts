@@ -24,8 +24,8 @@ export class Client {
     this.serverData = new ServerData(30, ServerState.initial);
     this.airConsole = new AirConsole();
     this.airConsole.onDeviceStateChange = (id: number) => {
-      this.subscribeToAirConsole();
-    }
+      this.id = id;
+    };
   }
 
   updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
