@@ -25,6 +25,7 @@ export class Client {
     this.airConsole = new AirConsole();
     this.airConsole.onDeviceStateChange = (id: number) => {
       this.id = id;
+      this.subscribeToAirConsole();
     };
   }
 

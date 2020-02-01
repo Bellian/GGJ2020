@@ -18408,6 +18408,7 @@ var Client = /** @class */ (function () {
         this.airConsole = new AirConsole();
         this.airConsole.onDeviceStateChange = function (id) {
             _this.id = id;
+            _this.subscribeToAirConsole();
         };
     }
     Client.prototype.onUpdateServerData = function (cb) {
