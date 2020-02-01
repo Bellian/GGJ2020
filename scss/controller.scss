@@ -7,6 +7,9 @@
 splashscreen{
     display: none;
     justify-content: space-around;
+    width: 100vw;
+    height: 100vh;
+    background: blue;
     > button{
         width: 100px;
         height: 60px;
@@ -17,10 +20,14 @@ splashscreen{
 }
 playscreen{
     display: none;
+    width: 100vw;
+    height: 100vh;
+    background: red;
     controller{
         width: 100vw;
         height: 100vh;
         display: block;
+        position: fixed;
     }
     &.visible{
         display: block;
@@ -28,12 +35,18 @@ playscreen{
 }
 endscreen{
     display: none;
+    width: 100vw;
+    height: 100vh;
+    background: yellow;
     &.visible{
         display: block;
     }
 }
 characterselection{
     display: none;
+    width: 100vw;
+    height: 100vh;
+    background: turquoise;
     &.visible{
         display: block;
     }

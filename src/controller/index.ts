@@ -26,16 +26,16 @@ class Controller{
 
     updateView(serverState:ServerState){
         switch(serverState){
-            case ServerState.joining:
+            case ServerState.lobby:
                 this.showView(Views.splashscreen);
                 break;
-            case ServerState.:
+            case ServerState.characterSelection:
                 this.showView(Views.characterselection)
                 break;
-            case ServerState.:
+            case ServerState.running:
                 this.showView(Views.playscreen)
                 break;
-            case ServerState.:
+            case ServerState.final:
                 this.showView(Views.endscreen)
                 break;
             default:
