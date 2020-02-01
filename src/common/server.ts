@@ -11,7 +11,6 @@ import {
 } from "./index";
 
 export class Server {
-  serverState: ServerState = ServerState.initial;
   airConsole = new AirConsole();
   serverData: ServerData = new ServerData();
   playerData: PlayerData[] = [];
@@ -21,7 +20,7 @@ export class Server {
   }
 
   updateServerState = () => (cb: (serverState: ServerState) => void) => {
-    cb(this.serverState);
+    cb(this.serverData.serverState);
   };
 
   updateControllerData = (controllerData: ControllerData) => (
@@ -42,7 +41,7 @@ export class Server {
 
   startAfterFirstPlayerJoined() {
     if (this.playerData.length == 1) {
-      this.serverState = ServerState.lobby;
+      this.serverData.serverState = ServerState.lobby;
       this.updateServerState();
       this.serverStateUpdate(30, ServerState.characterSelection, () => {
         this.serverStateUpdate(15, ServerState.running, () => {
@@ -59,7 +58,7 @@ export class Server {
   ) {
     let timer = this.setAndStartTimer(timerValueInSeconds);
     setTimeout(() => {
-      this.serverState = serverState;
+      this.serverData.serverState = serverState;
       this.updateServerState();
       cb();
       clearInterval(timer);
