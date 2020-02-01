@@ -2,6 +2,33 @@
   "size": [500, 500],
   "objectData": [
     {
+      "type": "wall", "pos": [250, -5], "meta": {
+        "size": [500, 10],
+        "style": "outer"
+      }
+    },
+    {
+      "type": "wall", "pos": [250, 505], "meta": {
+        "size": [500, 10],
+        "style": "outer"
+      }
+    },
+    {
+      "type": "wall", "pos": [-5, 250], "meta": {
+        "size": [10, 520],
+        "style": "outer"
+      }
+    },
+    {
+      "type": "wall", "pos": [505, 250], "meta": {
+        "size": [10, 520],
+        "style": "outer"
+      }
+    },
+
+
+    
+    {
       "type": "wall", "pos": [50, 105], "meta": {
         "size": [100, 10]
       }
@@ -14,6 +41,26 @@
     {
       "type": "wall", "pos": [245, 50], "meta": {
         "size": [10, 100]
+      }
+    },
+    {
+      "type": "wall", "pos": [245, 120], "meta": {
+        "size": [10, 20]
+      }
+    },
+    {
+      "type": "wall", "pos": [245, 190], "meta": {
+        "size": [10, 20]
+      }
+    },
+    {
+      "type": "wall", "pos": [295, 205], "meta": {
+        "size": [110, 10]
+      }
+    },
+    {
+      "type": "wall", "pos": [450, 205], "meta": {
+        "size": [100, 10]
       }
     }
   ]
