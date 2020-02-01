@@ -4,16 +4,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
 var Client = /** @class */ (function () {
     function Client() {
-        var _this = this;
         this.id = 0;
         this.playerData = [];
         this.objectData = [];
         this.updateServerCallbacks = new Set();
         this.serverData = new index_1.ServerData();
         this.airConsole = new AirConsole();
-        this.airConsole.getDeviceId = function (id) {
-            _this.id = id;
-        };
         this.subscribeToAirConsole();
     }
     Client.prototype.onUpdateServerData = function (cb) {
@@ -49,6 +45,10 @@ var Client = /** @class */ (function () {
                     console.error("not implemented", data);
                     break;
             }
+        };
+        this.airConsole.onDeviceStateChange = function (id) {
+            _this.id = id;
+            debugger;
         };
     };
     Client.prototype.toggleAngryDad = function () {

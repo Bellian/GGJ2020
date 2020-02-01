@@ -23,9 +23,6 @@ export class Client {
   constructor() {
     this.serverData = new ServerData();
     this.airConsole = new AirConsole();
-    this.airConsole.getDeviceId = (id: number) => {
-      this.id = id;
-    };
     this.subscribeToAirConsole();
   }
 
@@ -64,6 +61,10 @@ export class Client {
           console.error("not implemented", data);
           break;
       }
+    };
+    this.airConsole.onDeviceStateChange = (id: number) => {
+      this.id = id;
+      debugger;
     };
   }
 
