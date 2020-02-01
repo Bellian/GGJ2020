@@ -5,13 +5,62 @@ exports.Module = "common";
 var Server = /** @class */ (function () {
     function Server() {
         this.airConsole = new AirConsole();
+        this.playerData = [];
     }
+    Server.prototype.sendPlayerData = function () {
+        this.sendAllClients(this.playerData);
+    };
+    Server.prototype.sendAllClients = function (data) {
+        this.airConsole.broadcast(data);
+    };
     return Server;
 }());
 exports.Server = Server;
+var Client = /** @class */ (function () {
+    function Client() {
+        this.id = 0;
+        this.playerData = [];
+        if (!this.id)
+            this.id = this.airconsole.getDeviceId();
+        this.airconsole = new AirConsole();
+        this.subscribeToAirConsole();
+        this.getPlayers();
+    }
+    Client.prototype.getPlayers = function () {
+        var _this = this;
+        setInterval(function () {
+            (_this.playerData = _this.airconsole.getPlayerData()), 300;
+        });
+    };
+    Client.prototype.sendControllerData = function (controllerData) {
+        controllerData.id = this.id;
+        this.airconsole.message(AirConsole.SCREEN, JSON.stringify(controllerData));
+    };
+    Client.prototype.recive = function () {
+        this.playerData;
+    };
+    Client.prototype.subscribeToAirConsole = function () {
+        this.onMessage();
+    };
+    Client.prototype.onMessage = function () {
+        this.airconsole.onMessage = function (from, data) {
+            data.filter();
+        };
+    };
+    return Client;
+}());
+exports.Client = Client;
 var PlayerData = /** @class */ (function () {
-    function PlayerData() {
+    function PlayerData(x, y, deviceId, isReady) {
+        this.x = x;
+        this.y = y;
         this.type = TransactionType.PlayerData;
+        this.playerState = PlayerState.idle;
+        this.isAngryDad = false;
+        this.isReady = false;
+        this.id = 0;
+        this.id = deviceId;
+        this.isReady = isReady;
     }
     return PlayerData;
 }());
@@ -29,23 +78,22 @@ var ServerState;
     ServerState[ServerState["final"] = 2] = "final";
 })(ServerState = exports.ServerState || (exports.ServerState = {}));
 var ControllerData = /** @class */ (function () {
-    function ControllerData() {
-        this.type = TransactionType.ControllerData;
+    function ControllerData(x, y) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = x;
+        this.y = y;
+        this.id = 0;
     }
     return ControllerData;
 }());
 exports.ControllerData = ControllerData;
-var PositionData = /** @class */ (function () {
-    function PositionData() {
-    }
-    return PositionData;
-}());
-exports.PositionData = PositionData;
 var PlayerState;
 (function (PlayerState) {
-    PlayerState[PlayerState["dead"] = 0] = "dead";
-    PlayerState[PlayerState["running"] = 1] = "running";
-    PlayerState[PlayerState["interacting"] = 2] = "interacting";
+    PlayerState[PlayerState["idle"] = 0] = "idle";
+    PlayerState[PlayerState["dead"] = 1] = "dead";
+    PlayerState[PlayerState["running"] = 2] = "running";
+    PlayerState[PlayerState["interacting"] = 3] = "interacting";
 })(PlayerState = exports.PlayerState || (exports.PlayerState = {}));
 
 
