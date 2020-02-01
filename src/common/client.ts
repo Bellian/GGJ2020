@@ -64,7 +64,6 @@ export class Client {
     };
     this.airConsole.onDeviceStateChange = (id: number) => {
       this.id = id;
-      debugger;
     };
   }
 

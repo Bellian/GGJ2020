@@ -48,7 +48,6 @@ var Client = /** @class */ (function () {
         };
         this.airConsole.onDeviceStateChange = function (id) {
             _this.id = id;
-            debugger;
         };
     };
     Client.prototype.toggleAngryDad = function () {
@@ -299,6 +298,7 @@ var Server = /** @class */ (function () {
         };
     };
     Server.prototype.sendPlayerData = function () {
+        console.table(this.playerData);
         this.sendAllClients({
             transactionType: index_1.TransactionType.PlayerData,
             playerData: this.playerData

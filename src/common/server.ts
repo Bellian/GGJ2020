@@ -143,6 +143,7 @@ export class Server {
   }
 
   sendPlayerData() {
+    console.table(this.playerData);
     this.sendAllClients({
       transactionType: TransactionType.PlayerData,
       playerData: this.playerData
