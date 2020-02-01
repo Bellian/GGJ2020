@@ -1,11 +1,11 @@
 &.floor {
     background: #aaa;
 
-    --primary-color: black;
+    --primary-color: #aaa;
     --secondary-color: #eee;
 
     &.carpet {
-        transform: translate(-50%, -50%) translateZ(2px);
+        transform: translate(-50%, -50%) translateZ(1px);
         box-shadow: 1px -1px 3px rgba(0,0,0,0.4); 
     }
 

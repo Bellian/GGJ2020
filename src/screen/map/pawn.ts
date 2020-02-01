@@ -14,9 +14,14 @@ export class Pawn extends LevelObject {
         World.add(PhysicsEngine.world, [this.hitBox]);
     };
 
+    move(direction: 'up'|'down'|'left'|'right'){
+        this.view!.classList.remove('up','down','left','right');
+        this.view!.classList.add(direction);
+    }
+
     render(): HTMLElement {
         const view = super.render();
-        view.classList.add('pawn');
+        view.classList.add('pawn', 'heinzel');
         return view;
     }
 }

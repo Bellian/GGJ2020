@@ -30,17 +30,21 @@ export class Player extends LevelObject {
             vec2.set(tmp, 0,0);
             this.move.forEach(e => {
                 switch(e){
-                    case Directions.UP:
-                        vec2.add(tmp, tmp, [0,-1]);
-                        break;
-                    case Directions.DOWN:
-                        vec2.add(tmp, tmp, [0,1]);
-                        break;
                     case Directions.LEFT:
+                        this.pawn.move('left');
                         vec2.add(tmp, tmp, [-1,0]);
                         break;
                     case Directions.RIGHT:
+                        this.pawn.move('right');
                         vec2.add(tmp, tmp, [1,0]);
+                        break;
+                    case Directions.UP:
+                        vec2.add(tmp, tmp, [0,-1]);
+                        this.pawn.move('up');
+                        break;
+                    case Directions.DOWN:
+                        this.pawn.move('down');
+                        vec2.add(tmp, tmp, [0,1]);
                         break;
                 }
             });
@@ -60,7 +64,7 @@ export class Player extends LevelObject {
 
     registerInput(){
         window.addEventListener('keydown', (e) => {
-            switch(e.key){
+            switch(e.key.toLowerCase()){
                 case 'w':
                     this.move.add(Directions.UP);
                     break;
@@ -76,7 +80,7 @@ export class Player extends LevelObject {
             }
         })
         window.addEventListener('keyup', (e) => {
-            switch(e.key){
+            switch(e.key.toLowerCase()){
                 case 'w':
                     this.move.delete(Directions.UP);
                     break;

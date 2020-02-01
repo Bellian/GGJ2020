@@ -19022,9 +19022,13 @@ var Pawn = /** @class */ (function (_super) {
         matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
     };
     ;
+    Pawn.prototype.move = function (direction) {
+        this.view.classList.remove('up', 'down', 'left', 'right');
+        this.view.classList.add(direction);
+    };
     Pawn.prototype.render = function () {
         var view = _super.prototype.render.call(this);
-        view.classList.add('pawn');
+        view.classList.add('pawn', 'heinzel');
         return view;
     };
     return Pawn;
@@ -19102,21 +19106,26 @@ var Player = /** @class */ (function (_super) {
         return _this;
     }
     Player.prototype.tick = function (delta) {
+        var _this = this;
         if (this.move.size !== 0) {
             gl_matrix_1.vec2.set(tmp, 0, 0);
             this.move.forEach(function (e) {
                 switch (e) {
-                    case enums_1.Directions.UP:
-                        gl_matrix_1.vec2.add(tmp, tmp, [0, -1]);
-                        break;
-                    case enums_1.Directions.DOWN:
-                        gl_matrix_1.vec2.add(tmp, tmp, [0, 1]);
-                        break;
                     case enums_1.Directions.LEFT:
+                        _this.pawn.move('left');
                         gl_matrix_1.vec2.add(tmp, tmp, [-1, 0]);
                         break;
                     case enums_1.Directions.RIGHT:
+                        _this.pawn.move('right');
                         gl_matrix_1.vec2.add(tmp, tmp, [1, 0]);
+                        break;
+                    case enums_1.Directions.UP:
+                        gl_matrix_1.vec2.add(tmp, tmp, [0, -1]);
+                        _this.pawn.move('up');
+                        break;
+                    case enums_1.Directions.DOWN:
+                        _this.pawn.move('down');
+                        gl_matrix_1.vec2.add(tmp, tmp, [0, 1]);
                         break;
                 }
             });
@@ -19134,7 +19143,7 @@ var Player = /** @class */ (function (_super) {
     Player.prototype.registerInput = function () {
         var _this = this;
         window.addEventListener('keydown', function (e) {
-            switch (e.key) {
+            switch (e.key.toLowerCase()) {
                 case 'w':
                     _this.move.add(enums_1.Directions.UP);
                     break;
@@ -19150,7 +19159,7 @@ var Player = /** @class */ (function (_super) {
             }
         });
         window.addEventListener('keyup', function (e) {
-            switch (e.key) {
+            switch (e.key.toLowerCase()) {
                 case 'w':
                     _this.move.delete(enums_1.Directions.UP);
                     break;
