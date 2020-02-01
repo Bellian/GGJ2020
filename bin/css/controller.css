@@ -1,3 +1,3 @@
-*{margin:0;padding:0;box-sizing:border-box}controller{width:100vw;height:100vh;display:block}
+*{margin:0;padding:0;box-sizing:border-box}controller{width:100vw;height:100vh;display:block}splashscreen{display:flex;justify-content:space-around}splashscreen>button{width:100px;height:60px}
 
 /*# sourceMappingURL=controller.css.map */

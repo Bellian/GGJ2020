@@ -2,10 +2,49 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  background-color: black;
 }
 
-controller {
+splashscreen {
+  display: none;
+  justify-content: space-around;
+}
+
+splashscreen > button {
+  width: 100px;
+  height: 60px;
+}
+
+splashscreen.visible {
+  display: flex;
+}
+
+playscreen {
+  display: none;
+}
+
+playscreen controller {
   width: 100vw;
   height: 100vh;
+  display: block;
+}
+
+playscreen.visible {
+  display: block;
+}
+
+endscreen {
+  display: none;
+}
+
+endscreen.visible {
+  display: block;
+}
+
+characterselection {
+  display: none;
+}
+
+characterselection.visible {
   display: block;
 }

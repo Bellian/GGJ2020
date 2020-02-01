@@ -5,13 +5,62 @@ exports.Module = "common";
 var Server = /** @class */ (function () {
     function Server() {
         this.airConsole = new AirConsole();
+        this.playerData = [];
     }
+    Server.prototype.sendPlayerData = function () {
+        this.sendAllClients(this.playerData);
+    };
+    Server.prototype.sendAllClients = function (data) {
+        this.airConsole.broadcast(data);
+    };
     return Server;
 }());
 exports.Server = Server;
+var Client = /** @class */ (function () {
+    function Client() {
+        this.id = 0;
+        this.playerData = [];
+        if (!this.id)
+            this.id = this.airconsole.getDeviceId();
+        this.airconsole = new AirConsole();
+        this.subscribeToAirConsole();
+        this.getPlayers();
+    }
+    Client.prototype.getPlayers = function () {
+        var _this = this;
+        setInterval(function () {
+            (_this.playerData = _this.airconsole.getPlayerData()), 300;
+        });
+    };
+    Client.prototype.sendControllerData = function (controllerData) {
+        controllerData.id = this.id;
+        this.airconsole.message(AirConsole.SCREEN, JSON.stringify(controllerData));
+    };
+    Client.prototype.recive = function () {
+        this.playerData;
+    };
+    Client.prototype.subscribeToAirConsole = function () {
+        this.onMessage();
+    };
+    Client.prototype.onMessage = function () {
+        this.airconsole.onMessage = function (from, data) {
+            data.filter();
+        };
+    };
+    return Client;
+}());
+exports.Client = Client;
 var PlayerData = /** @class */ (function () {
-    function PlayerData() {
+    function PlayerData(x, y, deviceId, isReady) {
+        this.x = x;
+        this.y = y;
         this.type = TransactionType.PlayerData;
+        this.playerState = PlayerState.idle;
+        this.isAngryDad = false;
+        this.isReady = false;
+        this.id = 0;
+        this.id = deviceId;
+        this.isReady = isReady;
     }
     return PlayerData;
 }());
@@ -29,23 +78,22 @@ var ServerState;
     ServerState[ServerState["final"] = 2] = "final";
 })(ServerState = exports.ServerState || (exports.ServerState = {}));
 var ControllerData = /** @class */ (function () {
-    function ControllerData() {
-        this.type = TransactionType.ControllerData;
+    function ControllerData(x, y) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = x;
+        this.y = y;
+        this.id = 0;
     }
     return ControllerData;
 }());
 exports.ControllerData = ControllerData;
-var PositionData = /** @class */ (function () {
-    function PositionData() {
-    }
-    return PositionData;
-}());
-exports.PositionData = PositionData;
 var PlayerState;
 (function (PlayerState) {
-    PlayerState[PlayerState["dead"] = 0] = "dead";
-    PlayerState[PlayerState["running"] = 1] = "running";
-    PlayerState[PlayerState["interacting"] = 2] = "interacting";
+    PlayerState[PlayerState["idle"] = 0] = "idle";
+    PlayerState[PlayerState["dead"] = 1] = "dead";
+    PlayerState[PlayerState["running"] = 2] = "running";
+    PlayerState[PlayerState["interacting"] = 3] = "interacting";
 })(PlayerState = exports.PlayerState || (exports.PlayerState = {}));
 
 
@@ -55,14 +103,21 @@ var PlayerState;
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../common/index");
 var Controller = /** @class */ (function () {
-    function Controller() {
+    function Controller(client) {
         var _this = this;
+        this.client = client;
         this.startPos = undefined;
         document.addEventListener('DOMContentLoaded', function () {
-            _this.init();
+            _this.virtualController();
+            _this.client.updateServerState(_this.updateView);
         });
     }
-    Controller.prototype.init = function () {
+    Controller.prototype.updateView = function (serverState) {
+        switch (serverState) {
+            case ser:
+        }
+    };
+    Controller.prototype.virtualController = function () {
         var _this = this;
         document.querySelectorAll('controller')[0].addEventListener('touchstart', function (ev) {
             console.log('touchstart');
@@ -70,16 +125,37 @@ var Controller = /** @class */ (function () {
         });
         document.querySelectorAll('controller')[0].addEventListener('touchmove', function (ev) {
             if (_this.startPos !== undefined) {
-                new index_1.ControllerData(ev.targetTouches[0].clientX - _this.startPos[0], ev.targetTouches[0].clientY - _this.startPos[1]);
+                _this.client.sendControllerData(new index_1.ControllerData(ev.targetTouches[0].clientX - _this.startPos[0], ev.targetTouches[0].clientY - _this.startPos[1]));
             }
         });
         document.querySelectorAll('controller')[0].addEventListener('touchend', function (ev) {
             _this.startPos = undefined;
         });
     };
+    Controller.prototype.splashscreen = function () {
+        var _this = this;
+        document.querySelectorAll('splashscreen > button').forEach(function (btn) {
+            var character = document.querySelectorAll('splashscreen > character')[0];
+            var isPlayerAngryDad = _this.client.toggleAngryDad();
+            if (isPlayerAngryDad) {
+                character.innerHTML = 'You would like to be angry dad!';
+            }
+            else {
+                character.innerHTML = 'You would like to be a wichtel!';
+            }
+        });
+        var timeUntilStartInterval = setInterval(function () {
+            var timeUntilStart = _this.client.getTimeUntilStart();
+            document.querySelectorAll('splashscreen > time')[0].innerHTML = timeUntilStart;
+            if (timeUntilStart === 0) {
+                clearInterval(timeUntilStartInterval);
+            }
+        }, 1000);
+    };
     return Controller;
 }());
-new Controller();
+var client = new index_1.Client();
+new Controller(client);
 
 
 
