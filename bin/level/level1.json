@@ -1,20 +1,4 @@
 {
   "size": [500, 500],
-  "objectData": [
-    {
-      "type": "wall", "pos": [50, 105], "meta": {
-        "size": [100, 10]
-      }
-    },
-    {
-      "type": "wall", "pos": [200, 105], "meta": {
-        "size": [100, 10]
-      }
-    },
-    {
-      "type": "wall", "pos": [245, 50], "meta": {
-        "size": [10, 100]
-      }
-    }
-  ]
+  "objectData": []
 }

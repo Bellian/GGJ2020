@@ -20,27 +20,18 @@ export class Server {
     this.serverData = new ServerData();
     this.subscribeToAirConsole();
   }
-  updateServerCallbacks: Set<(serverState: ServerState) => void> = new Set();
-  onUpdateServerState(cb: () => void) {
-    this.updateControllerCallbacks.add(cb);
-  }
 
-  private updateServerState() {
-    this.updateServerCallbacks.forEach(e => e(this.serverData.serverState));
-  }
+  updateServerState = () => (cb: (serverState: ServerState) => void) => {
+    cb(this.serverData.serverState);
+  };
 
-  updateControllerCallbacks: Set<
-    (controllerData: ControllerData) => void
-  > = new Set();
-  onUpdateControllerData(cb: (controllerData: ControllerData) => void) {
-    this.updateControllerCallbacks.add(cb);
-  }
+  updateControllerData = (controllerData: ControllerData) => (
+    cb: (controllerData: ControllerData) => void
+  ) => {
+    cb(controllerData);
+  };
 
-  private updateControllerData(controllerData: ControllerData) {
-    this.updateControllerCallbacks.forEach(e => e(controllerData));
-  }
-
-  private createAndUpdatePlayer(data: PlayerData) {
+  createAndUpdatePlayer(data: PlayerData) {
     let playerFound = this.playerData.find(pD => pD.id === data.id);
     if (!playerFound) {
       playerFound = new PlayerData(0, 0, data.id);
@@ -50,7 +41,7 @@ export class Server {
     this.updatePlayer(data);
   }
 
-  private startAfterFirstPlayerJoined() {
+  startAfterFirstPlayerJoined() {
     if (this.playerData.length == 1) {
       this.serverData.serverState = ServerState.lobby;
       this.updateServerState();
@@ -85,7 +76,7 @@ export class Server {
     }, 1000);
   }
 
-  public updatePlayer(updateData: PlayerData) {
+  updatePlayer(updateData: PlayerData) {
     let player = this.playerData.filter(pD => pD.id === updateData.id)[0];
     player = player;
     this.sendPlayerData();
@@ -95,7 +86,7 @@ export class Server {
     this.airConsole.broadcast(data);
   }
 
-  private onMessage() {
+  onMessage() {
     this.airConsole.onMessage = (from: any, data: TransactionTypeInterface) => {
       switch (data.transactionType) {
         case TransactionType.PlayerData:
@@ -114,7 +105,6 @@ export class Server {
   }
 
   subscribeToAirConsole() {
-    this.onMessage();
     this.airConsole.onConnect = (id: number) => {
       this.createAndUpdatePlayer({ id: id } as PlayerData);
       this.sendObjectData();
