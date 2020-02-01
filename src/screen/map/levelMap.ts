@@ -10,6 +10,7 @@ import Player from "./player";
 import Wall from "./wall";
 import Floor from "./floor";
 import { Placeholder } from "./placeholder";
+import { Asset } from "./asset";
 
 interface LevelObjectData {
     type: string;
@@ -57,6 +58,9 @@ export class LevelMap {
                     break;
                 case 'floor':
                     new Floor(this, vec2.fromValues(... data.pos) as vec2, data.meta);
+                    break;
+                case 'asset':
+                    new Asset(this, vec2.fromValues(... data.pos) as vec2, data.meta);
                     break;
                 default:
                     new Placeholder(this, vec2.fromValues(... data.pos) as vec2);

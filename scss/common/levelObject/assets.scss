@@ -1,0 +1,43 @@
+&.asset {
+    width: 15px;
+    height: 15px;
+    transform: translate(-50%, -50%) translateZ(0px);
+    top: 50%;
+    left: 50%;
+
+    &::before{
+        content: '';
+        position: absolute;
+        width:20px;
+        height: 20px;
+        border-radius: 50%;
+
+        transform: translate(-50%, -50%) rotateX(-90deg) translateY(-50%);
+        top: 50%;
+        left: 50%;
+        background: #ff0000;
+    }
+
+    &.sink {
+        width: 0px;
+        height: 0px;
+
+        &::before{
+            width:40px;
+            height: 40px;
+            background: url(../assets/sink_100.svg);
+        }
+    }
+
+    &.kommode {
+        width: 0px;
+        height: 0px;
+
+        &::before{
+            width:60px;
+            height: 60px;
+            transform: translate(-50%, -50%) rotateX(-90deg) translateY(-28%);
+            background: url(../assets/kommode_100.svg);
+        }
+    }
+}
