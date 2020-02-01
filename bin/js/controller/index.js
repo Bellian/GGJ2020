@@ -4,19 +4,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
 var Client = /** @class */ (function () {
     function Client() {
-        var _this = this;
         this.id = 0;
         this.playerData = [];
         this.objectData = [];
         this.serverData = new index_1.ServerData();
-        this.updateServerData = function () { return function (cb) {
-            cb(_this.serverData);
-        }; };
+        this.updateServerCallbacks = new Set();
+        this.airconsole = new AirConsole();
         if (!this.id)
             this.id = this.airconsole.getDeviceId();
-        this.airconsole = new AirConsole();
         this.subscribeToAirConsole();
     }
+    Client.prototype.onUpdateServerData = function (cb) {
+        this.updateServerCallbacks.add(cb);
+    };
+    Client.prototype.updateServerData = function () {
+        var _this = this;
+        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData); });
+    };
     Client.prototype.currentPlayerData = function () {
         var _this = this;
         return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
@@ -168,8 +172,6 @@ var index_1 = require("./index");
 var Server = /** @class */ (function () {
     function Server() {
         var _this = this;
-        this.airConsole = new AirConsole();
-        this.serverData = new index_1.ServerData();
         this.playerData = [];
         this.objectData = [];
         this.updateServerState = function () { return function (cb) {
@@ -178,6 +180,8 @@ var Server = /** @class */ (function () {
         this.updateControllerData = function (controllerData) { return function (cb) {
             cb(controllerData);
         }; };
+        this.airConsole = new AirConsole();
+        this.serverData = new index_1.ServerData();
         this.subscribeToAirConsole();
     }
     Server.prototype.createAndUpdatePlayer = function (data) {
