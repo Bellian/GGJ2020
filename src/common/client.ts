@@ -27,8 +27,9 @@ export class Client {
   }
 
   onAirConReady(device_id:number){
-    if (!this.id) this.id = this.airConsole.getDeviceId() as number;
-    this.subscribeToAirConsole();
+    console.log(device_id);
+    /*if (!this.id) this.id = this.airConsole.getDeviceId() as number;
+    this.subscribeToAirConsole();*/
   }
 
   updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();

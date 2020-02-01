@@ -18408,9 +18408,9 @@ var Client = /** @class */ (function () {
         this.airConsole.onConnect = this.onAirConReady;
     }
     Client.prototype.onAirConReady = function (device_id) {
-        if (!this.id)
-            this.id = this.airConsole.getDeviceId();
-        this.subscribeToAirConsole();
+        console.log(device_id);
+        /*if (!this.id) this.id = this.airConsole.getDeviceId() as number;
+        this.subscribeToAirConsole();*/
     };
     Client.prototype.onUpdateServerData = function (cb) {
         this.updateServerCallbacks.add(cb);
