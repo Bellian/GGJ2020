@@ -10,20 +10,37 @@
         <script src="../js/controller/index.min.js"></script>
     </head>
     <body>
-        <splashscreen>
-            <time></time>
+        <default>
+            <h1>This should happen, please try to reload</h1>
+            <button>Reload</button>
+        </default>
+        <splashscreen class='view'>
+            <left>
+                <h1>Enter game
+                    <small>Time to start</small></h1>
+                <time></time>
+            </left>
+            <right>
+                <selectheinzel>
+                    <img class='selected' src='../assets/heinzel1_front.svg'>
+                    <img src='../assets/heinzel1_front.svg'>
+                    <img src='../assets/heinzel1_front.svg'>
+                    <img src='../assets/heinzel1_front.svg'>
+                </selectheinzel>
+            </right>
+            <heinzelcontainer><img src='../assets/heinzel1_front.svg'><img src='../assets/heinzel1_front.svg'></heinzelcontainer>
         </splashscreen>
-        <characterselection>
-            <button class='angry-dad'>Angry dad</button>
-            <button class='wichtel'>Wichtel</button>
+        <characterselection class='view'>
+            <characters>
+                <img class='angry-dad' src='../assets/heinzel1_front.svg'>
+                <img class='wichtel' src='../assets/heinzel1_front.svg'>
+            </characters>
             <time></time>
         </characterselection>
-        <playscreen>
+        <playscreen class='view'>
             <gamecontainer></gamecontainer>
-            <controller></controller>
             <time></time>
+            <controller></controller>
         </playscreen>
-        <endscreen>
-        </endscreen>
-    </body>
+    </body> 
 </html>

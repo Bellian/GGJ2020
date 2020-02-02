@@ -9,8 +9,12 @@ import {
 export enum Views {
   splashscreen,
   characterselection,
-  playscreen,
-  endscreen
+  playscreen
+}
+
+interface JoyStickPosition{
+  x:number
+  y:number
 }
 
 class Controller {
@@ -19,45 +23,47 @@ class Controller {
     this.client.onUpdateServerData(this.updateView.bind(this));
   }
 
-  showView(view: Views) {
+
+  // Joystick event handling
+  joystickMoveCallbacks: Set<(joystickPosition: JoyStickPosition) => void> = new Set();
+  onJoystickMove(cb: (joystickPosition: JoyStickPosition) => void) {
+    this.joystickMoveCallbacks.add(cb);
+  }
+
+  private updateJoystickPosition(joystickPosition:JoyStickPosition) {
+    this.joystickMoveCallbacks.forEach(e => e(joystickPosition));
+  }
+
+  // displays the current used view
+  private showView(view: Views) {
     (document.querySelectorAll(Views[view])[0] as HTMLElement).classList.add(
       "visible"
     );
+    document.querySelectorAll('.view').forEach(view => view.classList.remove("visible"));
   }
 
-  hideView(view: Views) {
-    (document.querySelectorAll(Views[view])[0] as HTMLElement).classList.remove(
-      "visible"
-    );
-  }
-
-  updateView(serverData: ServerData) {
-    console.log(
-      "new server state received",
-      ServerState[serverData.serverState]
-    );
-    switch (serverData.serverState) {
-      case ServerState.lobby:
+  // initialize the desired view
+  updateView(view:string) {
+    switch (view) {
+      case 'join':
         this.showView(Views.splashscreen);
         this.lobby();
         break;
-      case ServerState.characterSelection:
+      case 'choose':
         this.showView(Views.characterselection);
         this.characterselection();
         break;
-      case ServerState.running:
+      case 'game':
         this.showView(Views.playscreen);
         this.virtualController();
         break;
-      case ServerState.final:
-        this.showView(Views.endscreen);
-        break;
       default:
-        console.error("not implemented", serverData);
+        console.error("not implemented", view);
     }
   }
 
-  virtualController() {
+  // start the virtual controller
+  private virtualController() {
     document
       .querySelectorAll("playscreen > controller")[0]
       .addEventListener("touchstart", ev => {
@@ -70,12 +76,7 @@ class Controller {
       .querySelectorAll("playscreen > controller")[0]
       .addEventListener("touchmove", ev => {
         if (this.startPos !== undefined) {
-          this.client.sendControllerData(
-            new ControllerData(
-              (ev as TouchEvent).targetTouches[0].clientX - this.startPos[0],
-              (ev as TouchEvent).targetTouches[0].clientY - this.startPos[1]
-            )
-          );
+          this.updateJoystickPosition({x:((ev as TouchEvent).targetTouches[0].clientX - this.startPos[0]),y:-((ev as TouchEvent).targetTouches[0].clientY - this.startPos[1])});
         }
       });
     document
@@ -85,35 +86,30 @@ class Controller {
       });
   }
 
+  // start the time for the lobby
   lobby() {
-    this.setTime(Views.splashscreen);
+    this.setTime(Views.splashscreen, 30);
   }
 
+  // 
   characterselection() {
-    document.querySelectorAll("characterselection > button").forEach(btn => {
-      let isPlayerAngryDad = this.client.toggleAngryDad();
-      if (isPlayerAngryDad) {
-        document
-          .querySelectorAll("characterselection")[0]
-          .classList.add("isAngryDad");
+    document.querySelectorAll('characterselection > characters > img').forEach(character => character.addEventListener('click', ()=>{
+      if(character.classList.contains('angry-dad')){
+        document.querySelectorAll('characterselection')[0].classList.add('isAngryDad');
         console.log("You would like to be angry dad!");
-      } else {
-        document
-          .querySelectorAll("characterselection")[0]
-          .classList.remove("isAngryDad");
+      }else{
+        document.querySelectorAll('characterselection')[0].classList.remove('isAngryDad');
         console.log("You would like to be a wichtel!");
       }
-    });
-    this.setTime(Views.characterselection);
+    }));
+    this.setTime(Views.characterselection, 15);
   }
 
-  setTime(view: Views) {
+  setTime(view: Views, timeUntil: number) {
     let timeUntilInterval = setInterval(() => {
-      let timeUntil = this.client.getTime();
-      document.querySelectorAll(
-        Views[view] + " > time"
-      )[0].innerHTML = timeUntil.toString();
-      if (timeUntil === 0) {
+      document.querySelectorAll(Views[view] + " time")[0].innerHTML = timeUntil.toString();
+      timeUntil--;
+      if (timeUntil <= 0) {
         clearInterval(timeUntilInterval);
       }
     }, 1000);
@@ -123,6 +119,10 @@ class Controller {
 document.addEventListener("DOMContentLoaded", () => {
   let client: Client = new Client();
   let controller = new Controller(client);
+  controller.virtualController();
+  controller.onJoystickMove((pos)=>{
+    console.log(pos);
+  });
   //let test = new ServerData(30, ServerState.lobby);
   //controller.updateView(test);
 });

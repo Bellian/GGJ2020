@@ -1,6 +1,11 @@
+body {
+  height: 100vh;
+  width: 100vw;
+}
+
 @font-face {
   font-family: "EraserRegular";
-  src: url("../font/EraserRegular.woff2") format("woff2");
+  src: url("./fonts/EraserRegular.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
 }
@@ -12,163 +17,13 @@
 }
 
 default {
-  display: none;
   width: 100vw;
   height: 100vh;
-  background: #cd9fce;
-}
-
-default.visible {
-  display: block;
+  background: #cda0ce;
 }
 
 default h1 {
   font-family: "EraserRegular";
-  font-size: 48px;
-  width: 600px;
-  text-align: center;
-  line-height: 70px;
-  margin: auto;
-  padding: 60px 0 0 0;
-  color: white;
-}
-
-default button {
-  padding: 30px 100px;
-  margin: 40px auto 0 auto;
-  display: block;
-  -webkit-appearance: none;
-  border: none;
-  background: white;
-  text-transform: uppercase;
-  color: #cd9fce;
-  font-size: 56px;
-  font-weight: 1000;
-}
-
-splashscreen {
-  display: none;
-  justify-content: space-between;
-  width: 100vw;
-  height: 100vh;
-  background: #cd9fce;
-  padding: 60px 60px 0 60px;
-}
-
-splashscreen.visible {
-  display: flex;
-}
-
-splashscreen left h1 {
-  font-family: "EraserRegular";
-  color: black;
-  font-size: 60px;
-}
-
-splashscreen left h1 small {
-  display: block;
-  color: #006e50;
-  font-size: 33px;
-  padding: 20px 0 0 0;
-}
-
-splashscreen left time {
-  color: #006e50;
-  font-family: "EraserRegular";
-  display: block;
-  font-size: 100px;
-  padding: 18px 0;
-}
-
-splashscreen right selectheinzel {
-  width: 228px;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  padding: 20px 0 10px 10px;
-  border: 0px solid white;
-  transition: border 0.3s ease-in-out;
-}
-
-splashscreen right selectheinzel img {
-  width: 100px;
-  padding: 10px;
-}
-
-splashscreen right selectheinzel img.selected {
-  border: 8px solid white;
-}
-
-splashscreen right selectheinzel img:hover {
-  border: 8px solid white;
-}
-
-splashscreen heinzelcontainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-splashscreen heinzelcontainer img {
-  width: 30px;
-  bottom: 0;
-  position: absolute;
-  animation: ltr 4s linear 0s infinite alternate;
-}
-
-@keyframes ltr {
-  0% {
-    left: 0;
-  }
-  50% {
-    left: 100%;
-  }
-  100% {
-    left: 0;
-  }
-}
-
-characterselection {
-  display: none;
-  width: 100vw;
-  height: 100vh;
-  background: #cd9fce;
-}
-
-characterselection.visible {
-  display: block;
-}
-
-characterselection.isAngryDad characters .angry-dad {
-  width: 200px;
-}
-
-characterselection.isAngryDad characters .wichtel {
-  width: 140px;
-}
-
-characterselection characters {
-  margin: auto;
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  width: 500px;
-  height: 100%;
-  display: flex;
-  justify-content: space-around;
-}
-
-characterselection characters img {
-  width: 140px;
-  transition: width 0.3s ease-in-out;
-}
-
-characterselection characters img.wichtel {
-  width: 200px;
 }
 
 .game-container {
