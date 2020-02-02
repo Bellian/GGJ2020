@@ -153,11 +153,11 @@ export class Client {
 
   moveTimeout: any;
   lastData: any;
-  moveAndInteract(x: number = 0, y: number = 0, isInteracting: boolean = false, isToching = false) {
+  moveAndInteract(x: number = 0, y: number = 0, isInteracting: boolean = false, isTouching = false) {
     this.lastData = {
       doesAction: isInteracting,
       moveDirection: vec2.fromValues(x, y),
-      isToching: isToching
+      isTouching: isTouching
     };
     if(this.moveTimeout){
       return;

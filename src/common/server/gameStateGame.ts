@@ -14,12 +14,22 @@ import { Body } from "matter-js";
 
 const eventListener = EventListener.get();
 const gameTime = 1200000;
+const forceDefault = 0.001;
+
+let tmp = vec2.create();
 
 export class GameStateGame extends GameState {
     nextState = GameStateChoose as any;
     timerStarted!: number;
     updateInterval: any;
     players!: Map<ConnectedDevice, Player>;
+    deviceInputs!: Map<ConnectedDevice, {
+        from: number;
+        doesAction: boolean;
+        moveDirection: vec2;
+        isTouching: boolean;
+    }>;
+    level!: LevelMap;
 
     constructor(server: Server, data: ConnectedDevice) {
         super(server, data);
@@ -29,11 +39,41 @@ export class GameStateGame extends GameState {
         if (this.timerStarted === undefined) {
             return;
         }
+
         const timeLeft = gameTime - (Date.now() - this.timerStarted);
         if (timeLeft <= 0) {
             console.log("game is over, angry man won");
             this.exit();
         }
+
+        getAllDevices()
+            .filter(device => device.deviceId !== 0)
+            .forEach(device => {
+                const player = this.players.get(device);
+                if (player === undefined) { return; }
+                const data = this.deviceInputs.get(device);
+                if (data === undefined) { return; }
+                if(!data.isTouching){
+                    return;
+                }
+
+                vec2.copy(tmp, data.moveDirection);
+                vec2.normalize(tmp, tmp);
+
+                Body.applyForce(player.pawn.hitBox!, player.pawn.hitBox!.position, {
+                    x: tmp[0] * forceDefault,
+                    y: -tmp[1] * forceDefault,
+                });
+
+                player.position = vec2.fromValues(player.pawn.hitBox!.position.x, player.pawn.hitBox!.position.y);
+
+                vec2.copy(player.pawn.position, player.position);
+                player.pawn.viewUpdate();
+
+                if(device === this.data){
+                    this.level.setCameraPosition(player.pawn.position);
+                }
+            })
     }
 
     enter() {
@@ -48,40 +88,22 @@ export class GameStateGame extends GameState {
 
         PhysicsEngine.init();
         const level = new LevelMap("../level/level1.json", document.body);
+        this.level = level;
 
         level.wait.then(() => {
             this.players = new Map();
+            this.deviceInputs = new Map();
             this.startTimer();
 
             console.log("is angry:", this.data);
 
-            const forceDefault = 0.000001;
-            let tmp = vec2.create();
 
             eventListener.on("CLIENT_updateControllerData", (data) => {
                 const device = getDevice(data.from);
                 if (device === undefined) { return; }
-                const player = this.players.get(device);
-                if (player === undefined) { return; }
 
-                vec2.copy(tmp, data.moveDirection);
-                vec2.normalize(tmp, tmp);
-
-                console.log("apply force", tmp);
-                Body.applyForce(player.pawn.hitBox!, player.pawn.hitBox!.position, {
-                    x: tmp[0] * forceDefault,
-                    y: tmp[1] * forceDefault
-                });
-
-                player.position = vec2.fromValues(player.pawn.hitBox!.position.x, player.pawn.hitBox!.position.y);
-                console.log("position", player.position);
-
-                vec2.copy(player.pawn.position, player.position);
-                player.pawn.viewUpdate();
-
-                if(device === this.data){
-                    level.setCameraPosition(player.pawn.position);
-                }
+                this.deviceInputs.set(device, data);
+                console.log('CLIENT_updateControllerData');
             });
 
             const spawnpoints = level.getAllLevelObjectsByType(Spawnpoint);

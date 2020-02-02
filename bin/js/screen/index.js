@@ -18506,16 +18506,16 @@ var Client = /** @class */ (function () {
         };
         this.notifyServer(controllerUpdate);
     };
-    Client.prototype.moveAndInteract = function (x, y, isInteracting, isToching) {
+    Client.prototype.moveAndInteract = function (x, y, isInteracting, isTouching) {
         var _this = this;
         if (x === void 0) { x = 0; }
         if (y === void 0) { y = 0; }
         if (isInteracting === void 0) { isInteracting = false; }
-        if (isToching === void 0) { isToching = false; }
+        if (isTouching === void 0) { isTouching = false; }
         this.lastData = {
             doesAction: isInteracting,
             moveDirection: gl_matrix_1.vec2.fromValues(x, y),
-            isToching: isToching
+            isTouching: isTouching
         };
         if (this.moveTimeout) {
             return;
@@ -18970,6 +18970,8 @@ var pawn_1 = require("../../screen/map/pawn");
 var matter_js_1 = require("matter-js");
 var eventListener = eventListener_1.EventListener.get();
 var gameTime = 1200000;
+var forceDefault = 0.001;
+var tmp = gl_matrix_1.vec2.create();
 var GameStateGame = /** @class */ (function (_super) {
     __extends(GameStateGame, _super);
     function GameStateGame(server, data) {
@@ -18978,6 +18980,7 @@ var GameStateGame = /** @class */ (function (_super) {
         return _this;
     }
     GameStateGame.prototype.tick = function (delta) {
+        var _this = this;
         if (this.timerStarted === undefined) {
             return;
         }
@@ -18986,6 +18989,33 @@ var GameStateGame = /** @class */ (function (_super) {
             console.log("game is over, angry man won");
             this.exit();
         }
+        connectedDevice_1.getAllDevices()
+            .filter(function (device) { return device.deviceId !== 0; })
+            .forEach(function (device) {
+            var player = _this.players.get(device);
+            if (player === undefined) {
+                return;
+            }
+            var data = _this.deviceInputs.get(device);
+            if (data === undefined) {
+                return;
+            }
+            if (!data.isTouching) {
+                return;
+            }
+            gl_matrix_1.vec2.copy(tmp, data.moveDirection);
+            gl_matrix_1.vec2.normalize(tmp, tmp);
+            matter_js_1.Body.applyForce(player.pawn.hitBox, player.pawn.hitBox.position, {
+                x: tmp[0] * forceDefault,
+                y: -tmp[1] * forceDefault,
+            });
+            player.position = gl_matrix_1.vec2.fromValues(player.pawn.hitBox.position.x, player.pawn.hitBox.position.y);
+            gl_matrix_1.vec2.copy(player.pawn.position, player.position);
+            player.pawn.viewUpdate();
+            if (device === _this.data) {
+                _this.level.setCameraPosition(player.pawn.position);
+            }
+        });
     };
     GameStateGame.prototype.enter = function () {
         var _this = this;
@@ -18999,35 +19029,19 @@ var GameStateGame = /** @class */ (function (_super) {
         });
         physicsEngine_1.PhysicsEngine.init();
         var level = new levelMap_1.LevelMap("../level/level1.json", document.body);
+        this.level = level;
         level.wait.then(function () {
             _this.players = new Map();
+            _this.deviceInputs = new Map();
             _this.startTimer();
             console.log("is angry:", _this.data);
-            var forceDefault = 0.000001;
-            var tmp = gl_matrix_1.vec2.create();
             eventListener.on("CLIENT_updateControllerData", function (data) {
                 var device = connectedDevice_1.getDevice(data.from);
                 if (device === undefined) {
                     return;
                 }
-                var player = _this.players.get(device);
-                if (player === undefined) {
-                    return;
-                }
-                gl_matrix_1.vec2.copy(tmp, data.moveDirection);
-                gl_matrix_1.vec2.normalize(tmp, tmp);
-                console.log("apply force", tmp);
-                matter_js_1.Body.applyForce(player.pawn.hitBox, player.pawn.hitBox.position, {
-                    x: tmp[0] * forceDefault,
-                    y: tmp[1] * forceDefault
-                });
-                player.position = gl_matrix_1.vec2.fromValues(player.pawn.hitBox.position.x, player.pawn.hitBox.position.y);
-                console.log("position", player.position);
-                gl_matrix_1.vec2.copy(player.pawn.position, player.position);
-                player.pawn.viewUpdate();
-                if (device === _this.data) {
-                    level.setCameraPosition(player.pawn.position);
-                }
+                _this.deviceInputs.set(device, data);
+                console.log('CLIENT_updateControllerData');
             });
             var spawnpoints = level.getAllLevelObjectsByType(spawnpoint_1.default);
             _this.shuffle(spawnpoints);
@@ -19106,7 +19120,7 @@ var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
 var eventListener = eventListener_1.EventListener.get();
-var joinTime = 3000;
+var joinTime = 7000;
 var GameStateJoin = /** @class */ (function (_super) {
     __extends(GameStateJoin, _super);
     function GameStateJoin() {
