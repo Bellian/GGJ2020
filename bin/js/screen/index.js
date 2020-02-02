@@ -19855,7 +19855,7 @@ var Player = /** @class */ (function (_super) {
     Player.prototype.kill = function () {
         var _a;
         this.alive = false;
-        matter_js_1.World.remove(physicsEngine_1.default.world, this.pawn.interactionHitbox);
+        // World.remove(PhysicsEngine.world, this.pawn.interactionHitbox);
         matter_js_1.World.remove(physicsEngine_1.default.world, this.pawn.killHitbox);
         (_a = this.pawn.view) === null || _a === void 0 ? void 0 : _a.classList.remove("pawn", "angryDad", "heinzel");
     };
