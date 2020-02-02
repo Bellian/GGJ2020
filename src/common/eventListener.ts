@@ -23,6 +23,7 @@ interface EventCallbacks {
     from: number;
     doesAction: boolean;
     moveDirection: vec2;
+    isTouching: boolean;
   };
 }
 

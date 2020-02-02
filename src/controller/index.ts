@@ -122,7 +122,7 @@ class Shake{
   }
   onShake(){
     alert('you did a shake');
-    this.client.moveAndInteract(0, 0, true);
+    this.client.moveAndInteract(0, 0, true, false);
   }
 }
 
@@ -141,7 +141,7 @@ class Joystick{
 
   private sendJoystickData(){
     this.onJoystickMove((pos)=>{
-      this.client.moveAndInteract(pos.x, pos.y, false);
+      this.client.moveAndInteract(pos.x, pos.y, false, true);
     });
   }
 
@@ -155,6 +155,7 @@ class Joystick{
           (ev as TouchEvent).targetTouches[0].clientX,
           (ev as TouchEvent).targetTouches[0].clientY
         ];
+        this.client.moveAndInteract(0, 0, false, true);
       });
     document
       .querySelectorAll("playscreen > controller")[0]
@@ -167,6 +168,7 @@ class Joystick{
       .querySelectorAll("playscreen > controller")[0]
       .addEventListener("touchend", ev => {
         this.startPos = undefined;
+        this.client.moveAndInteract(0, 0, false, false);
       });
   }
 }

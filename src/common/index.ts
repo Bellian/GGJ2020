@@ -13,6 +13,7 @@ export interface AirConsoleMessage<T extends any> {
 export interface AirConsoleControllerUpdate {
   moveDirection: vec2;
   doesAction: boolean;
+  isTouching: boolean;
 }
 
 export interface AirConsoleCharacterAppearanceUpdate {

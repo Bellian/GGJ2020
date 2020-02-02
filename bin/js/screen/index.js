@@ -18506,12 +18506,16 @@ var Client = /** @class */ (function () {
         };
         this.notifyServer(controllerUpdate);
     };
-    Client.prototype.moveAndInteract = function (x, y, isInteracting) {
+    Client.prototype.moveAndInteract = function (x, y, isInteracting, isToching) {
         var _this = this;
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
         if (isInteracting === void 0) { isInteracting = false; }
+        if (isToching === void 0) { isToching = false; }
         this.lastData = {
             doesAction: isInteracting,
-            moveDirection: gl_matrix_1.vec2.fromValues(x, y)
+            moveDirection: gl_matrix_1.vec2.fromValues(x, y),
+            isToching: isToching
         };
         if (this.moveTimeout) {
             return;
