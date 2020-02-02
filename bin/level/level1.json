@@ -140,7 +140,7 @@
     {
       "type": "floor", "pos": [250, 250], "meta": {
         "size": [500, 500],
-        "class": []
+        "class": ["wood"]
       }
     }
     ,{
@@ -160,6 +160,19 @@
       "type": "floor", "pos": [50, 50], "meta": {
         "size": [50, 50],
         "class": ["weave", "round", "carpet"]
+      }
+    }
+
+    ,{
+      "type": "floor", "pos": [145, 230], "meta": {
+        "size": [106, 110],
+        "class": ["weave", "carpet"]
+      }
+    }
+    ,{
+      "type": "floor", "pos": [99, 443], "meta": {
+        "size": [200, 120],
+        "class": ["blueCarpet"]
       }
     }
 
