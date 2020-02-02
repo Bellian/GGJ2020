@@ -230,10 +230,17 @@ characterselection characters {
   right: 0;
   left: 0;
   bottom: 0;
+  flex-wrap: wrap;
   width: 500px;
   height: 100%;
   display: flex;
   justify-content: space-around;
+}
+
+@media screen and (max-width: 380px) {
+  characterselection characters {
+    width: 100%;
+  }
 }
 
 characterselection characters img {

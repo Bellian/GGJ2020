@@ -188,10 +188,14 @@ characterselection{
     right: 0;
     left: 0;
     bottom: 0;
+    flex-wrap: wrap;
     width: 500px;
     height: 100%;
     display: flex;
     justify-content: space-around;
+    @media screen and (max-width: 380px) {
+      width: 100%;
+    }
     img{
       width: 140px;
       transition: width 0.3s ease-in-out;
