@@ -19340,6 +19340,7 @@ var Views;
     Views[Views["splashscreen"] = 0] = "splashscreen";
     Views[Views["characterselection"] = 1] = "characterselection";
     Views[Views["playscreen"] = 2] = "playscreen";
+    Views[Views["endscreen"] = 3] = "endscreen";
 })(Views = exports.Views || (exports.Views = {}));
 var Controller = /** @class */ (function () {
     function Controller(client) {
@@ -19376,6 +19377,9 @@ var Controller = /** @class */ (function () {
                 this.showView(Views.playscreen);
                 this.joystick.start();
                 this.shakeController.listen();
+                break;
+            case 'end':
+                this.showView(Views.endscreen);
                 break;
             default:
                 console.error("not implemented", view);

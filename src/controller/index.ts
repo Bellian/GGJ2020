@@ -17,7 +17,8 @@ const eventListener = EventListener.get();
 export enum Views {
   splashscreen,
   characterselection,
-  playscreen
+  playscreen,
+  endscreen
 }
 
 interface JoyStickPosition{
@@ -65,6 +66,9 @@ class Controller {
         this.showView(Views.playscreen);
         this.joystick.start();
         this.shakeController.listen();
+        break;
+      case 'end':
+        this.showView(Views.endscreen);
         break;
       default:
         console.error("not implemented", view);

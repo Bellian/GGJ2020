@@ -96,7 +96,7 @@ splashscreen left h1 {
 }
 
 splashscreen left h1 small {
-  display: block;
+  display: none;
   color: #006e50;
   font-size: 33px;
   padding: 20px 0 0 0;
@@ -120,6 +120,7 @@ splashscreen left time {
   display: block;
   font-size: 100px;
   padding: 18px 0;
+  display: none;
 }
 
 @media screen and (max-width: 380px) {
@@ -140,6 +141,10 @@ splashscreen left time {
     right: 0;
     padding: 20px;
   }
+}
+
+splashscreen right {
+  display: none;
 }
 
 splashscreen right selectheinzel {
@@ -288,4 +293,29 @@ playscreen controller {
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+endscreen {
+  display: none;
+  background: #cd9fce;
+  width: 100%;
+  height: 100%;
+}
+
+endscreen h1 {
+  background: black;
+  font-family: "EraserRegular";
+  color: white;
+  width: 300px;
+  text-align: center;
+  margin: 40px auto;
+  padding: 24px;
+}
+
+endscreen p {
+  background: white;
+  font-family: sans-serif;
+  font-size: 25px;
+  padding: 20px;
+  text-align: center;
 }

@@ -81,7 +81,7 @@ splashscreen{
       color: black;
       font-size: 60px;
       small{
-        display: block;
+        display: none;
         color: $green;
         font-size: 33px;
         padding: 20px 0 0 0;
@@ -99,6 +99,7 @@ splashscreen{
       display: block;
       font-size: 100px;
       padding: 18px 0;
+      display: none;
         @media screen and (max-width: 380px) {
           font-size: 20px;
           position: absolute;
@@ -116,6 +117,7 @@ splashscreen{
     }
   }
   right{
+    display: none; // heinzel selection currently not used
     selectheinzel{
       width: 228px;
       display: flex;
@@ -236,5 +238,28 @@ playscreen{
     left: 0;
     width: 100%;
     height: 100%;
+  }
+}
+
+endscreen{
+  display: none;
+  background: $background;
+  width: 100%;
+  height: 100%;
+  h1{
+    background: black;
+    font-family: $EraserRegular;
+    color: white;
+    width: 300px;
+    text-align: center;
+    margin: 40px auto;
+    padding: 24px;
+  }
+  p{
+    background: white;
+    font-family: sans-serif;
+    font-size: 25px;
+    padding: 20px;
+    text-align: center;
   }
 }
