@@ -181,7 +181,7 @@ export class Client {
                 data: this.lastData
             };
             this.notifyServer(controllerUpdate);
-        }, 1000 / 25);
+        }, 1000 / 20);
     }
 
     private notifyServer(data: any) {
