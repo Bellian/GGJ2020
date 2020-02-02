@@ -100,7 +100,7 @@ export class GameStateGame extends GameState {
                     y: -tmp[1] * forceDefault,
                 });
                 */
-                Body.setPosition(player.pawn.interactionHitbox, player.pawn.hitBox?.position!)
+                // Body.setPosition(player.pawn.interactionHitbox, player.pawn.hitBox?.position!)
                 Body.setPosition(player.pawn.killHitbox, player.pawn.hitBox?.position!)
 
                 player.position = vec2.fromValues(player.pawn.hitBox!.position.x, player.pawn.hitBox!.position.y);
@@ -184,7 +184,7 @@ export class GameStateGame extends GameState {
                     action: "updatePlayer",
                     data: result
                 });
-            }, 1000 / 15);
+            }, 1000 / 20);
 
             // Engine.showDebugPlayer();
 
@@ -225,14 +225,6 @@ export class GameStateGame extends GameState {
                         }
                     })
                 }
-            }
-        });
-    
-        Events.on(PhysicsEngine.engine, 'collisionEnd', (event) => {
-            var pairs = event.pairs;
-            
-            for (var i = 0, j = pairs.length; i != j; ++i) {
-                
             }
         });
     }

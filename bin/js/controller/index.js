@@ -19191,7 +19191,7 @@ var GameStateGame = /** @class */ (function (_super) {
         connectedDevice_1.getAllDevices()
             .filter(function (device) { return device.deviceId !== 0; })
             .forEach(function (device) {
-            var _a, _b;
+            var _a;
             var player = _this.players.get(device);
             if (player === undefined) {
                 return;
@@ -19233,8 +19233,8 @@ var GameStateGame = /** @class */ (function (_super) {
                 y: -tmp[1] * forceDefault,
             });
             */
-            matter_js_1.Body.setPosition(player.pawn.interactionHitbox, (_a = player.pawn.hitBox) === null || _a === void 0 ? void 0 : _a.position);
-            matter_js_1.Body.setPosition(player.pawn.killHitbox, (_b = player.pawn.hitBox) === null || _b === void 0 ? void 0 : _b.position);
+            // Body.setPosition(player.pawn.interactionHitbox, player.pawn.hitBox?.position!)
+            matter_js_1.Body.setPosition(player.pawn.killHitbox, (_a = player.pawn.hitBox) === null || _a === void 0 ? void 0 : _a.position);
             player.position = gl_matrix_1.vec2.fromValues(player.pawn.hitBox.position.x, player.pawn.hitBox.position.y);
             gl_matrix_1.vec2.copy(player.pawn.position, player.position);
             player.pawn.viewUpdate();
@@ -19308,7 +19308,7 @@ var GameStateGame = /** @class */ (function (_super) {
                     action: "updatePlayer",
                     data: result
                 });
-            }, 1000 / 15);
+            }, 1000 / 20);
             // Engine.showDebugPlayer();
             // PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();
@@ -19348,11 +19348,6 @@ var GameStateGame = /** @class */ (function (_super) {
                         }
                     });
                 }
-            }
-        });
-        matter_js_1.Events.on(physicsEngine_1.PhysicsEngine.engine, 'collisionEnd', function (event) {
-            var pairs = event.pairs;
-            for (var i = 0, j = pairs.length; i != j; ++i) {
             }
         });
     };
@@ -20009,13 +20004,13 @@ var Pawn = /** @class */ (function (_super) {
                 category: levelObject_1.CollisionChannel.PLAYER,
             }
         });
-        this.interactionHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 12, {
+        /*this.interactionHitbox = Bodies.circle(this.position[0], this.position[1], 12, {
             isSensor: true,
             collisionFilter: {
-                category: levelObject_1.CollisionChannel.PLAYER,
-                mask: levelObject_1.CollisionChannel.DEFAULT,
+                category: CollisionChannel.PLAYER,
+                mask: CollisionChannel.DEFAULT,
             }
-        });
+        });*/
         this.hitBox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 10, {
             collisionFilter: {
                 category: levelObject_1.CollisionChannel.PLAYER,
@@ -20024,7 +20019,7 @@ var Pawn = /** @class */ (function (_super) {
             frictionStatic: 1,
             frictionAir: 0.4
         });
-        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox, this.interactionHitbox, this.killHitbox]);
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox, /*this.interactionHitbox,*/ this.killHitbox]);
     };
     Pawn.prototype.move = function (direction) {
         this.view.classList.remove("up", "down", "left", "right");
