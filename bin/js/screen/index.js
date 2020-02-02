@@ -18431,16 +18431,14 @@ var Client = /** @class */ (function () {
                 catch (e) {
                     var newDevice = new connectedDevice_1.ConnectedDevice(_this.airConsole.getDeviceId());
                 }
-                // prepare stuff for choose state
-                _this.airConsole.setCustomDeviceState({
-                    wantAngry: Math.random() > 0.5
-                });
             }
             if (state.state === "game") {
                 // prepare stuff for game state
                 var myDeviceId_1 = _this.airConsole.getDeviceId();
                 physicsEngine_1.default.init();
-                var container = document.querySelector('gamecontainer') || document.querySelector('playscreen') || document.body;
+                var container = document.querySelector("gamecontainer") ||
+                    document.querySelector("playscreen") ||
+                    document.body;
                 var level_1 = new levelMap_1.LevelMap("../level/level1.json", container);
                 level_1.wait.then(function () {
                     // Engine.showDebugPlayer();
@@ -18451,8 +18449,8 @@ var Client = /** @class */ (function () {
                             return;
                         }
                         if (!_this.players.has(device)) {
-                            console.log('create player for:', device.deviceId);
-                            var player = new player_1.Player(level_1, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default);
+                            console.log("create player for:", device.deviceId);
+                            var player = new player_1.Player(level_1, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default, device.customStateData.isAngryDad);
                             player.pawn.viewUpdate();
                             if (device.deviceId === myDeviceId_1) {
                                 level_1.setCameraPosition(player.position);
@@ -18524,7 +18522,7 @@ var Client = /** @class */ (function () {
             _this.moveTimeout = undefined;
             var controllerUpdate = {
                 action: "updateControllerData",
-                data: _this.lastData,
+                data: _this.lastData
             };
             _this.notifyServer(controllerUpdate);
         }, 1000 / 25);
@@ -18557,7 +18555,7 @@ var eventListener = eventListener_1.EventListener.get();
 var deviceLib = new Map();
 function getDevice(deviceId) {
     if (!deviceLib.has(deviceId)) {
-        throw new Error('The device does not exist: ' + deviceId);
+        throw new Error("The device does not exist: " + deviceId);
     }
     return deviceLib.get(deviceId);
 }
@@ -18587,11 +18585,11 @@ var ConnectedDevice = /** @class */ (function () {
         this.deviceId = deviceId;
         this.internalID = internalID++;
         deviceLib.set(deviceId, this);
-        eventListener.trigger('deviceJoined', this);
+        eventListener.trigger("deviceJoined", this);
     }
     ConnectedDevice.prototype.disconnect = function () {
         deviceLib.delete(this.deviceId);
-        eventListener.trigger('deviceDisconnected', this);
+        eventListener.trigger("deviceDisconnected", this);
     };
     ConnectedDevice.prototype.updateState = function (data) {
         this.stateData = data;
@@ -18602,12 +18600,20 @@ var ConnectedDevice = /** @class */ (function () {
     ConnectedDevice.prototype.toJson = function () {
         return {
             internalID: this.internalID,
-            deviceId: this.deviceId,
+            deviceId: this.deviceId
         };
     };
     return ConnectedDevice;
 }());
 exports.ConnectedDevice = ConnectedDevice;
+var CustomStateData = /** @class */ (function () {
+    function CustomStateData() {
+        this.wantAngry = false;
+        this.isAngryDad = false;
+    }
+    return CustomStateData;
+}());
+exports.CustomStateData = CustomStateData;
 
 
 
@@ -18897,11 +18903,11 @@ var GameStateChoose = /** @class */ (function (_super) {
     GameStateChoose.prototype.enter = function () {
         this.startTimer();
         this.server.airConsole.broadcast({
-            action: 'updateState',
+            action: "updateState",
             data: {
-                state: 'choose',
+                state: "choose",
                 timerStarted: this.timerStarted,
-                duration: chooseTime,
+                duration: chooseTime
             }
         });
     };
@@ -18911,7 +18917,7 @@ var GameStateChoose = /** @class */ (function (_super) {
         }
         var timeLeft = chooseTime - (Date.now() - this.timerStarted);
         if (timeLeft <= 0) {
-            console.log('timer is up, next state');
+            console.log("timer is up, next state");
             this.exit();
         }
     };
@@ -18926,13 +18932,14 @@ var GameStateChoose = /** @class */ (function (_super) {
         else {
             angry = candidates[Math.floor(candidates.length * Math.random())];
         }
-        console.log('candidates:', candidates);
-        console.log('devices:', devices);
-        console.log('and the winner is:', angry);
+        console.log("candidates:", candidates);
+        console.log("devices:", devices);
+        console.log("and the winner is:", angry);
+        angry.customStateData.isAngryDad = true;
         _super.prototype.exit.call(this, angry);
     };
     GameStateChoose.prototype.startTimer = function () {
-        console.log('player joined, starting timer');
+        console.log("player joined, starting timer");
         this.timerStarted = Date.now();
     };
     return GameStateChoose;
@@ -19004,7 +19011,25 @@ var GameStateGame = /** @class */ (function (_super) {
                 return;
             }
             gl_matrix_1.vec2.copy(tmp, data.moveDirection);
+            gl_matrix_1.vec2.scale(tmp, tmp, 1 / 50);
+            var length = Math.min(gl_matrix_1.vec2.length(tmp), 1);
             gl_matrix_1.vec2.normalize(tmp, tmp);
+            var dir = gl_matrix_1.vec2.round(gl_matrix_1.vec2.create(), tmp);
+            var dirString = 'up';
+            if (dir[1] === -1) {
+                dirString = 'down';
+            }
+            else if (dir[1] === 1) {
+                dirString = 'up';
+            }
+            else if (dir[0] === -1) {
+                dirString = 'left';
+            }
+            else if (dir[0] === 1) {
+                dirString = 'right';
+            }
+            player.pawn.move(dirString);
+            gl_matrix_1.vec2.scale(tmp, tmp, length);
             matter_js_1.Body.applyForce(player.pawn.hitBox, player.pawn.hitBox.position, {
                 x: tmp[0] * forceDefault,
                 y: -tmp[1] * forceDefault,
@@ -19024,7 +19049,8 @@ var GameStateGame = /** @class */ (function (_super) {
             data: {
                 state: "game",
                 timerStarted: this.timerStarted,
-                duration: gameTime
+                duration: gameTime,
+                angry: this.data.deviceId,
             }
         });
         physicsEngine_1.PhysicsEngine.init();
@@ -19041,7 +19067,6 @@ var GameStateGame = /** @class */ (function (_super) {
                     return;
                 }
                 _this.deviceInputs.set(device, data);
-                console.log('CLIENT_updateControllerData');
             });
             var spawnpoints = level.getAllLevelObjectsByType(spawnpoint_1.default);
             _this.shuffle(spawnpoints);
@@ -19053,7 +19078,7 @@ var GameStateGame = /** @class */ (function (_super) {
                 .forEach(function (e) {
                 if (!_this.players.has(e)) {
                     console.log("create player for:", e.deviceId);
-                    var player = new player_1.default(level, gl_matrix_1.vec2.clone(spawnpoints[index].position), pawn_1.default);
+                    var player = new player_1.default(level, gl_matrix_1.vec2.clone(spawnpoints[index].position), pawn_1.default, false);
                     _this.players.set(e, player);
                     if (e === _this.data) {
                         level.setCameraPosition(player.pawn.position);
@@ -19069,7 +19094,7 @@ var GameStateGame = /** @class */ (function (_super) {
                     var player = _this.players.get(e);
                     result[e.deviceId] = {
                         position: player.pawn.position,
-                        direction: player.pawn.direction
+                        direction: player.pawn.direction,
                     };
                 });
                 _this.server.airConsole.broadcast({
@@ -19120,7 +19145,7 @@ var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
 var eventListener = eventListener_1.EventListener.get();
-var joinTime = 7000;
+var joinTime = 5000;
 var GameStateJoin = /** @class */ (function (_super) {
     __extends(GameStateJoin, _super);
     function GameStateJoin() {
@@ -19256,20 +19281,41 @@ var physicsEngine_1 = require("../physicsEngine");
 var Asset = /** @class */ (function (_super) {
     __extends(Asset, _super);
     function Asset() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.currentHealth = 100;
+        return _this;
     }
+    Asset.prototype.hit = function (value) {
+        this.currentHealth += value;
+        if (this.currentHealth <= 0)
+            this.currentHealth = 0;
+        if (this.currentHealth >= 100)
+            this.currentHealth = 100;
+        var view = _super.prototype.render.call(this);
+        view.classList.remove("nodamage", "littledamage", "destroyed");
+        var clazz = "";
+        if (this.currentHealth == 100) {
+            clazz = "nodamage";
+        }
+        else if (this.currentHealth > 1 && this.currentHealth <= 99) {
+            clazz = "littledamage";
+        }
+        else {
+            clazz = "destroyed";
+        }
+        view.classList.add(clazz);
+    };
     Asset.prototype.createPysics = function () {
         this.hitBox = matter_js_1.Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
-            isStatic: true,
+            isStatic: true
         });
         matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
     };
-    ;
     Asset.prototype.render = function () {
         var _a;
         var classes = this.meta.class ? this.meta.class : [];
         var view = _super.prototype.render.call(this);
-        (_a = view.classList).add.apply(_a, __spread(['asset'], classes));
+        (_a = view.classList).add.apply(_a, __spread(["asset"], classes));
         return view;
     };
     Object.defineProperty(Asset.prototype, "isDestructable", {
@@ -19393,9 +19439,11 @@ var LevelMap = /** @class */ (function () {
         this.mainContainer = mainContainer;
         this.objects = [];
         this.lastTimestamp = 0;
-        this.wait = fetch(url).then(function (result) {
+        this.wait = fetch(url)
+            .then(function (result) {
             return result.json();
-        }).then(function (json) {
+        })
+            .then(function (json) {
             _this.parse(json);
         });
     }
@@ -19407,16 +19455,16 @@ var LevelMap = /** @class */ (function () {
         // parse levelObjects
         json.objectData.forEach(function (data) {
             switch (data.type) {
-                case 'wall':
+                case "wall":
                     new wall_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
                     break;
-                case 'floor':
+                case "floor":
                     new floor_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
                     break;
-                case 'asset':
+                case "asset":
                     new asset_1.Asset(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
                     break;
-                case 'spawnpoint':
+                case "spawnpoint":
                     new spawnpoint_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
                     break;
                 default:
@@ -19424,7 +19472,7 @@ var LevelMap = /** @class */ (function () {
                     break;
             }
         });
-        matter_js_1.Events.on(physicsEngine_1.default.engine, 'beforeUpdate', function (event) {
+        matter_js_1.Events.on(physicsEngine_1.default.engine, "beforeUpdate", function (event) {
             var e_1, _a;
             var delta = (event.timestamp - _this.lastTimestamp) / 1000; // convert to sec
             _this.lastTimestamp = event.timestamp;
@@ -19444,8 +19492,6 @@ var LevelMap = /** @class */ (function () {
                 finally { if (e_1) throw e_1.error; }
             }
         });
-        // create player
-        // new Player(this, vec2.fromValues(10,10), Pawn);
     };
     LevelMap.prototype.createBounds = function () {
         if (!authority_1.default.get().hasAuthority()) {
@@ -19456,21 +19502,23 @@ var LevelMap = /** @class */ (function () {
         matter_js_1.World.add(physicsEngine_1.default.world, [
             matter_js_1.Bodies.rectangle(width / 2, -50, width, 100, { isStatic: true }),
             matter_js_1.Bodies.rectangle(width / 2, height + 50, width, 100, { isStatic: true }),
-            matter_js_1.Bodies.rectangle(width + 50, height / 2, 100, height + 200, { isStatic: true }),
+            matter_js_1.Bodies.rectangle(width + 50, height / 2, 100, height + 200, {
+                isStatic: true
+            }),
             matter_js_1.Bodies.rectangle(-50, height / 2, 100, height + 200, { isStatic: true })
         ]);
     };
     LevelMap.prototype.createContainer = function () {
-        this.gameContainer = document.createElement('div');
-        this.gameContainer.classList.add('game-container');
-        this.cameraElement = document.createElement('div');
-        this.cameraElement.classList.add('camera');
-        this.sceneContainer = document.createElement('div');
-        this.sceneContainer.classList.add('scene');
-        this.mapContainer = document.createElement('div');
-        this.mapContainer.classList.add('map');
-        this.mapContainer.style.width = this.size[0] + 'px';
-        this.mapContainer.style.height = this.size[1] + 'px';
+        this.gameContainer = document.createElement("div");
+        this.gameContainer.classList.add("game-container");
+        this.cameraElement = document.createElement("div");
+        this.cameraElement.classList.add("camera");
+        this.sceneContainer = document.createElement("div");
+        this.sceneContainer.classList.add("scene");
+        this.mapContainer = document.createElement("div");
+        this.mapContainer.classList.add("map");
+        this.mapContainer.style.width = this.size[0] + "px";
+        this.mapContainer.style.height = this.size[1] + "px";
         this.mainContainer.append(this.gameContainer);
         this.gameContainer.append(this.cameraElement);
         this.cameraElement.append(this.sceneContainer);
@@ -19500,6 +19548,11 @@ exports.LevelMap = LevelMap;
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
 var physicsEngine_1 = require("../physicsEngine");
+var CollisionChannel;
+(function (CollisionChannel) {
+    CollisionChannel[CollisionChannel["DEFAULT"] = 1] = "DEFAULT";
+    CollisionChannel[CollisionChannel["PLAYER"] = 2] = "PLAYER";
+})(CollisionChannel = exports.CollisionChannel || (exports.CollisionChannel = {}));
 var LevelObject = /** @class */ (function () {
     function LevelObject(levelMap, position, meta) {
         this.levelMap = levelMap;
@@ -19565,14 +19618,19 @@ var matter_js_1 = require("matter-js");
 var physicsEngine_1 = require("../physicsEngine");
 var Pawn = /** @class */ (function (_super) {
     __extends(Pawn, _super);
-    function Pawn() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
+    function Pawn(levelMap, position, isAngryDad, meta) {
+        var _this = _super.call(this, levelMap, position, meta) || this;
         _this.radius = 10;
         _this.direction = "down";
+        _this.isAngryDad = isAngryDad;
         return _this;
     }
     Pawn.prototype.createPysics = function () {
         this.hitBox = matter_js_1.Bodies.circle(5, 5, 10, {
+            collisionFilter: {
+                category: levelObject_1.CollisionChannel.PLAYER,
+                mask: levelObject_1.CollisionChannel.DEFAULT,
+            },
             frictionStatic: 1,
             frictionAir: 0.4
         });
@@ -19585,7 +19643,7 @@ var Pawn = /** @class */ (function (_super) {
     };
     Pawn.prototype.render = function () {
         var view = _super.prototype.render.call(this);
-        view.classList.add("pawn", "heinzel");
+        view.classList.add("pawn", this.isAngryDad ? "angryDad" : "heinzel");
         return view;
     };
     return Pawn;
@@ -19651,47 +19709,16 @@ var tmp = gl_matrix_1.vec2.create();
 var forceDefault = 0.001;
 var Player = /** @class */ (function (_super) {
     __extends(Player, _super);
-    function Player(levelMap, position, pawnClass) {
+    function Player(levelMap, position, pawnClass, isAngryDad) {
         var _this = _super.call(this, levelMap, position) || this;
         _this.pawnClass = pawnClass;
         _this.move = new Set();
         _this.canTick = true;
-        _this.pawn = new pawnClass(levelMap, gl_matrix_1.vec2.clone(position));
+        _this.pawn = new pawnClass(levelMap, gl_matrix_1.vec2.clone(position), isAngryDad);
         return _this;
         // this.registerInput();
     }
     Player.prototype.tick = function (delta) {
-        // if(this.move.size !== 0){
-        //     vec2.set(tmp, 0,0);
-        //     this.move.forEach(e => {
-        //         switch(e){
-        //             case Directions.LEFT:
-        //                 this.pawn.move('left');
-        //                 vec2.add(tmp, tmp, [-1,0]);
-        //                 break;
-        //             case Directions.RIGHT:
-        //                 this.pawn.move('right');
-        //                 vec2.add(tmp, tmp, [1,0]);
-        //                 break;
-        //             case Directions.UP:
-        //                 vec2.add(tmp, tmp, [0,-1]);
-        //                 this.pawn.move('up');
-        //                 break;
-        //             case Directions.DOWN:
-        //                 this.pawn.move('down');
-        //                 vec2.add(tmp, tmp, [0,1]);
-        //                 break;
-        //         }
-        //     });
-        //     vec2.normalize(tmp, tmp);
-        //     Body.applyForce(this.pawn.hitBox!, this.pawn.hitBox!.position, {
-        //         x: tmp[0] * forceDefault,
-        //         y: tmp[1] * forceDefault
-        //     });
-        // }
-        // this.position = vec2.fromValues(this.pawn.hitBox!.position.x, this.pawn.hitBox!.position.y);
-        // vec2.copy(this.pawn.position, this.position);
-        // this.levelMap.setCameraPosition(this.position);
         this.pawn.viewUpdate();
     };
     return Player;
@@ -19776,6 +19803,9 @@ var Wall = /** @class */ (function (_super) {
     }
     Wall.prototype.createPysics = function () {
         this.hitBox = matter_js_1.Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
+            collisionFilter: {
+                category: levelObject_1.CollisionChannel.DEFAULT,
+            },
             isStatic: true,
         });
         matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);

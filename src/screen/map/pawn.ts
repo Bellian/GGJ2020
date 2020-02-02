@@ -1,4 +1,4 @@
-import LevelObject from "./levelObject";
+import LevelObject, { CollisionChannel } from "./levelObject";
 import { Bodies, World } from "matter-js";
 import PhysicsEngine from "../physicsEngine";
 import { LevelMap } from "./levelMap";
@@ -19,8 +19,12 @@ export class Pawn extends LevelObject {
   isAngryDad: boolean;
   createPysics() {
     this.hitBox = Bodies.circle(5, 5, 10, {
-      frictionStatic: 1,
-      frictionAir: 0.4
+        collisionFilter: {
+            category: CollisionChannel.PLAYER,
+            mask: CollisionChannel.DEFAULT,
+        },
+        frictionStatic: 1,
+        frictionAir: 0.4
     });
     World.add(PhysicsEngine.world, [this.hitBox]);
   }

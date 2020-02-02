@@ -4,6 +4,11 @@ import Authority from "../../common/authority";
 import { World, Body } from "matter-js";
 import PhysicsEngine from "../physicsEngine";
 
+export enum CollisionChannel{
+    DEFAULT = 1,
+    PLAYER = 2,
+}
+
 export abstract class LevelObject {
 
     hitBox: Body | undefined;
