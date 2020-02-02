@@ -15,6 +15,10 @@ export interface AirConsoleControllerUpdate {
   doesAction: boolean;
 }
 
+export interface AirConsoleCharacterAppearanceUpdate {
+  appearance: CharacterAppearanceType;
+}
+
 export class PlayerData implements TransactionTypeInterface {
   constructor(public x: number, public y: number, deviceId: number) {
     this.id = deviceId;

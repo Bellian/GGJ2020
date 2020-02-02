@@ -13,7 +13,8 @@ import {
   PlayerUpdateData,
   PlayerState,
   AirConsoleMessage,
-  AirConsoleControllerUpdate
+  AirConsoleControllerUpdate,
+  AirConsoleCharacterAppearanceUpdate
 } from "./index";
 import { EventListener } from "./eventListener";
 import { ConnectedDevice, getDevice } from "./connectedDevice";
@@ -130,17 +131,17 @@ export class Client {
     };
   }
 
-  //todo
-  // changeAppearance(
-  //   appearance: CharacterAppearanceType
-  // ): CharacterAppearanceType {
-  //   let currentPlayer = this.currentPlayerData();
-  //   currentPlayer.characterAppearanceType = appearance;
-  //   this.notifyServer(currentPlayer);
-  //   return currentPlayer.characterAppearanceType;
-  // }
+  changeAppearance(appearance: CharacterAppearanceType) {
+    let controllerUpdate: AirConsoleMessage<AirConsoleCharacterAppearanceUpdate> = {
+      action: "updateCharacterAppearance",
+      data: {
+        appearance: appearance
+      }
+    };
+    this.notifyServer(controllerUpdate);
+  }
 
-  moveAndInteracting(x: number, y: number, isInteracting: boolean = false) {
+  moveAndInteract(x: number, y: number, isInteracting: boolean = false) {
     let controllerUpdate: AirConsoleMessage<AirConsoleControllerUpdate> = {
       action: "updateControllerData",
       data: {
