@@ -98,18 +98,18 @@
 
 
     ,{
-      "type": "spawnpoint", "pos": [20, 20]
+      "type": "spawnpoint", "pos": [50, 50]
     }
     ,{
-      "type": "spawnpoint", "pos": [20, 420]
+      "type": "spawnpoint", "pos": [50, 450]
     }
     ,{
-      "type": "spawnpoint", "pos": [420, 20]
+      "type": "spawnpoint", "pos": [450, 50]
     }
     ,{
-      "type": "spawnpoint", "pos": [420, 420]
+      "type": "spawnpoint", "pos": [450, 450]
     }
-    
+
 
 
     ,{
