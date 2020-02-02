@@ -6,7 +6,6 @@ import { Server } from "../common/server";
 Authority.get().requestAuthority();
 
 document.addEventListener('DOMContentLoaded', () => {
-    Engine.init();
 
     let server:Server = new Server();
 

@@ -62,6 +62,7 @@ export class GameStateGame extends GameState {
             })
         }, 1000 / 25);
 
+        PhysicsEngine.init();
         const level = new LevelMap('../level/level1.json', document.body);
 
         level.wait.then(() => {

@@ -18425,6 +18425,12 @@ var Client = /** @class */ (function () {
                 // prepare stuff for join state
             }
             if (state.state === "choose") {
+                try {
+                    connectedDevice_1.getDevice(_this.airConsole.getDeviceId());
+                }
+                catch (e) {
+                    var newDevice = new connectedDevice_1.ConnectedDevice(_this.airConsole.getDeviceId());
+                }
                 // prepare stuff for choose state
                 _this.airConsole.setCustomDeviceState({
                     wantAngry: Math.random() > 0.5
@@ -18433,6 +18439,7 @@ var Client = /** @class */ (function () {
             if (state.state === "game") {
                 // prepare stuff for game state
                 var myDeviceId_1 = _this.airConsole.getDeviceId();
+                physicsEngine_1.default.init();
                 var level_1 = new levelMap_1.LevelMap("../level/level1.json", document.body);
                 level_1.wait.then(function () {
                     // Engine.showDebugPlayer();
@@ -18453,6 +18460,9 @@ var Client = /** @class */ (function () {
                         var device = connectedDevice_1.getDevice(Number.parseInt(key));
                         var item = data[key];
                         var p = _this.players.get(device);
+                        if (p === undefined || p === null) {
+                            return;
+                        }
                         p.pawn.move(item.direction);
                         p.pawn.position = item.position;
                         if (key === myDeviceId_1) {
@@ -18985,6 +18995,7 @@ var GameStateGame = /** @class */ (function (_super) {
                 data: result,
             });
         }, 1000 / 25);
+        physicsEngine_1.PhysicsEngine.init();
         var level = new levelMap_1.LevelMap('../level/level1.json', document.body);
         level.wait.then(function () {
             // Engine.showDebugPlayer();
@@ -19080,12 +19091,10 @@ exports.GameStateJoin = GameStateJoin;
 },{"../eventListener":17,"./gameState":20,"./gameStateChoose":21}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var physicsEngine_1 = require("./physicsEngine");
 var authority_1 = require("../common/authority");
 var server_1 = require("../common/server");
 authority_1.default.get().requestAuthority();
 document.addEventListener('DOMContentLoaded', function () {
-    physicsEngine_1.default.init();
     var server = new server_1.Server();
     /*
 
@@ -19103,7 +19112,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-},{"../common/authority":13,"../common/server":19,"./physicsEngine":34}],25:[function(require,module,exports){
+},{"../common/authority":13,"../common/server":19}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {

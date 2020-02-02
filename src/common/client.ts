@@ -52,6 +52,11 @@ export class Client {
       }
 
       if (state.state === "choose") {
+        try{
+          getDevice(this.airConsole.getDeviceId())
+        }catch(e) {
+          const newDevice = new ConnectedDevice(this.airConsole.getDeviceId());
+        }
         // prepare stuff for choose state
         this.airConsole.setCustomDeviceState({
           wantAngry: Math.random() > 0.5
@@ -61,6 +66,7 @@ export class Client {
       if (state.state === "game") {
         // prepare stuff for game state
         let myDeviceId = this.airConsole.getDeviceId();
+        Engine.init();
         const level = new LevelMap("../level/level1.json", document.body);
         level.wait.then(() => {
           // Engine.showDebugPlayer();
@@ -91,7 +97,10 @@ export class Client {
             for (let key in data) {
               let device = getDevice(Number.parseInt(key));
               let item = data[key];
-              let p = this.players.get(device)!;
+              let p = this.players.get(device);
+              if(p === undefined || p === null) {
+                return;
+              }
               p.pawn.move(item.direction);
               p.pawn.position = item.position;
               if (key === myDeviceId) {
@@ -107,7 +116,7 @@ export class Client {
           const direction = vec2.random(vec2.create(), 2);
           this.moveAndInteract(direction[0], direction[1], Math.random() > 0.5);
         }, rate);
-        
+
       } else {
         clearInterval(this.debugInterface);
       }
