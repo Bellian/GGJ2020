@@ -19877,7 +19877,7 @@ var Pawn = /** @class */ (function (_super) {
         return _this;
     }
     Pawn.prototype.createPysics = function () {
-        this.hitBox = matter_js_1.Bodies.circle(5, 5, 10, {
+        this.hitBox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 10, {
             collisionFilter: {
                 category: levelObject_1.CollisionChannel.PLAYER,
                 mask: levelObject_1.CollisionChannel.DEFAULT,

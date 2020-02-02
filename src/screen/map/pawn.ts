@@ -18,7 +18,7 @@ export class Pawn extends LevelObject {
   direction: string = "down";
   isAngryDad: boolean;
   createPysics() {
-    this.hitBox = Bodies.circle(5, 5, 10, {
+    this.hitBox = Bodies.circle(this.position[0], this.position[1], 10, {
         collisionFilter: {
             category: CollisionChannel.PLAYER,
             mask: CollisionChannel.DEFAULT,
