@@ -151,15 +151,28 @@ export class Client {
     this.notifyServer(controllerUpdate);
   }
 
+  moveTimeout: any;
+  lastData: any;
   moveAndInteract(x: number, y: number, isInteracting: boolean = false) {
-    let controllerUpdate: AirConsoleMessage<AirConsoleControllerUpdate> = {
-      action: "updateControllerData",
-      data: {
-        doesAction: isInteracting,
-        moveDirection: vec2.fromValues(x, y)
-      }
+    this.lastData = {
+      doesAction: isInteracting,
+      moveDirection: vec2.fromValues(x, y)
     };
-    this.notifyServer(controllerUpdate);
+    if(this.moveTimeout){
+      return;
+    }
+    this.moveTimeout = setTimeout(() => {
+      this.moveTimeout = undefined;
+      let controllerUpdate: AirConsoleMessage<AirConsoleControllerUpdate> = {
+        action: "updateControllerData",
+        data: {
+          doesAction: isInteracting,
+          moveDirection: vec2.fromValues(x, y)
+        }
+      };
+      this.notifyServer(controllerUpdate);
+    }, 1000/25);
+    
   }
 
   private notifyServer(data: any) {

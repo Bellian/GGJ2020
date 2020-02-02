@@ -18507,15 +18507,26 @@ var Client = /** @class */ (function () {
         this.notifyServer(controllerUpdate);
     };
     Client.prototype.moveAndInteract = function (x, y, isInteracting) {
+        var _this = this;
         if (isInteracting === void 0) { isInteracting = false; }
-        var controllerUpdate = {
-            action: "updateControllerData",
-            data: {
-                doesAction: isInteracting,
-                moveDirection: gl_matrix_1.vec2.fromValues(x, y)
-            }
+        this.lastData = {
+            doesAction: isInteracting,
+            moveDirection: gl_matrix_1.vec2.fromValues(x, y)
         };
-        this.notifyServer(controllerUpdate);
+        if (this.moveTimeout) {
+            return;
+        }
+        this.moveTimeout = setTimeout(function () {
+            _this.moveTimeout = undefined;
+            var controllerUpdate = {
+                action: "updateControllerData",
+                data: {
+                    doesAction: isInteracting,
+                    moveDirection: gl_matrix_1.vec2.fromValues(x, y)
+                }
+            };
+            _this.notifyServer(controllerUpdate);
+        }, 1000 / 25);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
@@ -19104,7 +19115,9 @@ exports.GameStateJoin = GameStateJoin;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../common/index");
+var gl_matrix_1 = require("gl-matrix");
 var eventListener_1 = require("../common/eventListener");
+gl_matrix_1.glMatrix.setMatrixArrayType(Array);
 var eventListener = eventListener_1.EventListener.get();
 var Views;
 (function (Views) {
@@ -19241,7 +19254,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-},{"../common/eventListener":17,"../common/index":18}],25:[function(require,module,exports){
+},{"../common/eventListener":17,"../common/index":18,"gl-matrix":2}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {

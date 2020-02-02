@@ -18507,15 +18507,26 @@ var Client = /** @class */ (function () {
         this.notifyServer(controllerUpdate);
     };
     Client.prototype.moveAndInteract = function (x, y, isInteracting) {
+        var _this = this;
         if (isInteracting === void 0) { isInteracting = false; }
-        var controllerUpdate = {
-            action: "updateControllerData",
-            data: {
-                doesAction: isInteracting,
-                moveDirection: gl_matrix_1.vec2.fromValues(x, y)
-            }
+        this.lastData = {
+            doesAction: isInteracting,
+            moveDirection: gl_matrix_1.vec2.fromValues(x, y)
         };
-        this.notifyServer(controllerUpdate);
+        if (this.moveTimeout) {
+            return;
+        }
+        this.moveTimeout = setTimeout(function () {
+            _this.moveTimeout = undefined;
+            var controllerUpdate = {
+                action: "updateControllerData",
+                data: {
+                    doesAction: isInteracting,
+                    moveDirection: gl_matrix_1.vec2.fromValues(x, y)
+                }
+            };
+            _this.notifyServer(controllerUpdate);
+        }, 1000 / 25);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
@@ -19105,6 +19116,8 @@ exports.GameStateJoin = GameStateJoin;
 Object.defineProperty(exports, "__esModule", { value: true });
 var authority_1 = require("../common/authority");
 var server_1 = require("../common/server");
+var gl_matrix_1 = require("gl-matrix");
+gl_matrix_1.glMatrix.setMatrixArrayType(Array);
 authority_1.default.get().requestAuthority();
 document.addEventListener('DOMContentLoaded', function () {
     var server = new server_1.Server();
@@ -19120,11 +19133,29 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     
     */
+    new Sound('../sound/main.mp3').play();
 });
+var Sound = /** @class */ (function () {
+    function Sound(src) {
+        this.soundElement = document.createElement("audio");
+        this.soundElement.src = src;
+        this.soundElement.setAttribute("preload", "auto");
+        this.soundElement.setAttribute("controls", "none");
+        this.soundElement.style.display = "none";
+        document.body.appendChild(this.soundElement);
+    }
+    Sound.prototype.play = function () {
+        this.soundElement.play();
+    };
+    Sound.prototype.stop = function () {
+        this.soundElement.pause();
+    };
+    return Sound;
+}());
 
 
 
-},{"../common/authority":13,"../common/server":19}],25:[function(require,module,exports){
+},{"../common/authority":13,"../common/server":19,"gl-matrix":2}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {

@@ -3,25 +3,23 @@
 <svg width="100%" height="100%" viewBox="0 0 257 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
     <g id="_100-" serif:id="100%" transform="matrix(1,0,0,1,0.299827,-0.143355)">
         <rect x="-0.3" y="0.143" width="256.162" height="255.349" style="fill:none;"/>
-        <g id="Ebene1">
+        <g transform="matrix(0.223111,0,0,0.179272,-79.9946,-23.7544)">
+            <path d="M605.938,709.687L615.379,1243.48L647.574,1243.36L652.022,1128.68L1197.7,1117.45L1201.08,1242.48L1244.88,1241.71L1244,709.687" style="fill:rgb(96,17,0);stroke:black;stroke-width:15.08px;"/>
+        </g>
+        <g transform="matrix(0.179272,0,0,0.198999,-37.7279,-2.74811)">
+            <rect x="617.344" y="708.352" width="585.656" height="127.648" style="fill:white;stroke:black;stroke-width:16.12px;"/>
         </g>
         <g transform="matrix(0.179272,0,0,0.131292,-54.3329,-4.73771)">
-            <rect x="563.094" y="536.109" width="900.906" height="289.891" style="fill:none;stroke:black;stroke-width:19.43px;"/>
+            <rect x="563.094" y="536.109" width="900.906" height="289.891" style="fill:white;stroke:black;stroke-width:19.43px;"/>
         </g>
         <g transform="matrix(0.179272,0,0,0.198999,-37.571,-28.559)">
-            <rect x="617.344" y="708.352" width="585.656" height="127.648" style="fill:none;stroke:black;stroke-width:16.12px;"/>
+            <rect x="617.344" y="708.352" width="585.656" height="127.648" style="fill:white;stroke:black;stroke-width:16.12px;"/>
         </g>
         <g transform="matrix(0.133849,0,0,0.172821,2.30524,-75.8288)">
             <rect x="885.406" y="1139.23" width="48.594" height="42.773" style="fill:none;stroke:black;stroke-width:19.75px;"/>
         </g>
         <g transform="matrix(0.133849,0,0,0.172821,1.7282,-48.8498)">
             <rect x="885.406" y="1139.23" width="48.594" height="42.773" style="fill:none;stroke:black;stroke-width:19.75px;"/>
-        </g>
-        <g transform="matrix(0.179272,0,0,0.198999,-37.7279,-2.74811)">
-            <rect x="617.344" y="708.352" width="585.656" height="127.648" style="fill:none;stroke:black;stroke-width:16.12px;"/>
-        </g>
-        <g transform="matrix(0.223111,0,0,0.179272,-79.9946,-23.7544)">
-            <path d="M605.938,709.687L615.379,1243.48L647.574,1243.36L652.022,1128.68L1197.7,1117.45L1201.08,1242.48L1244.88,1241.71L1244,709.687" style="fill:none;stroke:black;stroke-width:15.08px;"/>
         </g>
     </g>
 </svg>
