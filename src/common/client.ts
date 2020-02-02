@@ -17,51 +17,91 @@ import {
   AirConsoleCharacterAppearanceUpdate
 } from "./index";
 import { EventListener } from "./eventListener";
-import { ConnectedDevice, getDevice } from "./connectedDevice";
+import { ConnectedDevice, getDevice, getAllDevices } from "./connectedDevice";
 import { vec2 } from "gl-matrix";
+import { LevelMap } from "./../screen/map/levelMap";
+import Engine from "./../screen/physicsEngine";
+import { Player } from "../screen/map/player";
+import Pawn from "../screen/map/pawn";
 
 const eventListener = EventListener.get();
 
 export class Client {
-  id: number = 0;
+  deviceId!: number;
   airConsole: any;
-  playerData: PlayerData[] = [];
-  objectData: ObjectData[] = [];
-  serverData: ServerData;
+  players: Map<ConnectedDevice, Player> = new Map();
 
   constructor() {
-    this.serverData = new ServerData(30, ServerState.initial);
-
     this.airConsole = new AirConsole();
     this.initMessageHandler();
 
     this.airConsole.onDeviceStateChange = (id: number, state: any) => {
       try {
-        getDevice(id).updateState(state)
-      } catch(e) {
+        getDevice(id).updateState(state);
+      } catch (e) {
         const newDevice = new ConnectedDevice(id);
         newDevice.updateState(state);
       }
     };
 
-    eventListener.on('SERVER_updateState', (state: any) => {
-      console.log('game state changed', state.state);
+    eventListener.on("SERVER_updateState", (state: any) => {
+      console.log("game state changed", state.state);
 
-      if(state.state === 'join') {
+      if (state.state === "join") {
         // prepare stuff for join state
       }
 
-      if(state.state === 'choose') {
+      if (state.state === "choose") {
         // prepare stuff for choose state
         this.airConsole.setCustomDeviceState({
-          wantAngry: Math.random() > 0.5,
-        })
+          wantAngry: Math.random() > 0.5
+        });
       }
 
-      if(state.state === 'game') {
+      if (state.state === "game") {
         // prepare stuff for game state
+        let myDeviceId = this.airConsole.getDeviceId();
+        const level = new LevelMap("../level/level1.json", document.body);
+        level.wait.then(() => {
+          // Engine.showDebugPlayer();
+          Engine.showDebugRenderer(level);
+          Engine.start();
+          getAllDevices().forEach(device => {
+            if (!this.players.has(device)) {
+              let player = new Player(
+                level,
+                vec2.fromValues(-5000, -5000),
+                Pawn
+              );
+              if (device.deviceId === myDeviceId) {
+                level.setCameraPosition(player.position);
+              }
+              this.players.set(device, player);
+            }
+          });
+        });
+        eventListener.on(
+          "SERVER_updatePlayer",
+          (data: {
+            [id: number]: {
+              position: vec2;
+              direction: "up" | "down" | "left" | "right";
+            };
+          }) => {
+            for (let key in data) {
+              let device = getDevice(Number.parseInt(key));
+              let item = data[key];
+              let p = this.players.get(device)!;
+              p.pawn.move(item.direction);
+              p.pawn.position = item.position;
+              if (key === myDeviceId) {
+                level.setCameraPosition(p.position);
+              }
+              this.players.set(device, p);
+            }
+          }
+        );
       }
-
     });
   }
 
@@ -77,53 +117,6 @@ export class Client {
         } else {
           // IDK
         }
-      }
-    };
-  }
-
-  updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
-  onUpdateServerData(cb: (serverData: ServerData) => void) {
-    this.updateServerCallbacks.add(cb);
-  }
-
-  updateServerData() {
-    this.updateServerCallbacks.forEach(e => e(this.serverData));
-  }
-
-  currentPlayerData() {
-    console.table("currentPlayerData playerData", this.playerData);
-    console.table("currentPlayerData id", this.id);
-    return this.playerData.filter(pD => pD.id === this.id)[0];
-  }
-
-  sendControllerData(controllerData: ControllerData) {
-    controllerData.id = this.id;
-    this.notifyServer(controllerData);
-  }
-
-  subscribeToAirConsole() {
-    this.airConsole.onMessage = (from: any, data: TransactionTypeInterface) => {
-      if (data) {
-        switch (data.transactionType) {
-          case TransactionType.PlayerData:
-            console.log("received player data", data);
-            this.playerData = (data as PlayerUpdateData).playerData;
-            break;
-          case TransactionType.ObjectData:
-            // console.log("received object data", data);
-            this.objectData = (data as ObjectUpdateData).objectData;
-            break;
-          case TransactionType.ServerData:
-            // console.log("received server data", data);
-            this.serverData = (data as ServerUpdateData).serverData;
-            this.updateServerData();
-            break;
-          default:
-            console.error("client onMessage switch", data);
-            break;
-        }
-      } else {
-        console.error("client onMessage", data);
       }
     };
   }
@@ -151,9 +144,5 @@ export class Client {
 
   private notifyServer(data: any) {
     this.airConsole.message(AirConsole.SCREEN, data);
-  }
-
-  getTime(): number {
-    return this.serverData.timerValueInSeconds;
   }
 }
