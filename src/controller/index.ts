@@ -64,7 +64,7 @@ class Controller {
       case 'game':
         this.showView(Views.playscreen);
         this.joystick.start();
-        this.shake.listen();
+        this.shakeController.listen();
         break;
       default:
         console.error("not implemented", view);
