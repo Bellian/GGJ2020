@@ -5,6 +5,10 @@
   font-style: normal;
 }
 
+html, body {
+  overflow: hidden;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -34,11 +38,11 @@ default.visible {
 default h1 {
   font-family: "EraserRegular";
   font-size: 44px;
-  width: 600px;
+  max-width: 600px;
   text-align: center;
   line-height: 70px;
   margin: auto;
-  padding: 60px 0 0 0;
+  padding: 60px 20px 0 20px;
   color: white;
 }
 
@@ -55,17 +59,34 @@ default button {
   font-weight: 1000;
 }
 
+@media screen and (max-width: 380px) {
+  default button {
+    padding: 20px 20px;
+  }
+}
+
 splashscreen {
   display: none;
   justify-content: space-between;
+  flex-wrap: wrap;
   width: 100vw;
   height: 100vh;
   background: #cd9fce;
-  padding: 60px 60px 0 60px;
+  padding: 20px 40px 0 40px;
+}
+
+@media screen and (max-width: 380px) {
+  splashscreen {
+    padding: 60px 40px 0 40px;
+  }
 }
 
 splashscreen.visible {
   display: flex;
+}
+
+splashscreen left {
+  max-width: 210px;
 }
 
 splashscreen left h1 {
@@ -81,12 +102,44 @@ splashscreen left h1 small {
   padding: 20px 0 0 0;
 }
 
+@media screen and (max-width: 380px) {
+  splashscreen left h1 small {
+    display: none;
+  }
+}
+
+@media screen and (max-height: 380px) {
+  splashscreen left h1 small {
+    display: none;
+  }
+}
+
 splashscreen left time {
   color: #006e50;
   font-family: "EraserRegular";
   display: block;
   font-size: 100px;
   padding: 18px 0;
+}
+
+@media screen and (max-width: 380px) {
+  splashscreen left time {
+    font-size: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 20px;
+  }
+}
+
+@media screen and (max-height: 380px) {
+  splashscreen left time {
+    font-size: 20px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 20px;
+  }
 }
 
 splashscreen right selectheinzel {
@@ -99,9 +152,21 @@ splashscreen right selectheinzel {
   transition: border 0.3s ease-in-out;
 }
 
+@media screen and (max-width: 380px) {
+  splashscreen right selectheinzel {
+    width: 100%;
+  }
+}
+
 splashscreen right selectheinzel img {
   width: 100px;
   padding: 10px;
+}
+
+@media screen and (max-width: 380px) {
+  splashscreen right selectheinzel img {
+    width: 90px;
+  }
 }
 
 splashscreen right selectheinzel img.selected {

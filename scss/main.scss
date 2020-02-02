@@ -7,7 +7,9 @@ $EraserRegular: 'EraserRegular';
   font-weight: normal;
   font-style: normal;
 }
-
+html,body{
+  overflow: hidden;
+}
 *{
   margin: 0;
   padding: 0;
@@ -34,11 +36,11 @@ default{
   h1{
     font-family: $EraserRegular;
     font-size: 44px;
-    width: 600px;
+    max-width: 600px;
     text-align: center;
     line-height: 70px;
     margin: auto;
-    padding: 60px 0 0 0;
+    padding: 60px 20px 0 20px;
     color: white;
   }
   button{
@@ -52,20 +54,28 @@ default{
     color: $background;
     font-size: 56px;
     font-weight: 1000;
+    @media screen and (max-width: 380px) {
+      padding: 20px 20px;
+    }
   }
 }
 
 splashscreen{
   display: none;
   justify-content: space-between;
+  flex-wrap: wrap;
   width: 100vw;
   height: 100vh;
   background: $background;
-  padding: 60px 60px 0 60px;
+  padding: 20px 40px 0 40px;
+  @media screen and (max-width: 380px) {
+    padding: 60px 40px 0 40px;
+  }
   &.visible{
     display: flex;
   }
   left{
+    max-width: 210px;
     h1{
       font-family: $EraserRegular;
       color: black;
@@ -75,6 +85,12 @@ splashscreen{
         color: $green;
         font-size: 33px;
         padding: 20px 0 0 0;
+        @media screen and (max-width: 380px) {
+          display: none;
+        }
+        @media screen and (max-height: 380px) {
+          display: none;
+        }
       }
     }
     time{
@@ -83,6 +99,20 @@ splashscreen{
       display: block;
       font-size: 100px;
       padding: 18px 0;
+        @media screen and (max-width: 380px) {
+          font-size: 20px;
+          position: absolute;
+          top: 0;
+          left: 0;
+          padding: 20px;
+        }
+        @media screen and (max-height: 380px) {
+          font-size: 20px;
+          position: absolute;
+          top: 0;
+          right: 0;
+          padding: 20px;
+        }
     }
   }
   right{
@@ -94,9 +124,15 @@ splashscreen{
       padding: 20px 0 10px 10px;
       border: 0px solid white;
       transition: border 0.3s ease-in-out;
+      @media screen and (max-width: 380px) {
+        width: 100%;
+      }
       img{
         width: 100px;
         padding: 10px;
+        @media screen and (max-width: 380px) {
+          width: 90px;
+        }
         &.selected{
           border: 8px solid white;
         }
