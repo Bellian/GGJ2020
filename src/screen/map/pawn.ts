@@ -5,18 +5,16 @@ import { LevelMap } from "./levelMap";
 import { vec2 } from "gl-matrix";
 
 export class Pawn extends LevelObject {
+  radius: number = 10;
+  direction: string = "down";
+
   constructor(
     levelMap: LevelMap,
     position: vec2,
-    isAngryDad: boolean,
     meta?: any
   ) {
     super(levelMap, position, meta);
-    this.isAngryDad = isAngryDad;
   }
-  radius: number = 10;
-  direction: string = "down";
-  isAngryDad: boolean;
   createPysics() {
     this.hitBox = Bodies.circle(this.position[0], this.position[1], 10, {
         collisionFilter: {
@@ -36,8 +34,9 @@ export class Pawn extends LevelObject {
   }
 
   render(): HTMLElement {
+      console.log('render', this.meta.isAngryDad);
     const view = super.render();
-    view.classList.add("pawn", this.isAngryDad ? "angryDad" : "heinzel");
+    view.classList.add("pawn", this.meta.isAngryDad ? "angryDad" : "heinzel");
     return view;
   }
 }

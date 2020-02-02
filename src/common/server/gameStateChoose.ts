@@ -48,7 +48,6 @@ export class GameStateChoose extends GameState {
         const candidates = devices.filter(
             e => e.customStateData && e.customStateData.wantAngry
         );
-        devices.map(d => d.customStateData.isAngryDad = false);
         if (candidates.length === 0) {
             // fuck u all and pick random
             angry = devices[Math.floor(devices.length * Math.random())];
@@ -59,7 +58,6 @@ export class GameStateChoose extends GameState {
         console.log("candidates:", candidates);
         console.log("devices:", devices);
         console.log("and the winner is:", angry);
-        angry.customStateData.isAngryDad = true;
 
         super.exit(angry);
     }

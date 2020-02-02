@@ -135,7 +135,7 @@ export class GameStateGame extends GameState {
                 .forEach(e => {
                     if (!this.players.has(e)) {
                         console.log("create player for:", e.deviceId);
-                        let player = new Player(level, vec2.clone(spawnpoints[index].position), Pawn, false);
+                        let player = new Player(level, vec2.clone(spawnpoints[index].position), Pawn, e.deviceId === this.data.deviceId);
                         this.players.set(e, player);
                         if (e === this.data) {
                             level.setCameraPosition(player.pawn.position);

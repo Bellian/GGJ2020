@@ -80,12 +80,12 @@ export class Client {
               return;
             }
             if (!this.players.has(device)) {
-              console.log("create player for:", device.deviceId);
+              console.log("create player for:", device.deviceId, device.deviceId === state.angry);
               let player = new Player(
                 level,
                 vec2.fromValues(-5000, -5000),
                 Pawn,
-                device.customStateData.isAngryDad
+                device.deviceId === state.angry
               );
               player.pawn.viewUpdate();
               if (device.deviceId === myDeviceId) {

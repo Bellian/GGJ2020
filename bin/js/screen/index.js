@@ -18449,8 +18449,8 @@ var Client = /** @class */ (function () {
                             return;
                         }
                         if (!_this.players.has(device)) {
-                            console.log("create player for:", device.deviceId);
-                            var player = new player_1.Player(level_1, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default, device.customStateData.isAngryDad);
+                            console.log("create player for:", device.deviceId, device.deviceId === state.angry);
+                            var player = new player_1.Player(level_1, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default, device.deviceId === state.angry);
                             player.pawn.viewUpdate();
                             if (device.deviceId === myDeviceId_1) {
                                 level_1.setCameraPosition(player.position);
@@ -18935,7 +18935,6 @@ var GameStateChoose = /** @class */ (function (_super) {
         console.log("candidates:", candidates);
         console.log("devices:", devices);
         console.log("and the winner is:", angry);
-        angry.customStateData.isAngryDad = true;
         _super.prototype.exit.call(this, angry);
     };
     GameStateChoose.prototype.startTimer = function () {
@@ -19078,7 +19077,7 @@ var GameStateGame = /** @class */ (function (_super) {
                 .forEach(function (e) {
                 if (!_this.players.has(e)) {
                     console.log("create player for:", e.deviceId);
-                    var player = new player_1.default(level, gl_matrix_1.vec2.clone(spawnpoints[index].position), pawn_1.default, false);
+                    var player = new player_1.default(level, gl_matrix_1.vec2.clone(spawnpoints[index].position), pawn_1.default, e.deviceId === _this.data.deviceId);
                     _this.players.set(e, player);
                     if (e === _this.data) {
                         level.setCameraPosition(player.pawn.position);
@@ -19618,11 +19617,10 @@ var matter_js_1 = require("matter-js");
 var physicsEngine_1 = require("../physicsEngine");
 var Pawn = /** @class */ (function (_super) {
     __extends(Pawn, _super);
-    function Pawn(levelMap, position, isAngryDad, meta) {
+    function Pawn(levelMap, position, meta) {
         var _this = _super.call(this, levelMap, position, meta) || this;
         _this.radius = 10;
         _this.direction = "down";
-        _this.isAngryDad = isAngryDad;
         return _this;
     }
     Pawn.prototype.createPysics = function () {
@@ -19642,8 +19640,9 @@ var Pawn = /** @class */ (function (_super) {
         this.direction = direction;
     };
     Pawn.prototype.render = function () {
+        console.log('render', this.meta.isAngryDad);
         var view = _super.prototype.render.call(this);
-        view.classList.add("pawn", this.isAngryDad ? "angryDad" : "heinzel");
+        view.classList.add("pawn", this.meta.isAngryDad ? "angryDad" : "heinzel");
         return view;
     };
     return Pawn;
@@ -19714,7 +19713,7 @@ var Player = /** @class */ (function (_super) {
         _this.pawnClass = pawnClass;
         _this.move = new Set();
         _this.canTick = true;
-        _this.pawn = new pawnClass(levelMap, gl_matrix_1.vec2.clone(position), isAngryDad);
+        _this.pawn = new pawnClass(levelMap, gl_matrix_1.vec2.clone(position), { isAngryDad: isAngryDad });
         return _this;
         // this.registerInput();
     }

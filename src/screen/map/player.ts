@@ -20,7 +20,7 @@ export class Player extends LevelObject {
         isAngryDad: boolean
     ) {
         super(levelMap, position);
-        this.pawn = new pawnClass(levelMap, vec2.clone(position), isAngryDad);
+        this.pawn = new pawnClass(levelMap, vec2.clone(position), {isAngryDad});
 
         // this.registerInput();
     }
