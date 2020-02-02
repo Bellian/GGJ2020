@@ -108,16 +108,6 @@
         "size": [10, 60]
       }
     },
-    {
-      "type": "wall", "pos": [105, 349], "meta": {
-        "size": [170, 10]
-      }
-    },
-    {
-      "type": "wall", "pos": [85, 320], "meta": {
-        "size": [170, 10]
-      }
-    },
 
 
     {
@@ -229,6 +219,44 @@
         "class": ["ggj"]
       }
     }
+
+    ,{
+      "type": "asset", "pos": [350, 385], "meta": {
+        "size": [40, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["bilderrahmen"]
+      }
+    }
+
+    ,{
+      "type": "asset", "pos": [440, 385], "meta": {
+        "size": [40, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["sofa"]
+      }
+    }
+
+    ,{
+      "type": "asset", "pos": [450, 210], "meta": {
+        "size": [40, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["candle"]
+      }
+    }
+
+    ,{
+      "type": "asset", "pos": [70, 295], "meta": {
+        "size": [40, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["meme1"]
+      }
+    }
+
+
 
   ]
 }

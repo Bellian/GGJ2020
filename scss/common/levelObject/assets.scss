@@ -10,7 +10,6 @@
     position: absolute;
     width: 20px;
     height: 20px;
-    border-radius: 50%;
 
     transform: translate(-50%, -50%) rotateX(-90deg) translateY(-50%);
     top: 50%;
@@ -32,6 +31,40 @@
     }
     &.destroyed::before {
       background: url(../assets/sink_000.svg);
+    }
+  }
+
+  &.bilderrahmen {
+    width: 0px;
+    height: 0px;
+
+    &::before {
+      width: 40px;
+      height: 40px;
+      background: url(../assets/bilderrahmen_100.svg);
+    }
+    &.littledamage::before {
+      background: url(../assets/bilderrahmen_050.svg);
+    }
+    &.destroyed::before {
+      background: url(../assets/bilderrahmen_000.svg);
+    }
+  }
+
+  &.sofa {
+    width: 0px;
+    height: 0px;
+
+    &::before {
+      width: 40px;
+      height: 40px;
+      background: url(../assets/sofa_100.svg);
+    }
+    &.littledamage::before {
+      background: url(../assets/sofa_050.svg);
+    }
+    &.destroyed::before {
+      background: url(../assets/sofa_000.svg);
     }
   }
 
@@ -72,4 +105,44 @@
       background: url(../assets/kommode_000.svg);
     }
   }
+
+  &.candle {
+    width: 0px;
+    height: 0px;
+
+    &::before {
+      width: 60px;
+      height: 60px;
+      transform: translate(-50%, -50%) rotateX(-90deg) translateY(-28%);
+      background: url(../assets/candle_100.svg);
+    }
+    &.littledamage::before {
+      background: url(../assets/candle_050.svg);
+    }
+    &.destroyed::before {
+      background: url(../assets/candle_000.svg);
+    }
+  }
+
+  &.meme1 {
+    width: 0px;
+    height: 0px;
+
+    &::before {
+      width: 60px;
+      height: 90px;
+      transform: translate(-50%, -50%) rotateX(-90deg) translateY(-28%);
+      background: url(../assets/meme1_100.jpg);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    &.littledamage::before {
+      background: url(../assets/meme1_050.jpg);
+    }
+    &.destroyed::before {
+      background: url(../assets/meme1_000.jpg);
+    }
+  }
+
 }
