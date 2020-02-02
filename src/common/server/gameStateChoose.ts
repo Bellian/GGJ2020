@@ -20,6 +20,13 @@ export class GameStateChoose extends GameState {
     }
 
     enter() {
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key.toLowerCase() === 's'){
+                this.timerStarted = 0;
+            }
+        })
+        
         this.startTimer();
         this.server.airConsole.broadcast({
             action: "updateState",

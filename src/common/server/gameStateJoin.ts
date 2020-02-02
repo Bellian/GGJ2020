@@ -25,6 +25,13 @@ export class GameStateJoin extends GameState {
     }
 
     enter(){
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key.toLowerCase() === 's'){
+                this.timerStarted = 0;
+            }
+        })
+        
         this.deviceJoinedCallback = eventListener.on('deviceJoined', (device) => {
             if(!this.timerStarted){
                 this.startTimer();

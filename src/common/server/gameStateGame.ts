@@ -15,7 +15,7 @@ import { GameStateEnd } from "./gameStateEnd";
 
 const eventListener = EventListener.get();
 const gameTime = 1200000;
-const forceDefault = 0.001;
+const forceDefault = 1;
 
 let tmp = vec2.create();
 
@@ -90,10 +90,16 @@ export class GameStateGame extends GameState {
 
                 vec2.scale(tmp, tmp, length);
 
+                Body.setVelocity(player.pawn.hitBox!, {
+                    x: tmp[0] * forceDefault,
+                    y: -tmp[1] * forceDefault,
+                })
+                /*
                 Body.applyForce(player.pawn.hitBox!, player.pawn.hitBox!.position, {
                     x: tmp[0] * forceDefault,
                     y: -tmp[1] * forceDefault,
                 });
+                */
                 Body.setPosition(player.pawn.interactionHitbox, player.pawn.hitBox?.position!)
                 Body.setPosition(player.pawn.killHitbox, player.pawn.hitBox?.position!)
 
@@ -109,6 +115,11 @@ export class GameStateGame extends GameState {
     }
 
     enter() {
+        window.addEventListener('keydown', (e) => {
+            if(e.key.toLowerCase() === 's'){
+                this.timerStarted = 0;
+            }
+        })
         this.server.airConsole.broadcast({
             action: "updateState",
             data: {
