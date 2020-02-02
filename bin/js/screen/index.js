@@ -18658,8 +18658,16 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
+var gl_matrix_1 = require("gl-matrix");
 __export(require("./client"));
 __export(require("./server"));
+var a = {
+    action: 'updateControllerData',
+    data: {
+        doesAction: false,
+        moveDirection: gl_matrix_1.vec2.fromValues(23, -55)
+    }
+};
 var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
@@ -18739,7 +18747,7 @@ exports.ObjectData = ObjectData;
 
 
 
-},{"./client":14,"./server":19}],19:[function(require,module,exports){
+},{"./client":14,"./server":19,"gl-matrix":2}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
@@ -19005,6 +19013,7 @@ document.addEventListener('DOMContentLoaded', function () {
     physicsEngine_1.default.init();
     var server = new server_1.Server();
     /*
+
     const level = new LevelMap('../level/level1.json', document.body);
 
     level.wait.then(() => {
@@ -19013,6 +19022,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Engine.start();
 
     })
+    
     */
 });
 
