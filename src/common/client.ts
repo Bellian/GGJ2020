@@ -60,6 +60,10 @@ export class Client {
           })
         }
 
+        if(state.state === 'game') {
+          // prepare stuff for game state
+        }
+
       });
 
 

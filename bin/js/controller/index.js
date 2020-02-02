@@ -36,6 +36,9 @@ var Client = /** @class */ (function () {
                         wantAngry: Math.random() > 0.5,
                     });
                 }
+                if (state.state === 'game') {
+                    // prepare stuff for game state
+                }
             });
         });
     }
@@ -400,25 +403,6 @@ var Server = /** @class */ (function () {
                 newDevice.updateCustomState(data);
             }
         };
-    };
-    Server.prototype.sendPlayerData = function () {
-        // console.table(this.playerData);
-        this.sendAllClients({
-            transactionType: index_1.TransactionType.PlayerData,
-            playerData: this.playerData
-        });
-    };
-    Server.prototype.sendObjectData = function () {
-        this.sendAllClients({
-            transactionType: index_1.TransactionType.ObjectData,
-            objectData: this.objectData
-        });
-    };
-    Server.prototype.sendServerData = function () {
-        this.sendAllClients({
-            transactionType: index_1.TransactionType.ServerData,
-            serverData: this.serverData
-        });
     };
     return Server;
 }());

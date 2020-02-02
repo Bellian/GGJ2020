@@ -105,38 +105,7 @@ export class Server {
       }
     };
   }
+  
 
 
-
-
-
-
-
-
-
-
-
-
-
-  sendPlayerData() {
-    // console.table(this.playerData);
-    this.sendAllClients({
-      transactionType: TransactionType.PlayerData,
-      playerData: this.playerData
-    });
-  }
-
-  sendObjectData() {
-    this.sendAllClients({
-      transactionType: TransactionType.ObjectData,
-      objectData: this.objectData
-    });
-  }
-
-  sendServerData() {
-    this.sendAllClients({
-      transactionType: TransactionType.ServerData,
-      serverData: this.serverData
-    });
-  }
 }
