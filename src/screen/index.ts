@@ -2,7 +2,9 @@ import { LevelMap } from "./map/levelMap";
 import Engine from './physicsEngine';
 import Authority from "../common/authority";
 import { Server } from "../common/server";
+import { glMatrix } from "gl-matrix";
 
+glMatrix.setMatrixArrayType(Array);
 Authority.get().requestAuthority();
 
 document.addEventListener('DOMContentLoaded', () => {

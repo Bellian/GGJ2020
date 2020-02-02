@@ -5,9 +5,10 @@ import {
   Server,
   ServerData
 } from "../common/index";
-
+import {glMatrix} from 'gl-matrix'
 import {EventListener} from '../common/eventListener';
 
+glMatrix.setMatrixArrayType(Array);
 const eventListener = EventListener.get();
 
 export enum Views {
