@@ -18955,6 +18955,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
@@ -18963,6 +18974,9 @@ var connectedDevice_1 = require("../connectedDevice");
 var levelMap_1 = require("../../screen/map/levelMap");
 var gl_matrix_1 = require("gl-matrix");
 var physicsEngine_1 = require("../../screen/physicsEngine");
+var spawnpoint_1 = require("../../screen/map/spawnpoint");
+var player_1 = require("../../screen/map/player");
+var pawn_1 = require("../../screen/map/pawn");
 var eventListener = eventListener_1.EventListener.get();
 var gameTime = 120000;
 var GameStateGame = /** @class */ (function (_super) {
@@ -18970,6 +18984,7 @@ var GameStateGame = /** @class */ (function (_super) {
     function GameStateGame(server, data) {
         var _this = _super.call(this, server, data) || this;
         _this.nextState = gameStateChoose_1.GameStateChoose;
+        _this.players = new Map();
         return _this;
     }
     GameStateGame.prototype.tick = function (delta) {
@@ -18978,7 +18993,7 @@ var GameStateGame = /** @class */ (function (_super) {
         }
         var timeLeft = gameTime - (Date.now() - this.timerStarted);
         if (timeLeft <= 0) {
-            console.log('game is over, angry man won');
+            console.log("game is over, angry man won");
             this.exit();
         }
     };
@@ -18986,54 +19001,84 @@ var GameStateGame = /** @class */ (function (_super) {
         var _this = this;
         this.startTimer();
         this.server.airConsole.broadcast({
-            action: 'updateState',
+            action: "updateState",
             data: {
-                state: 'game',
+                state: "game",
                 timerStarted: this.timerStarted,
-                duration: gameTime,
+                duration: gameTime
             }
         });
-        console.log('is angry:', this.data);
-        eventListener.on('CLIENT_updateControllerData', function (data) {
+        console.log("is angry:", this.data);
+        eventListener.on("CLIENT_updateControllerData", function (data) {
             console.log(data.from, data.doesAction, data.moveDirection);
+        });
+        connectedDevice_1.getAllDevices()
+            .filter(function (e) { return e.deviceId !== 0; })
+            .forEach(function (e) {
+            if (!_this.players.has(e)) {
+                console.log("create player for:", e.deviceId);
+                var player = new player_1.default(level, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default);
+                player.pawn.viewUpdate();
+                _this.players.set(e, player);
+            }
         });
         this.updateInterval = setInterval(function () {
             var result = {};
-            connectedDevice_1.getAllDevices().filter(function (e) { return e.deviceId !== 0; }).forEach(function (e) {
+            connectedDevice_1.getAllDevices()
+                .filter(function (e) { return e.deviceId !== 0; })
+                .forEach(function (e) {
+                var player = _this.players.get(e);
                 result[e.deviceId] = {
-                    position: gl_matrix_1.vec2.create(),
-                    direction: 'left'
+                    position: player.pawn.position,
+                    direction: player.pawn.direction
                 };
             });
             _this.server.airConsole.broadcast({
-                action: 'updatePlayer',
-                data: result,
+                action: "updatePlayer",
+                data: result
             });
         }, 1000 / 24);
         physicsEngine_1.PhysicsEngine.init();
-        var level = new levelMap_1.LevelMap('../level/level1.json', document.body);
+        var level = new levelMap_1.LevelMap("../level/level1.json", document.body);
         level.wait.then(function () {
+            var e_1, _a;
             // Engine.showDebugPlayer();
             physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();
-            /*
-            const spawnpoints = level.getAllLevelObjectsByType(Spawnpoint);
-            const devices = getAllDevices();
-            for(let i = 0; i < devices.length;i++) {
-                devices.
-                spawnpoints[i].position
+            var spawnpoints = level.getAllLevelObjectsByType(spawnpoint_1.default);
+            _this.shuffle(spawnpoints);
+            _this.shuffle(spawnpoints);
+            _this.shuffle(spawnpoints);
+            var index = 0;
+            try {
+                for (var _b = __values(_this.players.keys()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var key = _c.value;
+                    var player = _this.players.get(key);
+                    player.position = spawnpoints[index].position;
+                    _this.players.set(key, player);
+                    index++;
+                }
             }
-            */
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
         });
     };
     GameStateGame.prototype.exit = function () {
-        eventListener.off('CLIENT_updateControllerData');
+        eventListener.off("CLIENT_updateControllerData");
         clearInterval(this.updateInterval);
         _super.prototype.exit.call(this);
     };
     GameStateGame.prototype.startTimer = function () {
-        console.log('game started');
+        console.log("game started");
         this.timerStarted = Date.now();
+    };
+    GameStateGame.prototype.shuffle = function (array) {
+        array.sort(function () { return Math.random() - 0.5; });
     };
     return GameStateGame;
 }(gameState_1.GameState));
@@ -19041,7 +19086,7 @@ exports.GameStateGame = GameStateGame;
 
 
 
-},{"../../screen/map/levelMap":27,"../../screen/physicsEngine":34,"../connectedDevice":15,"../eventListener":17,"./gameState":20,"./gameStateChoose":21,"gl-matrix":2}],23:[function(require,module,exports){
+},{"../../screen/map/levelMap":27,"../../screen/map/pawn":29,"../../screen/map/player":31,"../../screen/map/spawnpoint":32,"../../screen/physicsEngine":34,"../connectedDevice":15,"../eventListener":17,"./gameState":20,"./gameStateChoose":21,"gl-matrix":2}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19625,6 +19670,7 @@ var Pawn = /** @class */ (function (_super) {
     function Pawn() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.radius = 10;
+        _this.direction = "down";
         return _this;
     }
     Pawn.prototype.createPysics = function () {
@@ -19634,14 +19680,14 @@ var Pawn = /** @class */ (function (_super) {
         });
         matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
     };
-    ;
     Pawn.prototype.move = function (direction) {
-        this.view.classList.remove('up', 'down', 'left', 'right');
+        this.view.classList.remove("up", "down", "left", "right");
         this.view.classList.add(direction);
+        this.direction = direction;
     };
     Pawn.prototype.render = function () {
         var view = _super.prototype.render.call(this);
-        view.classList.add('pawn', 'heinzel');
+        view.classList.add("pawn", "heinzel");
         return view;
     };
     return Pawn;
