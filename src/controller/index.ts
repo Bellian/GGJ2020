@@ -22,23 +22,16 @@ interface JoyStickPosition{
 }
 
 class Controller {
-  private startPos: [number, number] | undefined = undefined;
+  private joystick:Joystick;
   constructor(private client: Client) {
-    eventListener.on('SERVER_updateState', (state: any) => {
-      console.log('game state changed', state.state);
-      this.updateView(state.state);
+    this.joystick = new Joystick(client);
+    this.onUpdateView();
+  }
+
+  private onUpdateView(){
+    eventListener.on('SERVER_updateState', (view: any) => {
+      this.updateView(view.state);
     });
-  }
-
-
-  // Joystick event handling
-  joystickMoveCallbacks: Set<(joystickPosition: JoyStickPosition) => void> = new Set();
-  onJoystickMove(cb: (joystickPosition: JoyStickPosition) => void) {
-    this.joystickMoveCallbacks.add(cb);
-  }
-
-  private updateJoystickPosition(joystickPosition:JoyStickPosition) {
-    this.joystickMoveCallbacks.forEach(e => e(joystickPosition));
   }
 
   // displays the current used view
@@ -62,35 +55,11 @@ class Controller {
         break;
       case 'game':
         this.showView(Views.playscreen);
-        this.virtualController();
+        this.joystick.start();
         break;
       default:
         console.error("not implemented", view);
     }
-  }
-
-  // start the virtual controller
-  private virtualController() {
-    document
-      .querySelectorAll("playscreen > controller")[0]
-      .addEventListener("touchstart", ev => {
-        this.startPos = [
-          (ev as TouchEvent).targetTouches[0].clientX,
-          (ev as TouchEvent).targetTouches[0].clientY
-        ];
-      });
-    document
-      .querySelectorAll("playscreen > controller")[0]
-      .addEventListener("touchmove", ev => {
-        if (this.startPos !== undefined) {
-          this.updateJoystickPosition({x:((ev as TouchEvent).targetTouches[0].clientX - this.startPos[0]),y:-((ev as TouchEvent).targetTouches[0].clientY - this.startPos[1])});
-        }
-      });
-    document
-      .querySelectorAll("playscreen > controller")[0]
-      .addEventListener("touchend", ev => {
-        this.startPos = undefined;
-      });
   }
 
   // start the time for the lobby
@@ -123,14 +92,55 @@ class Controller {
       }
     }, 1000);
   }
+
+}
+
+class Joystick{
+  private startPos: [number, number] | undefined = undefined;
+  constructor(private client:Client){} //dont forget to start the joystick!
+  // Joystick event handling
+  private joystickMoveCallbacks: Set<(joystickPosition: JoyStickPosition) => void> = new Set();
+  private onJoystickMove(cb: (joystickPosition: JoyStickPosition) => void) {
+    this.joystickMoveCallbacks.add(cb);
+  }
+
+  private updateJoystickPosition(joystickPosition:JoyStickPosition) {
+    this.joystickMoveCallbacks.forEach(e => e(joystickPosition));
+  }
+
+  private sendJoystickData(){
+    this.onJoystickMove((pos)=>{
+      this.client.moveAndInteract(pos.x, pos.y, false);
+    });
+  }
+
+  // start the virtual controller
+  start() {
+    this.sendJoystickData();
+    document
+      .querySelectorAll("playscreen > controller")[0]
+      .addEventListener("touchstart", ev => {
+        this.startPos = [
+          (ev as TouchEvent).targetTouches[0].clientX,
+          (ev as TouchEvent).targetTouches[0].clientY
+        ];
+      });
+    document
+      .querySelectorAll("playscreen > controller")[0]
+      .addEventListener("touchmove", ev => {
+        if (this.startPos !== undefined) {
+          this.updateJoystickPosition({x:((ev as TouchEvent).targetTouches[0].clientX - this.startPos[0]),y:-((ev as TouchEvent).targetTouches[0].clientY - this.startPos[1])});
+        }
+      });
+    document
+      .querySelectorAll("playscreen > controller")[0]
+      .addEventListener("touchend", ev => {
+        this.startPos = undefined;
+      });
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   let client: Client = new Client();
   let controller = new Controller(client);
-  controller.onJoystickMove((pos)=>{
-    console.log(pos);
-  });
-  //let test = new ServerData(30, ServerState.lobby);
-  //controller.updateView(test);
 });

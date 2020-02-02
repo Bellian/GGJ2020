@@ -8103,16 +8103,16 @@ var Client = /** @class */ (function () {
             }
         };
     };
-    //todo
-    // changeAppearance(
-    //   appearance: CharacterAppearanceType
-    // ): CharacterAppearanceType {
-    //   let currentPlayer = this.currentPlayerData();
-    //   currentPlayer.characterAppearanceType = appearance;
-    //   this.notifyServer(currentPlayer);
-    //   return currentPlayer.characterAppearanceType;
-    // }
-    Client.prototype.moveAndInteracting = function (x, y, isInteracting) {
+    Client.prototype.changeAppearance = function (appearance) {
+        var controllerUpdate = {
+            action: "updateCharacterAppearance",
+            data: {
+                appearance: appearance
+            }
+        };
+        this.notifyServer(controllerUpdate);
+    };
+    Client.prototype.moveAndInteract = function (x, y, isInteracting) {
         if (isInteracting === void 0) { isInteracting = false; }
         var controllerUpdate = {
             action: "updateControllerData",
@@ -8135,7 +8135,7 @@ exports.Client = Client;
 
 
 
-},{"./connectedDevice":13,"./eventListener":14,"./index":15}],13:[function(require,module,exports){
+},{"./connectedDevice":13,"./eventListener":14,"./index":15,"gl-matrix":2}],13:[function(require,module,exports){
 "use strict";
 var __spreadArrays = (this && this.__spreadArrays) || function () {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
@@ -8235,16 +8235,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-var gl_matrix_1 = require("gl-matrix");
 __export(require("./client"));
 __export(require("./server"));
-var a = {
-    action: 'updateControllerData',
-    data: {
-        doesAction: false,
-        moveDirection: gl_matrix_1.vec2.fromValues(23, -55)
-    }
-};
 var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
@@ -8324,7 +8316,7 @@ exports.ObjectData = ObjectData;
 
 
 
-},{"./client":12,"./server":16,"gl-matrix":2}],16:[function(require,module,exports){
+},{"./client":12,"./server":16}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
@@ -8403,7 +8395,7 @@ exports.Server = Server;
 
 
 
-},{"./connectedDevice":13,"./eventListener":14,"./index":15,"./server/gameStateJoin":19}],17:[function(require,module,exports){
+},{"./connectedDevice":13,"./eventListener":14,"./index":15,"./server/gameStateJoin":20}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("../eventListener");
@@ -8510,7 +8502,7 @@ exports.GameStateChoose = GameStateChoose;
 
 
 
-},{"../connectedDevice":13,"../eventListener":14,"./gameState":17}],19:[function(require,module,exports){
+},{"../connectedDevice":13,"../eventListener":14,"./gameState":17,"./gameStateGame":19}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -8643,7 +8635,7 @@ exports.GameStateJoin = GameStateJoin;
 
 
 
-},{"../eventListener":14,"./gameState":17,"./gameStateChoose":18}],20:[function(require,module,exports){
+},{"../eventListener":14,"./gameState":17,"./gameStateChoose":18}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../common/index");
@@ -8657,21 +8649,15 @@ var Views;
 })(Views = exports.Views || (exports.Views = {}));
 var Controller = /** @class */ (function () {
     function Controller(client) {
-        var _this = this;
         this.client = client;
-        this.startPos = undefined;
-        // Joystick event handling
-        this.joystickMoveCallbacks = new Set();
-        eventListener.on('SERVER_updateState', function (state) {
-            console.log('game state changed', state.state);
-            _this.updateView(state.state);
-        });
+        this.joystick = new Joystick(client);
+        this.onUpdateView();
     }
-    Controller.prototype.onJoystickMove = function (cb) {
-        this.joystickMoveCallbacks.add(cb);
-    };
-    Controller.prototype.updateJoystickPosition = function (joystickPosition) {
-        this.joystickMoveCallbacks.forEach(function (e) { return e(joystickPosition); });
+    Controller.prototype.onUpdateView = function () {
+        var _this = this;
+        eventListener.on('SERVER_updateState', function (view) {
+            _this.updateView(view.state);
+        });
     };
     // displays the current used view
     Controller.prototype.showView = function (view) {
@@ -8691,35 +8677,11 @@ var Controller = /** @class */ (function () {
                 break;
             case 'game':
                 this.showView(Views.playscreen);
-                this.virtualController();
+                this.joystick.start();
                 break;
             default:
                 console.error("not implemented", view);
         }
-    };
-    // start the virtual controller
-    Controller.prototype.virtualController = function () {
-        var _this = this;
-        document
-            .querySelectorAll("playscreen > controller")[0]
-            .addEventListener("touchstart", function (ev) {
-            _this.startPos = [
-                ev.targetTouches[0].clientX,
-                ev.targetTouches[0].clientY
-            ];
-        });
-        document
-            .querySelectorAll("playscreen > controller")[0]
-            .addEventListener("touchmove", function (ev) {
-            if (_this.startPos !== undefined) {
-                _this.updateJoystickPosition({ x: (ev.targetTouches[0].clientX - _this.startPos[0]), y: -(ev.targetTouches[0].clientY - _this.startPos[1]) });
-            }
-        });
-        document
-            .querySelectorAll("playscreen > controller")[0]
-            .addEventListener("touchend", function (ev) {
-            _this.startPos = undefined;
-        });
     };
     // start the time for the lobby
     Controller.prototype.lobby = function () {
@@ -8753,18 +8715,59 @@ var Controller = /** @class */ (function () {
     };
     return Controller;
 }());
+var Joystick = /** @class */ (function () {
+    function Joystick(client) {
+        this.client = client;
+        this.startPos = undefined;
+        // Joystick event handling
+        this.joystickMoveCallbacks = new Set();
+    } //dont forget to start the joystick!
+    Joystick.prototype.onJoystickMove = function (cb) {
+        this.joystickMoveCallbacks.add(cb);
+    };
+    Joystick.prototype.updateJoystickPosition = function (joystickPosition) {
+        this.joystickMoveCallbacks.forEach(function (e) { return e(joystickPosition); });
+    };
+    Joystick.prototype.sendJoystickData = function () {
+        var _this = this;
+        this.onJoystickMove(function (pos) {
+            _this.client.moveAndInteract(pos.x, pos.y, false);
+        });
+    };
+    // start the virtual controller
+    Joystick.prototype.start = function () {
+        var _this = this;
+        this.sendJoystickData();
+        document
+            .querySelectorAll("playscreen > controller")[0]
+            .addEventListener("touchstart", function (ev) {
+            _this.startPos = [
+                ev.targetTouches[0].clientX,
+                ev.targetTouches[0].clientY
+            ];
+        });
+        document
+            .querySelectorAll("playscreen > controller")[0]
+            .addEventListener("touchmove", function (ev) {
+            if (_this.startPos !== undefined) {
+                _this.updateJoystickPosition({ x: (ev.targetTouches[0].clientX - _this.startPos[0]), y: -(ev.targetTouches[0].clientY - _this.startPos[1]) });
+            }
+        });
+        document
+            .querySelectorAll("playscreen > controller")[0]
+            .addEventListener("touchend", function (ev) {
+            _this.startPos = undefined;
+        });
+    };
+    return Joystick;
+}());
 document.addEventListener("DOMContentLoaded", function () {
     var client = new index_1.Client();
     var controller = new Controller(client);
-    controller.onJoystickMove(function (pos) {
-        console.log(pos);
-    });
-    //let test = new ServerData(30, ServerState.lobby);
-    //controller.updateView(test);
 });
 
 
 
-},{"../common/eventListener":14,"../common/index":15}]},{},[20]);
+},{"../common/eventListener":14,"../common/index":15}]},{},[21]);
 
 //# sourceMappingURL=index.js.map
