@@ -10,7 +10,8 @@ import Spawnpoint from "../../screen/map/spawnpoint";
 import Player from "../../screen/map/player";
 import Pawn from "../../screen/map/pawn";
 import LevelObject from "../../screen/map/levelObject";
-import { Body } from "matter-js";
+import { Body, Events, Bodies } from "matter-js";
+import { GameStateEnd } from "./gameStateEnd";
 
 const eventListener = EventListener.get();
 const gameTime = 1200000;
@@ -19,7 +20,7 @@ const forceDefault = 0.001;
 let tmp = vec2.create();
 
 export class GameStateGame extends GameState {
-    nextState = GameStateChoose as any;
+    nextState = GameStateEnd as any;
     timerStarted!: number;
     updateInterval: any;
     players!: Map<ConnectedDevice, Player>;
@@ -45,9 +46,19 @@ export class GameStateGame extends GameState {
 
         const timeLeft = gameTime - (Date.now() - this.timerStarted);
         if (timeLeft <= 0) {
-            console.log("game is over, angry man won");
-            this.exit();
+            console.log("game is over, angry man lost");
+            this.exit(false);
         }
+        let alive = false;
+        this.players.forEach((player) => {
+            if(player !== this.players.get(this.data) && player.alive){
+                alive = true;
+            }
+        })
+        if(!alive){
+            this.exit(true);
+        }
+
         getAllDevices()
             .filter(device => device.deviceId !== 0)
             .forEach(device => {
@@ -83,6 +94,8 @@ export class GameStateGame extends GameState {
                     x: tmp[0] * forceDefault,
                     y: -tmp[1] * forceDefault,
                 });
+                Body.setPosition(player.pawn.interactionHitbox, player.pawn.hitBox?.position!)
+                Body.setPosition(player.pawn.killHitbox, player.pawn.hitBox?.position!)
 
                 player.position = vec2.fromValues(player.pawn.hitBox!.position.x, player.pawn.hitBox!.position.y);
 
@@ -107,6 +120,7 @@ export class GameStateGame extends GameState {
         });
 
         PhysicsEngine.init();
+        this.initCollision();
         const level = new LevelMap("../level/level1.json", document.body);
         this.level = level;
 
@@ -147,7 +161,7 @@ export class GameStateGame extends GameState {
             this.updateInterval = setInterval(() => {
                 const result: { [id: number]: any } = {};
                 getAllDevices()
-                    .filter(e => e.deviceId !== 0)
+                    .filter(e => e.deviceId !== 0 && this.players.get(e)?.alive)
                     .forEach(e => {
                         let player = this.players.get(e);
                         result[e.deviceId] = {
@@ -159,19 +173,64 @@ export class GameStateGame extends GameState {
                     action: "updatePlayer",
                     data: result
                 });
-            }, 1000 / 24);
+            }, 1000 / 15);
 
             // Engine.showDebugPlayer();
 
-            PhysicsEngine.showDebugRenderer(level);
+            // PhysicsEngine.showDebugRenderer(level);
             PhysicsEngine.start();
         });
     }
 
-    exit() {
+    initCollision(){
+        Events.on(PhysicsEngine.engine, 'collisionStart', (event) => {
+            var pairs = event.pairs;
+            
+            for (var i = 0, j = pairs.length; i != j; ++i) {
+                var pair = pairs[i];
+    
+                if (pair.bodyA === this.players.get(this.data)?.pawn.killHitbox) {
+                    getAllDevices().filter(e => e.deviceId !== 0 && e !== this.data).forEach(e => {
+                        if(pair.bodyB === this.players.get(e)?.pawn.killHitbox){
+                            console.log('angry man collided with player', e, pair.bodyA === pair.bodyB);
+                            this.players.get(e)!.alive = false;
+                            this.players.get(e)!.kill();
+                            this.server.airConsole.broadcast({
+                                action:'playerKilled',
+                                data: e.deviceId,
+                            })
+                        }
+                    })
+                }
+                if (pair.bodyB === this.players.get(this.data)?.pawn.killHitbox) {
+                    getAllDevices().filter(e => e.deviceId !== 0 && e !== this.data).forEach(e => {
+                        if(pair.bodyA === this.players.get(e)?.pawn.killHitbox){
+                            console.log('angry man collided with player', e, pair.bodyA === pair.bodyB);
+                            this.players.get(e)!.kill();
+                            this.server.airConsole.broadcast({
+                                action:'playerKilled',
+                                data: e.deviceId,
+                            })
+                        }
+                    })
+                }
+            }
+        });
+    
+        Events.on(PhysicsEngine.engine, 'collisionEnd', (event) => {
+            var pairs = event.pairs;
+            
+            for (var i = 0, j = pairs.length; i != j; ++i) {
+                
+            }
+        });
+    }
+
+
+    exit(data?: any) {
         eventListener.off("CLIENT_updateControllerData");
         clearInterval(this.updateInterval);
-        super.exit();
+        super.exit(data);
     }
 
     startTimer() {

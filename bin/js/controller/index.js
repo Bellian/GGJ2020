@@ -18590,6 +18590,10 @@ var Client = /** @class */ (function () {
                         }
                     });
                 });
+                eventListener.on('SERVER_playerKilled', function (data) {
+                    console.log('SERVER_playerKilled');
+                    _this.players.get(connectedDevice_1.getDevice(data)).kill();
+                });
                 eventListener.on("SERVER_updatePlayer", function (data) {
                     for (var key in data) {
                         var device = connectedDevice_1.getDevice(Number.parseInt(key));
@@ -18656,7 +18660,7 @@ var Client = /** @class */ (function () {
                 data: _this.lastData
             };
             _this.notifyServer(controllerUpdate);
-        }, 1000 / 25);
+        }, 1000 / 15);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
@@ -18667,7 +18671,7 @@ exports.Client = Client;
 
 
 
-},{"../screen/map/pawn":30,"../screen/map/player":32,"./../screen/map/levelMap":28,"./../screen/physicsEngine":35,"./connectedDevice":16,"./eventListener":18,"gl-matrix":2}],16:[function(require,module,exports){
+},{"../screen/map/pawn":31,"../screen/map/player":33,"./../screen/map/levelMap":29,"./../screen/physicsEngine":36,"./connectedDevice":16,"./eventListener":18,"gl-matrix":2}],16:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -18971,7 +18975,7 @@ exports.Server = Server;
 
 
 
-},{"./connectedDevice":16,"./eventListener":18,"./index":19,"./server/gameStateJoin":24}],21:[function(require,module,exports){
+},{"./connectedDevice":16,"./eventListener":18,"./index":19,"./server/gameStateJoin":25}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("../eventListener");
@@ -19021,7 +19025,7 @@ var eventListener_1 = require("../eventListener");
 var connectedDevice_1 = require("../connectedDevice");
 var gameStateGame_1 = require("./gameStateGame");
 var eventListener = eventListener_1.EventListener.get();
-var chooseTime = 5000;
+var chooseTime = 15000;
 var GameStateChoose = /** @class */ (function (_super) {
     __extends(GameStateChoose, _super);
     function GameStateChoose(server) {
@@ -19078,7 +19082,7 @@ exports.GameStateChoose = GameStateChoose;
 
 
 
-},{"../connectedDevice":16,"../eventListener":18,"./gameState":21,"./gameStateGame":23}],23:[function(require,module,exports){
+},{"../connectedDevice":16,"../eventListener":18,"./gameState":21,"./gameStateGame":24}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19096,7 +19100,49 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
-var gameStateChoose_1 = require("./gameStateChoose");
+var eventListener = eventListener_1.EventListener.get();
+var joinTime = 5000;
+var GameStateEnd = /** @class */ (function (_super) {
+    __extends(GameStateEnd, _super);
+    function GameStateEnd() {
+        //nextState = undefined;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.nextState = GameStateEnd;
+        return _this;
+    }
+    GameStateEnd.prototype.enter = function () {
+        this.server.airConsole.broadcast({
+            action: 'updateState',
+            data: {
+                state: 'end',
+                angryWon: this.data,
+            }
+        });
+    };
+    return GameStateEnd;
+}(gameState_1.GameState));
+exports.GameStateEnd = GameStateEnd;
+
+
+
+},{"../eventListener":18,"./gameState":21}],24:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var gameState_1 = require("./gameState");
+var eventListener_1 = require("../eventListener");
 var connectedDevice_1 = require("../connectedDevice");
 var levelMap_1 = require("../../screen/map/levelMap");
 var gl_matrix_1 = require("gl-matrix");
@@ -19105,6 +19151,7 @@ var spawnpoint_1 = require("../../screen/map/spawnpoint");
 var player_1 = require("../../screen/map/player");
 var pawn_1 = require("../../screen/map/pawn");
 var matter_js_1 = require("matter-js");
+var gameStateEnd_1 = require("./gameStateEnd");
 var eventListener = eventListener_1.EventListener.get();
 var gameTime = 1200000;
 var forceDefault = 0.001;
@@ -19113,7 +19160,7 @@ var GameStateGame = /** @class */ (function (_super) {
     __extends(GameStateGame, _super);
     function GameStateGame(server, data) {
         var _this = _super.call(this, server, data) || this;
-        _this.nextState = gameStateChoose_1.GameStateChoose;
+        _this.nextState = gameStateEnd_1.GameStateEnd;
         return _this;
     }
     GameStateGame.prototype.tick = function (delta) {
@@ -19123,12 +19170,22 @@ var GameStateGame = /** @class */ (function (_super) {
         }
         var timeLeft = gameTime - (Date.now() - this.timerStarted);
         if (timeLeft <= 0) {
-            console.log("game is over, angry man won");
-            this.exit();
+            console.log("game is over, angry man lost");
+            this.exit(false);
+        }
+        var alive = false;
+        this.players.forEach(function (player) {
+            if (player !== _this.players.get(_this.data) && player.alive) {
+                alive = true;
+            }
+        });
+        if (!alive) {
+            this.exit(true);
         }
         connectedDevice_1.getAllDevices()
             .filter(function (device) { return device.deviceId !== 0; })
             .forEach(function (device) {
+            var _a, _b;
             var player = _this.players.get(device);
             if (player === undefined) {
                 return;
@@ -19164,6 +19221,8 @@ var GameStateGame = /** @class */ (function (_super) {
                 x: tmp[0] * forceDefault,
                 y: -tmp[1] * forceDefault,
             });
+            matter_js_1.Body.setPosition(player.pawn.interactionHitbox, (_a = player.pawn.hitBox) === null || _a === void 0 ? void 0 : _a.position);
+            matter_js_1.Body.setPosition(player.pawn.killHitbox, (_b = player.pawn.hitBox) === null || _b === void 0 ? void 0 : _b.position);
             player.position = gl_matrix_1.vec2.fromValues(player.pawn.hitBox.position.x, player.pawn.hitBox.position.y);
             gl_matrix_1.vec2.copy(player.pawn.position, player.position);
             player.pawn.viewUpdate();
@@ -19184,6 +19243,7 @@ var GameStateGame = /** @class */ (function (_super) {
             }
         });
         physicsEngine_1.PhysicsEngine.init();
+        this.initCollision();
         var level = new levelMap_1.LevelMap("../level/level1.json", document.body);
         this.level = level;
         level.wait.then(function () {
@@ -19219,7 +19279,7 @@ var GameStateGame = /** @class */ (function (_super) {
             _this.updateInterval = setInterval(function () {
                 var result = {};
                 connectedDevice_1.getAllDevices()
-                    .filter(function (e) { return e.deviceId !== 0; })
+                    .filter(function (e) { var _a; return e.deviceId !== 0 && ((_a = _this.players.get(e)) === null || _a === void 0 ? void 0 : _a.alive); })
                     .forEach(function (e) {
                     var player = _this.players.get(e);
                     result[e.deviceId] = {
@@ -19231,16 +19291,58 @@ var GameStateGame = /** @class */ (function (_super) {
                     action: "updatePlayer",
                     data: result
                 });
-            }, 1000 / 24);
+            }, 1000 / 15);
             // Engine.showDebugPlayer();
-            physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
+            // PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();
         });
     };
-    GameStateGame.prototype.exit = function () {
+    GameStateGame.prototype.initCollision = function () {
+        var _this = this;
+        matter_js_1.Events.on(physicsEngine_1.PhysicsEngine.engine, 'collisionStart', function (event) {
+            var _a, _b;
+            var pairs = event.pairs;
+            for (var i = 0, j = pairs.length; i != j; ++i) {
+                var pair = pairs[i];
+                if (pair.bodyA === ((_a = _this.players.get(_this.data)) === null || _a === void 0 ? void 0 : _a.pawn.killHitbox)) {
+                    connectedDevice_1.getAllDevices().filter(function (e) { return e.deviceId !== 0 && e !== _this.data; }).forEach(function (e) {
+                        var _a;
+                        if (pair.bodyB === ((_a = _this.players.get(e)) === null || _a === void 0 ? void 0 : _a.pawn.killHitbox)) {
+                            console.log('angry man collided with player', e, pair.bodyA === pair.bodyB);
+                            _this.players.get(e).alive = false;
+                            _this.players.get(e).kill();
+                            _this.server.airConsole.broadcast({
+                                action: 'playerKilled',
+                                data: e.deviceId,
+                            });
+                        }
+                    });
+                }
+                if (pair.bodyB === ((_b = _this.players.get(_this.data)) === null || _b === void 0 ? void 0 : _b.pawn.killHitbox)) {
+                    connectedDevice_1.getAllDevices().filter(function (e) { return e.deviceId !== 0 && e !== _this.data; }).forEach(function (e) {
+                        var _a;
+                        if (pair.bodyA === ((_a = _this.players.get(e)) === null || _a === void 0 ? void 0 : _a.pawn.killHitbox)) {
+                            console.log('angry man collided with player', e, pair.bodyA === pair.bodyB);
+                            _this.players.get(e).kill();
+                            _this.server.airConsole.broadcast({
+                                action: 'playerKilled',
+                                data: e.deviceId,
+                            });
+                        }
+                    });
+                }
+            }
+        });
+        matter_js_1.Events.on(physicsEngine_1.PhysicsEngine.engine, 'collisionEnd', function (event) {
+            var pairs = event.pairs;
+            for (var i = 0, j = pairs.length; i != j; ++i) {
+            }
+        });
+    };
+    GameStateGame.prototype.exit = function (data) {
         eventListener.off("CLIENT_updateControllerData");
         clearInterval(this.updateInterval);
-        _super.prototype.exit.call(this);
+        _super.prototype.exit.call(this, data);
     };
     GameStateGame.prototype.startTimer = function () {
         console.log("game started");
@@ -19255,7 +19357,7 @@ exports.GameStateGame = GameStateGame;
 
 
 
-},{"../../screen/map/levelMap":28,"../../screen/map/pawn":30,"../../screen/map/player":32,"../../screen/map/spawnpoint":33,"../../screen/physicsEngine":35,"../connectedDevice":16,"../eventListener":18,"./gameState":21,"./gameStateChoose":22,"gl-matrix":2,"matter-js":12}],24:[function(require,module,exports){
+},{"../../screen/map/levelMap":29,"../../screen/map/pawn":31,"../../screen/map/player":33,"../../screen/map/spawnpoint":34,"../../screen/physicsEngine":36,"../connectedDevice":16,"../eventListener":18,"./gameState":21,"./gameStateEnd":23,"gl-matrix":2,"matter-js":12}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19275,7 +19377,7 @@ var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
 var eventListener = eventListener_1.EventListener.get();
-var joinTime = 5000;
+var joinTime = 30000;
 var GameStateJoin = /** @class */ (function (_super) {
     __extends(GameStateJoin, _super);
     function GameStateJoin() {
@@ -19325,7 +19427,7 @@ exports.GameStateJoin = GameStateJoin;
 
 
 
-},{"../eventListener":18,"./gameState":21,"./gameStateChoose":22}],25:[function(require,module,exports){
+},{"../eventListener":18,"./gameState":21,"./gameStateChoose":22}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../common/index");
@@ -19493,7 +19595,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-},{"../common/eventListener":18,"../common/index":19,"gl-matrix":2,"shake.js":13}],26:[function(require,module,exports){
+},{"../common/eventListener":18,"../common/index":19,"gl-matrix":2,"shake.js":13}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19586,7 +19688,7 @@ exports.default = Asset;
 
 
 
-},{"../physicsEngine":35,"./levelObject":29,"matter-js":12}],27:[function(require,module,exports){
+},{"../physicsEngine":36,"./levelObject":30,"matter-js":12}],28:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19643,7 +19745,7 @@ exports.default = Floor;
 
 
 
-},{"./levelObject":29}],28:[function(require,module,exports){
+},{"./levelObject":30}],29:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -19797,7 +19899,7 @@ exports.LevelMap = LevelMap;
 
 
 
-},{"../../common/authority":14,"../physicsEngine":35,"./asset":26,"./floor":27,"./placeholder":31,"./spawnpoint":33,"./wall":34,"gl-matrix":2,"matter-js":12}],29:[function(require,module,exports){
+},{"../../common/authority":14,"../physicsEngine":36,"./asset":27,"./floor":28,"./placeholder":32,"./spawnpoint":34,"./wall":35,"gl-matrix":2,"matter-js":12}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
@@ -19851,7 +19953,7 @@ exports.default = LevelObject;
 
 
 
-},{"../physicsEngine":35,"matter-js":12}],30:[function(require,module,exports){
+},{"../physicsEngine":36,"matter-js":12}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19879,6 +19981,19 @@ var Pawn = /** @class */ (function (_super) {
         return _this;
     }
     Pawn.prototype.createPysics = function () {
+        this.killHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 12, {
+            isSensor: true,
+            collisionFilter: {
+                category: levelObject_1.CollisionChannel.PLAYER,
+            }
+        });
+        this.interactionHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 12, {
+            isSensor: true,
+            collisionFilter: {
+                category: levelObject_1.CollisionChannel.PLAYER,
+                mask: levelObject_1.CollisionChannel.DEFAULT,
+            }
+        });
         this.hitBox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 10, {
             collisionFilter: {
                 category: levelObject_1.CollisionChannel.PLAYER,
@@ -19887,7 +20002,7 @@ var Pawn = /** @class */ (function (_super) {
             frictionStatic: 1,
             frictionAir: 0.4
         });
-        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox, this.interactionHitbox, this.killHitbox]);
     };
     Pawn.prototype.move = function (direction) {
         this.view.classList.remove("up", "down", "left", "right");
@@ -19907,7 +20022,7 @@ exports.default = Pawn;
 
 
 
-},{"../physicsEngine":35,"./levelObject":29,"matter-js":12}],31:[function(require,module,exports){
+},{"../physicsEngine":36,"./levelObject":30,"matter-js":12}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19941,7 +20056,7 @@ exports.default = Placeholder;
 
 
 
-},{"./levelObject":29}],32:[function(require,module,exports){
+},{"./levelObject":30}],33:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19959,6 +20074,8 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var levelObject_1 = require("./levelObject");
 var gl_matrix_1 = require("gl-matrix");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
 var tmp = gl_matrix_1.vec2.create();
 var forceDefault = 0.001;
 var Player = /** @class */ (function (_super) {
@@ -19968,10 +20085,18 @@ var Player = /** @class */ (function (_super) {
         _this.pawnClass = pawnClass;
         _this.move = new Set();
         _this.canTick = true;
+        _this.alive = true;
         _this.pawn = new pawnClass(levelMap, gl_matrix_1.vec2.clone(position), { isAngryDad: isAngryDad });
         return _this;
         // this.registerInput();
     }
+    Player.prototype.kill = function () {
+        var _a;
+        this.alive = false;
+        matter_js_1.World.remove(physicsEngine_1.default.world, this.pawn.interactionHitbox);
+        matter_js_1.World.remove(physicsEngine_1.default.world, this.pawn.killHitbox);
+        (_a = this.pawn.view) === null || _a === void 0 ? void 0 : _a.classList.remove("pawn", "angryDad", "heinzel");
+    };
     Player.prototype.tick = function (delta) {
         this.pawn.viewUpdate();
     };
@@ -19982,7 +20107,7 @@ exports.default = Player;
 
 
 
-},{"./levelObject":29,"gl-matrix":2}],33:[function(require,module,exports){
+},{"../physicsEngine":36,"./levelObject":30,"gl-matrix":2,"matter-js":12}],34:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -20011,7 +20136,7 @@ exports.default = Spawnpoint;
 
 
 
-},{"./levelObject":29}],34:[function(require,module,exports){
+},{"./levelObject":30}],35:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -20084,7 +20209,7 @@ exports.default = Wall;
 
 
 
-},{"../physicsEngine":35,"./levelObject":29,"matter-js":12}],35:[function(require,module,exports){
+},{"../physicsEngine":36,"./levelObject":30,"matter-js":12}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
@@ -20095,7 +20220,11 @@ var PhysicsEngine = /** @class */ (function () {
     function PhysicsEngine() {
     }
     PhysicsEngine.init = function () {
-        this.engine = matter_js_1.Engine.create();
+        this.engine = matter_js_1.Engine.create(undefined, {
+            constraintIterations: 1,
+            positionIterations: 1,
+            velocityIterations: 1
+        });
         this.world = this.engine.world;
         this.world.gravity = {
             scale: 0,
@@ -20215,6 +20344,6 @@ exports.default = PhysicsEngine;
 
 
 
-},{"../common/enums":17,"gl-matrix":2,"matter-js":12}]},{},[25]);
+},{"../common/enums":17,"gl-matrix":2,"matter-js":12}]},{},[26]);
 
 //# sourceMappingURL=index.js.map

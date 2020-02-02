@@ -6,7 +6,7 @@ import { GameStateGame } from "./gameStateGame";
 
 const eventListener = EventListener.get();
 
-const chooseTime = 5000;
+const chooseTime = 15000;
 
 export class GameStateChoose extends GameState {
     //nextState = undefined;

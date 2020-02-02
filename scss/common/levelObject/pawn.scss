@@ -86,13 +86,13 @@
 
     &.left {
       &::before {
-        background: url(../assets/angryman_left.svg);
+        background: url(../assets/angryman_right.svg);
       }
     }
 
     &.right {
       &::before {
-        background: url(../assets/angryman_right.svg);
+        background: url(../assets/angryman_left.svg);
       }
     }
   }

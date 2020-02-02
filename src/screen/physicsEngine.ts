@@ -14,7 +14,11 @@ export class PhysicsEngine {
     static debugElement: HTMLElement;
 
     static init(){
-        this.engine = Engine.create();
+        this.engine = Engine.create(undefined, {
+            constraintIterations: 1,
+            positionIterations: 1,
+            velocityIterations: 1
+        });
 
         this.world = this.engine.world;
         this.world.gravity = {

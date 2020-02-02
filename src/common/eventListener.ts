@@ -13,6 +13,7 @@ interface EventCallbacks {
   SERVER_updateState: {
     state: string;
   };
+  SERVER_playerKilled: number;
   SERVER_updatePlayer: {
     [id: number]: {
       position: vec2;
