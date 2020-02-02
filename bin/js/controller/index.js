@@ -19129,6 +19129,7 @@ var Controller = /** @class */ (function () {
     function Controller(client) {
         this.client = client;
         this.joystick = new Joystick(client);
+        this.shake = new Shake(client);
         this.onUpdateView();
         this.defaultView();
         // this.client.onUpdateServerData(this.updateView.bind(this));
@@ -19158,6 +19159,7 @@ var Controller = /** @class */ (function () {
             case 'game':
                 this.showView(Views.playscreen);
                 this.joystick.start();
+                this.shake.listen();
                 break;
             default:
                 console.error("not implemented", view);
@@ -19200,6 +19202,21 @@ var Controller = /** @class */ (function () {
         });
     };
     return Controller;
+}());
+var Shake = /** @class */ (function () {
+    function Shake(client) {
+        this.client = client;
+        // @ts-ignore
+        this.shakeEvent = new Shake({ threshold: 15, timeout: 1000 });
+    }
+    Shake.prototype.listen = function () {
+        window.addEventListener('shake', this.onShake, false);
+    };
+    Shake.prototype.onShake = function () {
+        alert('you did a shake');
+        this.client.moveAndInteract(0, 0, true);
+    };
+    return Shake;
 }());
 var Joystick = /** @class */ (function () {
     function Joystick(client) {

@@ -35,5 +35,8 @@
     "matter-js": "^0.14.2",
     "merge2": "^1.2.3",
     "typescript": "^3.6.4"
+  },
+  "dependencies": {
+    "shake.js": "^1.2.2"
   }
 }

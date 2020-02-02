@@ -7,6 +7,9 @@ import {
 } from "../common/index";
 import {glMatrix} from 'gl-matrix'
 import {EventListener} from '../common/eventListener';
+// @ts-ignore
+import * as Shake from 'shake.js';
+
 
 glMatrix.setMatrixArrayType(Array);
 const eventListener = EventListener.get();
@@ -24,8 +27,10 @@ interface JoyStickPosition{
 
 class Controller {
   private joystick:Joystick;
+  private shake:Shake;
   constructor(private client: Client) {
     this.joystick = new Joystick(client);
+    this.shake = new Shake(client);
     this.onUpdateView();
     this.defaultView();
     // this.client.onUpdateServerData(this.updateView.bind(this));
@@ -59,6 +64,7 @@ class Controller {
       case 'game':
         this.showView(Views.playscreen);
         this.joystick.start();
+        this.shake.listen();
         break;
       default:
         console.error("not implemented", view);
@@ -103,6 +109,21 @@ class Controller {
     });
   }
 
+}
+
+class Shake{
+  shakeEvent:any;
+  constructor(private client:Client){
+    // @ts-ignore
+    this.shakeEvent = new Shake({threshold: 15, timeout: 1000});
+  }
+  listen(){
+    window.addEventListener('shake', this.onShake, false);
+  }
+  onShake(){
+    alert('you did a shake');
+    this.client.moveAndInteract(0, 0, true);
+  }
 }
 
 class Joystick{
