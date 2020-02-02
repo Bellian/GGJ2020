@@ -1,4 +1,4 @@
-import LevelObject from "./levelObject";
+import LevelObject, { CollisionChannel } from "./levelObject";
 import { vec2 } from "gl-matrix";
 import { Bodies, World } from "matter-js";
 import PhysicsEngine from "../physicsEngine";
@@ -13,6 +13,9 @@ export class Wall extends LevelObject {
 
     createPysics() {
         this.hitBox = Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
+            collisionFilter: {
+                category: CollisionChannel.DEFAULT,
+            },
             isStatic: true,
         });
         World.add(PhysicsEngine.world, [this.hitBox]);

@@ -19142,10 +19142,28 @@ var GameStateGame = /** @class */ (function (_super) {
                 return;
             }
             gl_matrix_1.vec2.copy(tmp, data.moveDirection);
+            gl_matrix_1.vec2.scale(tmp, tmp, 1 / 50);
+            var length = Math.min(gl_matrix_1.vec2.length(tmp), 1);
             gl_matrix_1.vec2.normalize(tmp, tmp);
+            var dir = gl_matrix_1.vec2.round(gl_matrix_1.vec2.create(), tmp);
+            var dirString = 'up';
+            if (dir[1] === -1) {
+                dirString = 'down';
+            }
+            else if (dir[1] === 1) {
+                dirString = 'up';
+            }
+            else if (dir[0] === -1) {
+                dirString = 'left';
+            }
+            else if (dir[0] === 1) {
+                dirString = 'right';
+            }
+            player.pawn.move(dirString);
+            gl_matrix_1.vec2.scale(tmp, tmp, length);
             matter_js_1.Body.applyForce(player.pawn.hitBox, player.pawn.hitBox.position, {
                 x: tmp[0] * forceDefault,
-                y: -tmp[1] * forceDefault
+                y: -tmp[1] * forceDefault,
             });
             player.position = gl_matrix_1.vec2.fromValues(player.pawn.hitBox.position.x, player.pawn.hitBox.position.y);
             gl_matrix_1.vec2.copy(player.pawn.position, player.position);
@@ -19162,7 +19180,8 @@ var GameStateGame = /** @class */ (function (_super) {
             data: {
                 state: "game",
                 timerStarted: this.timerStarted,
-                duration: gameTime
+                duration: gameTime,
+                angry: this.data.deviceId,
             }
         });
         physicsEngine_1.PhysicsEngine.init();
@@ -19179,7 +19198,6 @@ var GameStateGame = /** @class */ (function (_super) {
                     return;
                 }
                 _this.deviceInputs.set(device, data);
-                console.log("CLIENT_updateControllerData");
             });
             var spawnpoints = level.getAllLevelObjectsByType(spawnpoint_1.default);
             _this.shuffle(spawnpoints);
@@ -19191,7 +19209,7 @@ var GameStateGame = /** @class */ (function (_super) {
                 .forEach(function (e) {
                 if (!_this.players.has(e)) {
                     console.log("create player for:", e.deviceId);
-                    var player = new player_1.default(level, gl_matrix_1.vec2.clone(spawnpoints[index].position), pawn_1.default, e.customStateData.isAngryDad);
+                    var player = new player_1.default(level, gl_matrix_1.vec2.clone(spawnpoints[index].position), pawn_1.default, false);
                     _this.players.set(e, player);
                     if (e === _this.data) {
                         level.setCameraPosition(player.pawn.position);
@@ -19207,7 +19225,7 @@ var GameStateGame = /** @class */ (function (_super) {
                     var player = _this.players.get(e);
                     result[e.deviceId] = {
                         position: player.pawn.position,
-                        direction: player.pawn.direction
+                        direction: player.pawn.direction,
                     };
                 });
                 _this.server.airConsole.broadcast({
@@ -19258,7 +19276,7 @@ var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
 var eventListener = eventListener_1.EventListener.get();
-var joinTime = 7000;
+var joinTime = 5000;
 var GameStateJoin = /** @class */ (function (_super) {
     __extends(GameStateJoin, _super);
     function GameStateJoin() {
@@ -19781,6 +19799,11 @@ exports.LevelMap = LevelMap;
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
 var physicsEngine_1 = require("../physicsEngine");
+var CollisionChannel;
+(function (CollisionChannel) {
+    CollisionChannel[CollisionChannel["DEFAULT"] = 1] = "DEFAULT";
+    CollisionChannel[CollisionChannel["PLAYER"] = 2] = "PLAYER";
+})(CollisionChannel = exports.CollisionChannel || (exports.CollisionChannel = {}));
 var LevelObject = /** @class */ (function () {
     function LevelObject(levelMap, position, meta) {
         this.levelMap = levelMap;
@@ -19855,6 +19878,10 @@ var Pawn = /** @class */ (function (_super) {
     }
     Pawn.prototype.createPysics = function () {
         this.hitBox = matter_js_1.Bodies.circle(5, 5, 10, {
+            collisionFilter: {
+                category: levelObject_1.CollisionChannel.PLAYER,
+                mask: levelObject_1.CollisionChannel.DEFAULT,
+            },
             frictionStatic: 1,
             frictionAir: 0.4
         });
@@ -19943,37 +19970,6 @@ var Player = /** @class */ (function (_super) {
         // this.registerInput();
     }
     Player.prototype.tick = function (delta) {
-        // if(this.move.size !== 0){
-        //     vec2.set(tmp, 0,0);
-        //     this.move.forEach(e => {
-        //         switch(e){
-        //             case Directions.LEFT:
-        //                 this.pawn.move('left');
-        //                 vec2.add(tmp, tmp, [-1,0]);
-        //                 break;
-        //             case Directions.RIGHT:
-        //                 this.pawn.move('right');
-        //                 vec2.add(tmp, tmp, [1,0]);
-        //                 break;
-        //             case Directions.UP:
-        //                 vec2.add(tmp, tmp, [0,-1]);
-        //                 this.pawn.move('up');
-        //                 break;
-        //             case Directions.DOWN:
-        //                 this.pawn.move('down');
-        //                 vec2.add(tmp, tmp, [0,1]);
-        //                 break;
-        //         }
-        //     });
-        //     vec2.normalize(tmp, tmp);
-        //     Body.applyForce(this.pawn.hitBox!, this.pawn.hitBox!.position, {
-        //         x: tmp[0] * forceDefault,
-        //         y: tmp[1] * forceDefault
-        //     });
-        // }
-        // this.position = vec2.fromValues(this.pawn.hitBox!.position.x, this.pawn.hitBox!.position.y);
-        // vec2.copy(this.pawn.position, this.position);
-        // this.levelMap.setCameraPosition(this.position);
         this.pawn.viewUpdate();
     };
     return Player;
@@ -20058,6 +20054,9 @@ var Wall = /** @class */ (function (_super) {
     }
     Wall.prototype.createPysics = function () {
         this.hitBox = matter_js_1.Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
+            collisionFilter: {
+                category: levelObject_1.CollisionChannel.DEFAULT,
+            },
             isStatic: true,
         });
         matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
