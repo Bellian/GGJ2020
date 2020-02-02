@@ -6,6 +6,10 @@ import {
   ServerData
 } from "../common/index";
 
+import {EventListener} from '../common/eventListener';
+
+const eventListener = EventListener.get();
+
 export enum Views {
   splashscreen,
   characterselection,
@@ -20,7 +24,10 @@ interface JoyStickPosition{
 class Controller {
   private startPos: [number, number] | undefined = undefined;
   constructor(private client: Client) {
-    this.client.onUpdateServerData(this.updateView.bind(this));
+    eventListener.on('SERVER_updateState', (state: any) => {
+      console.log('game state changed', state.state);
+      this.updateView(state.state);
+    });
   }
 
 
@@ -91,14 +98,16 @@ class Controller {
     this.setTime(Views.splashscreen, 30);
   }
 
-  // 
+  // change the character selection
   characterselection() {
     document.querySelectorAll('characterselection > characters > img').forEach(character => character.addEventListener('click', ()=>{
       if(character.classList.contains('angry-dad')){
         document.querySelectorAll('characterselection')[0].classList.add('isAngryDad');
+        this.client.airConsole.setCustomDeviceState({wantAngry:true});
         console.log("You would like to be angry dad!");
       }else{
         document.querySelectorAll('characterselection')[0].classList.remove('isAngryDad');
+        this.client.airConsole.setCustomDeviceState({wantAngry:false});
         console.log("You would like to be a wichtel!");
       }
     }));
@@ -119,7 +128,6 @@ class Controller {
 document.addEventListener("DOMContentLoaded", () => {
   let client: Client = new Client();
   let controller = new Controller(client);
-  controller.virtualController();
   controller.onJoystickMove((pos)=>{
     console.log(pos);
   });

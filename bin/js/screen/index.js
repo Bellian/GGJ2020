@@ -18534,25 +18534,12 @@ exports.Client = Client;
 
 },{"./connectedDevice":15,"./eventListener":17,"./index":18}],15:[function(require,module,exports){
 "use strict";
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("./eventListener");
@@ -18566,7 +18553,7 @@ function getDevice(deviceId) {
 }
 exports.getDevice = getDevice;
 function getAllDevices() {
-    return __spread(deviceLib.values());
+    return __spreadArrays(deviceLib.values());
 }
 exports.getAllDevices = getAllDevices;
 var internalID = 0;
@@ -18658,8 +18645,16 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
+var gl_matrix_1 = require("gl-matrix");
 __export(require("./client"));
 __export(require("./server"));
+var a = {
+    action: 'updateControllerData',
+    data: {
+        doesAction: false,
+        moveDirection: gl_matrix_1.vec2.fromValues(23, -55)
+    }
+};
 var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
@@ -18739,7 +18734,7 @@ exports.ObjectData = ObjectData;
 
 
 
-},{"./client":14,"./server":19}],19:[function(require,module,exports){
+},{"./client":14,"./server":19,"gl-matrix":2}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
@@ -19005,6 +19000,7 @@ document.addEventListener('DOMContentLoaded', function () {
     physicsEngine_1.default.init();
     var server = new server_1.Server();
     /*
+
     const level = new LevelMap('../level/level1.json', document.body);
 
     level.wait.then(() => {
@@ -19013,6 +19009,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Engine.start();
 
     })
+    
     */
 });
 
