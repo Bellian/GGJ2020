@@ -18660,7 +18660,7 @@ var Client = /** @class */ (function () {
                 data: _this.lastData
             };
             _this.notifyServer(controllerUpdate);
-        }, 1000 / 15);
+        }, 1000 / 10);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);

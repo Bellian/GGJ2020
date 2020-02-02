@@ -18529,7 +18529,7 @@ var Client = /** @class */ (function () {
                 data: _this.lastData
             };
             _this.notifyServer(controllerUpdate);
-        }, 1000 / 15);
+        }, 1000 / 10);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
@@ -19754,13 +19754,13 @@ var Pawn = /** @class */ (function (_super) {
                 category: levelObject_1.CollisionChannel.PLAYER,
             }
         });
-        this.interactionHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 12, {
+        /*this.interactionHitbox = Bodies.circle(this.position[0], this.position[1], 12, {
             isSensor: true,
             collisionFilter: {
-                category: levelObject_1.CollisionChannel.PLAYER,
-                mask: levelObject_1.CollisionChannel.DEFAULT,
+                category: CollisionChannel.PLAYER,
+                mask: CollisionChannel.DEFAULT,
             }
-        });
+        });*/
         this.hitBox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 10, {
             collisionFilter: {
                 category: levelObject_1.CollisionChannel.PLAYER,
@@ -19769,7 +19769,7 @@ var Pawn = /** @class */ (function (_super) {
             frictionStatic: 1,
             frictionAir: 0.4
         });
-        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox, this.interactionHitbox, this.killHitbox]);
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox, /*this.interactionHitbox,*/ this.killHitbox]);
     };
     Pawn.prototype.move = function (direction) {
         this.view.classList.remove("up", "down", "left", "right");
