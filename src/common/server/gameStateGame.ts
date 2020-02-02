@@ -9,6 +9,7 @@ import { PhysicsEngine } from "../../screen/physicsEngine";
 import Spawnpoint from "../../screen/map/spawnpoint";
 import Player from "../../screen/map/player";
 import Pawn from "../../screen/map/pawn";
+import LevelObject from "../../screen/map/levelObject";
 
 const eventListener = EventListener.get();
 const gameTime = 120000;
@@ -88,9 +89,16 @@ export class GameStateGame extends GameState {
       PhysicsEngine.start();
 
       const spawnpoints = level.getAllLevelObjectsByType(Spawnpoint);
-      const devices = getAllDevices();
-      for (let player of this.players) {
-        // devices.spawnpoints[i].position;
+      this.shuffle(spawnpoints);
+      this.shuffle(spawnpoints);
+      this.shuffle(spawnpoints);
+
+      let index = 0;
+      for (let key of this.players.keys()) {
+        let player = this.players.get(key)!;
+        player.position = spawnpoints[index].position;
+        this.players.set(key, player);
+        index++;
       }
     });
   }
@@ -104,5 +112,9 @@ export class GameStateGame extends GameState {
   startTimer() {
     console.log("game started");
     this.timerStarted = Date.now();
+  }
+
+  shuffle(array: any[]) {
+    array.sort(() => Math.random() - 0.5);
   }
 }
