@@ -19965,7 +19965,11 @@ var PhysicsEngine = /** @class */ (function () {
     function PhysicsEngine() {
     }
     PhysicsEngine.init = function () {
-        this.engine = matter_js_1.Engine.create();
+        this.engine = matter_js_1.Engine.create(undefined, {
+            constraintIterations: 1,
+            positionIterations: 1,
+            velocityIterations: 1
+        });
         this.world = this.engine.world;
         this.world.gravity = {
             scale: 0,
