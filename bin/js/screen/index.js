@@ -19133,7 +19133,25 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     
     */
+    new Sound('../sound/main.mp3').play();
 });
+var Sound = /** @class */ (function () {
+    function Sound(src) {
+        this.soundElement = document.createElement("audio");
+        this.soundElement.src = src;
+        this.soundElement.setAttribute("preload", "auto");
+        this.soundElement.setAttribute("controls", "none");
+        this.soundElement.style.display = "none";
+        document.body.appendChild(this.soundElement);
+    }
+    Sound.prototype.play = function () {
+        this.soundElement.play();
+    };
+    Sound.prototype.stop = function () {
+        this.soundElement.pause();
+    };
+    return Sound;
+}());
 
 
 
