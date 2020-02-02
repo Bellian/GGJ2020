@@ -29,7 +29,7 @@ export class Player extends LevelObject {
 
     kill(){
         this.alive = false;
-        World.remove(PhysicsEngine.world, this.pawn.interactionHitbox);
+        // World.remove(PhysicsEngine.world, this.pawn.interactionHitbox);
         World.remove(PhysicsEngine.world, this.pawn.killHitbox);
         this.pawn.view?.classList.remove("pawn", "angryDad", "heinzel");
     }

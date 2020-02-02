@@ -18660,7 +18660,7 @@ var Client = /** @class */ (function () {
                 data: _this.lastData
             };
             _this.notifyServer(controllerUpdate);
-        }, 1000 / 15);
+        }, 1000 / 10);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
@@ -19036,6 +19036,12 @@ var GameStateChoose = /** @class */ (function (_super) {
         return _this;
     }
     GameStateChoose.prototype.enter = function () {
+        var _this = this;
+        window.addEventListener('keydown', function (e) {
+            if (e.key.toLowerCase() === 's') {
+                _this.timerStarted = 0;
+            }
+        });
         this.startTimer();
         this.server.airConsole.broadcast({
             action: "updateState",
@@ -19154,7 +19160,7 @@ var matter_js_1 = require("matter-js");
 var gameStateEnd_1 = require("./gameStateEnd");
 var eventListener = eventListener_1.EventListener.get();
 var gameTime = 1200000;
-var forceDefault = 0.001;
+var forceDefault = 4;
 var tmp = gl_matrix_1.vec2.create();
 var GameStateGame = /** @class */ (function (_super) {
     __extends(GameStateGame, _super);
@@ -19185,7 +19191,7 @@ var GameStateGame = /** @class */ (function (_super) {
         connectedDevice_1.getAllDevices()
             .filter(function (device) { return device.deviceId !== 0; })
             .forEach(function (device) {
-            var _a, _b;
+            var _a;
             var player = _this.players.get(device);
             if (player === undefined) {
                 return;
@@ -19217,12 +19223,18 @@ var GameStateGame = /** @class */ (function (_super) {
             }
             player.pawn.move(dirString);
             gl_matrix_1.vec2.scale(tmp, tmp, length);
-            matter_js_1.Body.applyForce(player.pawn.hitBox, player.pawn.hitBox.position, {
+            matter_js_1.Body.setVelocity(player.pawn.hitBox, {
                 x: tmp[0] * forceDefault,
                 y: -tmp[1] * forceDefault,
             });
-            matter_js_1.Body.setPosition(player.pawn.interactionHitbox, (_a = player.pawn.hitBox) === null || _a === void 0 ? void 0 : _a.position);
-            matter_js_1.Body.setPosition(player.pawn.killHitbox, (_b = player.pawn.hitBox) === null || _b === void 0 ? void 0 : _b.position);
+            /*
+            Body.applyForce(player.pawn.hitBox!, player.pawn.hitBox!.position, {
+                x: tmp[0] * forceDefault,
+                y: -tmp[1] * forceDefault,
+            });
+            */
+            // Body.setPosition(player.pawn.interactionHitbox, player.pawn.hitBox?.position!)
+            matter_js_1.Body.setPosition(player.pawn.killHitbox, (_a = player.pawn.hitBox) === null || _a === void 0 ? void 0 : _a.position);
             player.position = gl_matrix_1.vec2.fromValues(player.pawn.hitBox.position.x, player.pawn.hitBox.position.y);
             gl_matrix_1.vec2.copy(player.pawn.position, player.position);
             player.pawn.viewUpdate();
@@ -19233,6 +19245,11 @@ var GameStateGame = /** @class */ (function (_super) {
     };
     GameStateGame.prototype.enter = function () {
         var _this = this;
+        window.addEventListener('keydown', function (e) {
+            if (e.key.toLowerCase() === 's') {
+                _this.timerStarted = 0;
+            }
+        });
         this.server.airConsole.broadcast({
             action: "updateState",
             data: {
@@ -19291,7 +19308,7 @@ var GameStateGame = /** @class */ (function (_super) {
                     action: "updatePlayer",
                     data: result
                 });
-            }, 1000 / 15);
+            }, 1000 / 20);
             // Engine.showDebugPlayer();
             // PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();
@@ -19331,11 +19348,6 @@ var GameStateGame = /** @class */ (function (_super) {
                         }
                     });
                 }
-            }
-        });
-        matter_js_1.Events.on(physicsEngine_1.PhysicsEngine.engine, 'collisionEnd', function (event) {
-            var pairs = event.pairs;
-            for (var i = 0, j = pairs.length; i != j; ++i) {
             }
         });
     };
@@ -19398,6 +19410,11 @@ var GameStateJoin = /** @class */ (function (_super) {
     };
     GameStateJoin.prototype.enter = function () {
         var _this = this;
+        window.addEventListener('keydown', function (e) {
+            if (e.key.toLowerCase() === 's') {
+                _this.timerStarted = 0;
+            }
+        });
         this.deviceJoinedCallback = eventListener.on('deviceJoined', function (device) {
             if (!_this.timerStarted) {
                 _this.startTimer();
@@ -19988,13 +20005,13 @@ var Pawn = /** @class */ (function (_super) {
                 category: levelObject_1.CollisionChannel.PLAYER,
             }
         });
-        this.interactionHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 12, {
+        /*this.interactionHitbox = Bodies.circle(this.position[0], this.position[1], 12, {
             isSensor: true,
             collisionFilter: {
-                category: levelObject_1.CollisionChannel.PLAYER,
-                mask: levelObject_1.CollisionChannel.DEFAULT,
+                category: CollisionChannel.PLAYER,
+                mask: CollisionChannel.DEFAULT,
             }
-        });
+        });*/
         this.hitBox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 10, {
             collisionFilter: {
                 category: levelObject_1.CollisionChannel.PLAYER,
@@ -20003,7 +20020,7 @@ var Pawn = /** @class */ (function (_super) {
             frictionStatic: 1,
             frictionAir: 0.4
         });
-        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox, this.interactionHitbox, this.killHitbox]);
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox, /*this.interactionHitbox,*/ this.killHitbox]);
     };
     Pawn.prototype.move = function (direction) {
         this.view.classList.remove("up", "down", "left", "right");
