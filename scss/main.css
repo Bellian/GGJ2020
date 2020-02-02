@@ -12,10 +12,12 @@
 }
 
 default {
-  display: none;
+  display: block;
   width: 100vw;
   height: 100vh;
   background: #cd9fce;
+  position: relative;
+  z-index: 0;
 }
 
 default.visible {
@@ -24,7 +26,7 @@ default.visible {
 
 default h1 {
   font-family: "EraserRegular";
-  font-size: 48px;
+  font-size: 44px;
   width: 600px;
   text-align: center;
   line-height: 70px;

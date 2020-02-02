@@ -15,16 +15,18 @@ $EraserRegular: 'EraserRegular';
 }
 
 default{
-  display: none;
+  display: block;
   width: 100vw;
   height: 100vh;
   background: $background;
+  position: relative;
+  z-index: 0;
   &.visible{
     display: block;
   }
   h1{
     font-family: $EraserRegular;
-    font-size: 48px;
+    font-size: 44px;
     width: 600px;
     text-align: center;
     line-height: 70px;
