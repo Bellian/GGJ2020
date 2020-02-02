@@ -12,10 +12,13 @@ import {
   ObjectUpdateData,
   PlayerUpdateData,
   PlayerState,
-  AirConsoleMessage
+  AirConsoleMessage,
+  AirConsoleControllerUpdate,
+  AirConsoleCharacterAppearanceUpdate
 } from "./index";
 import { EventListener } from "./eventListener";
 import { ConnectedDevice, getDevice } from "./connectedDevice";
+import { vec2 } from "gl-matrix";
 
 const eventListener = EventListener.get();
 
@@ -26,69 +29,57 @@ export class Client {
   objectData: ObjectData[] = [];
   serverData: ServerData;
 
-  awaitReady: Promise<number>;
-
   constructor() {
     this.serverData = new ServerData(30, ServerState.initial);
 
-    this.awaitReady = new Promise((resolve) => {
-      this.airConsole = new AirConsole();
-      this.initMessageHandler();
+    this.airConsole = new AirConsole();
+    this.initMessageHandler();
 
-      this.airConsole.onDeviceStateChange = (id: number, state: any) => {
-        try {
-          getDevice(id).updateState(state)
-        } catch(e) {
-          const newDevice = new ConnectedDevice(id);
-          newDevice.updateState(state);
-        }
-      };
+    this.airConsole.onDeviceStateChange = (id: number, state: any) => {
+      try {
+        getDevice(id).updateState(state)
+      } catch(e) {
+        const newDevice = new ConnectedDevice(id);
+        newDevice.updateState(state);
+      }
+    };
 
+    eventListener.on('SERVER_updateState', (state: any) => {
+      console.log('game state changed', state.state);
 
+      if(state.state === 'join') {
+        // prepare stuff for join state
+      }
 
-      eventListener.on('SERVER_updateState', (state: any) => {
-        console.log('game state changed', state.state);
+      if(state.state === 'choose') {
+        // prepare stuff for choose state
+        this.airConsole.setCustomDeviceState({
+          wantAngry: Math.random() > 0.5,
+        })
+      }
 
-        if(state.state === 'join') {
-          // prepare stuff for join state
-        }
-
-        if(state.state === 'choose') {
-          // prepare stuff for choose state
-          this.airConsole.setCustomDeviceState({
-            wantAngry: Math.random() > 0.5,
-          })
-        }
-
-        if(state.state === 'game') {
-          // prepare stuff for game state
-        }
-
-      });
-
+      if(state.state === 'game') {
+        // prepare stuff for game state
+      }
 
     });
   }
 
   private initMessageHandler() {
-    this.airConsole.onMessage = (from: number, data: AirConsoleMessage<any>) => {
+    this.airConsole.onMessage = (
+      from: number,
+      data: AirConsoleMessage<any>
+    ) => {
       if (data) {
-        if(from === 0){
-          const event = 'SERVER_'+data.action;
+        if (from === 0) {
+          const event = "SERVER_" + data.action;
           eventListener.trigger(event as any, data.data);
         } else {
           // IDK
         }
       }
     };
-
-    
   }
-
-
-
-
-
 
   updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
   onUpdateServerData(cb: (serverData: ServerData) => void) {
@@ -137,33 +128,25 @@ export class Client {
     };
   }
 
-  toggleAngryDad(): boolean {
-    console.table("toggleAngryDad playerData", this.playerData);
-    console.table("toggleAngryDad id", this.id);
-    let currentPlayer = this.currentPlayerData();
-    if (currentPlayer.isAngryDad === undefined) {
-      currentPlayer.isAngryDad = false;
-    } else {
-      currentPlayer.isAngryDad = !currentPlayer.isAngryDad;
-    }
-    this.notifyServer(currentPlayer);
-    return currentPlayer.isAngryDad;
+  changeAppearance(appearance: CharacterAppearanceType) {
+    let controllerUpdate: AirConsoleMessage<AirConsoleCharacterAppearanceUpdate> = {
+      action: "updateCharacterAppearance",
+      data: {
+        appearance: appearance
+      }
+    };
+    this.notifyServer(controllerUpdate);
   }
 
-  changeAppearance(
-    appearance: CharacterAppearanceType
-  ): CharacterAppearanceType {
-    let currentPlayer = this.currentPlayerData();
-    currentPlayer.characterAppearanceType = appearance;
-    this.notifyServer(currentPlayer);
-    return currentPlayer.characterAppearanceType;
-  }
-
-  interacting(playerState: PlayerState): PlayerState {
-    let currentPlayer = this.currentPlayerData();
-    currentPlayer.playerState = playerState;
-    this.notifyServer(currentPlayer);
-    return currentPlayer.playerState;
+  moveAndInteract(x: number, y: number, isInteracting: boolean = false) {
+    let controllerUpdate: AirConsoleMessage<AirConsoleControllerUpdate> = {
+      action: "updateControllerData",
+      data: {
+        doesAction: isInteracting,
+        moveDirection: vec2.fromValues(x, y)
+      }
+    };
+    this.notifyServer(controllerUpdate);
   }
 
   private notifyServer(data: any) {

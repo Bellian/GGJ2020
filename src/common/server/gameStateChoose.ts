@@ -2,17 +2,18 @@ import { GameState } from "./gameState";
 import { EventListener } from "../eventListener";
 import { Server } from "../server";
 import { getDevice, getAllDevices } from "../connectedDevice";
+import { GameStateGame } from "./gameStateGame";
 
 const eventListener = EventListener.get();
 
-const duration = 3000;
+const chooseTime = 3000;
 
 export class GameStateChoose extends GameState {
     //nextState = undefined;
 
-    duration: number = duration;
+    duration: number = chooseTime;
     timerStarted!: number;
-    nextState = GameState as any;
+    nextState = GameStateGame as any;
 
     constructor(server: Server){
         super(server);
@@ -25,7 +26,7 @@ export class GameStateChoose extends GameState {
             data: {
                 state: 'choose',
                 timerStarted: this.timerStarted,
-                duration,
+                duration: chooseTime,
             }
         })
     }
@@ -35,7 +36,7 @@ export class GameStateChoose extends GameState {
         if(this.timerStarted === undefined) {
             return;
         }
-        const timeLeft = this.duration - (Date.now() - this.timerStarted);
+        const timeLeft = chooseTime - (Date.now() - this.timerStarted);
         if(timeLeft <= 0){
             console.log('timer is up, next state');
             this.exit();
