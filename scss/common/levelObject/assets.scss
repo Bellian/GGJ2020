@@ -43,6 +43,9 @@
       width: 40px;
       height: 40px;
       background: url(../assets/ggj-koblenz_100.png);
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
     }
     &.littledamage::before {
       background: url(../assets/ggj-koblenz_050.png);

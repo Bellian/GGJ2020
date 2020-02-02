@@ -222,7 +222,7 @@
     }
 
     ,{
-      "type": "asset", "pos": [330, 5], "meta": {
+      "type": "asset", "pos": [153, 183], "meta": {
         "size": [40, 10],
         "destructible": true,
         "health": 100,

@@ -8,11 +8,11 @@
 
 
     .camera {
-        perspective: 300px;
+        perspective: 0;
         position: absolute;
         height: 100%;
         width: 100%;
-        transform: scale(3);
+        transform: scale(1);
         transform-style: preserve-3d;
     }
 
@@ -20,7 +20,7 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        transform: rotateX(30deg);
+        transform: rotateX(10deg);
         transform-style: preserve-3d;
     }
 
