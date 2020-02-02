@@ -38,10 +38,10 @@ class Controller {
 
   // displays the current used view
   private showView(view: Views) {
+    document.querySelectorAll('.view').forEach(view => view.classList.remove("visible"));
     (document.querySelectorAll(Views[view])[0] as HTMLElement).classList.add(
       "visible"
     );
-    document.querySelectorAll('.view').forEach(view => view.classList.remove("visible"));
   }
 
   // initialize the desired view
@@ -95,7 +95,7 @@ class Controller {
       }
     }, 1000);
   }
-  
+
   defaultView(){
     document.querySelectorAll('default button')[0].addEventListener('click', ()=>{
       location.reload();

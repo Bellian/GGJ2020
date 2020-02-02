@@ -19105,8 +19105,8 @@ var Controller = /** @class */ (function () {
     };
     // displays the current used view
     Controller.prototype.showView = function (view) {
-        document.querySelectorAll(Views[view])[0].classList.add("visible");
         document.querySelectorAll('.view').forEach(function (view) { return view.classList.remove("visible"); });
+        document.querySelectorAll(Views[view])[0].classList.add("visible");
     };
     // initialize the desired view
     Controller.prototype.updateView = function (view) {
