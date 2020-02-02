@@ -16,10 +16,11 @@ export class Player extends LevelObject {
   constructor(
     levelMap: LevelMap,
     position: vec2,
-    public pawnClass: typeof Pawn
+    public pawnClass: typeof Pawn,
+    isAngryDad: boolean
   ) {
     super(levelMap, position);
-    this.pawn = new pawnClass(levelMap, vec2.clone(position));
+    this.pawn = new pawnClass(levelMap, vec2.clone(position), isAngryDad);
 
     // this.registerInput();
   }
