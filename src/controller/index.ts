@@ -26,6 +26,7 @@ class Controller {
   constructor(private client: Client) {
     this.joystick = new Joystick(client);
     this.onUpdateView();
+    this.defaultView();
   }
 
   private onUpdateView(){
@@ -83,6 +84,7 @@ class Controller {
     this.setTime(Views.characterselection, 15);
   }
 
+  // sets the time element for an active view
   setTime(view: Views, timeUntil: number) {
     let timeUntilInterval = setInterval(() => {
       document.querySelectorAll(Views[view] + " time")[0].innerHTML = timeUntil.toString();
@@ -91,6 +93,12 @@ class Controller {
         clearInterval(timeUntilInterval);
       }
     }, 1000);
+  }
+  
+  defaultView(){
+    document.querySelectorAll('default button')[0].addEventListener('click', ()=>{
+      location.reload();
+    });
   }
 
 }

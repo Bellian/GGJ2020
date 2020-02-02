@@ -8652,6 +8652,7 @@ var Controller = /** @class */ (function () {
         this.client = client;
         this.joystick = new Joystick(client);
         this.onUpdateView();
+        this.defaultView();
     }
     Controller.prototype.onUpdateView = function () {
         var _this = this;
@@ -8704,6 +8705,7 @@ var Controller = /** @class */ (function () {
         }); });
         this.setTime(Views.characterselection, 15);
     };
+    // sets the time element for an active view
     Controller.prototype.setTime = function (view, timeUntil) {
         var timeUntilInterval = setInterval(function () {
             document.querySelectorAll(Views[view] + " time")[0].innerHTML = timeUntil.toString();
@@ -8712,6 +8714,11 @@ var Controller = /** @class */ (function () {
                 clearInterval(timeUntilInterval);
             }
         }, 1000);
+    };
+    Controller.prototype.defaultView = function () {
+        document.querySelectorAll('default button')[0].addEventListener('click', function () {
+            location.reload();
+        });
     };
     return Controller;
 }());
