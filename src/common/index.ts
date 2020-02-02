@@ -3,6 +3,18 @@ declare const AirConsole: any;
 export * from "./client";
 export * from "./server";
 
+
+
+export interface AirConsoleMessage<T extends any> {
+  action: string,
+  data: T;
+}
+
+
+
+
+
+
 export class PlayerData implements TransactionTypeInterface {
   constructor(public x: number, public y: number, deviceId: number) {
     this.id = deviceId;

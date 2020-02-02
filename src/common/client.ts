@@ -11,8 +11,13 @@ import {
   ServerUpdateData,
   ObjectUpdateData,
   PlayerUpdateData,
-  PlayerState
+  PlayerState,
+  AirConsoleMessage
 } from "./index";
+import { EventListener } from "./eventListener";
+import { ConnectedDevice, getDevice } from "./connectedDevice";
+
+const eventListener = EventListener.get();
 
 export class Client {
   id: number = 0;
@@ -20,14 +25,66 @@ export class Client {
   playerData: PlayerData[] = [];
   objectData: ObjectData[] = [];
   serverData: ServerData;
+
+  awaitReady: Promise<number>;
+
   constructor() {
     this.serverData = new ServerData(30, ServerState.initial);
-    this.airConsole = new AirConsole();
-    this.airConsole.onDeviceStateChange = (id: number) => {
-      this.id = id;
-      this.subscribeToAirConsole();
-    };
+
+    this.awaitReady = new Promise((resolve) => {
+      this.airConsole = new AirConsole();
+      this.initMessageHandler();
+
+      this.airConsole.onDeviceStateChange = (id: number, state: any) => {
+        try {
+          getDevice(id).updateState(state)
+        } catch(e) {
+          const newDevice = new ConnectedDevice(id);
+          newDevice.updateState(state);
+        }
+      };
+
+
+
+      eventListener.on('SERVER_updateState', (state: any) => {
+        console.log('game state changed', state.state);
+
+        if(state.state === 'join') {
+          // prepare stuff for join state
+        }
+
+        if(state.state === 'choose') {
+          // prepare stuff for choose state
+          this.airConsole.setCustomDeviceState({
+            wantAngry: Math.random() > 0.5,
+          })
+        }
+
+      });
+
+
+    });
   }
+
+  private initMessageHandler() {
+    this.airConsole.onMessage = (from: number, data: AirConsoleMessage<any>) => {
+      if (data) {
+        if(from === 0){
+          const event = 'SERVER_'+data.action;
+          eventListener.trigger(event as any, data.data);
+        } else {
+          // IDK
+        }
+      }
+    };
+
+    
+  }
+
+
+
+
+
 
   updateServerCallbacks: Set<(serverData: ServerData) => void> = new Set();
   onUpdateServerData(cb: (serverData: ServerData) => void) {
@@ -50,29 +107,28 @@ export class Client {
   }
 
   subscribeToAirConsole() {
-    this.airConsole.onMessage = (from: any, dataAsString: string) => {
-      if (dataAsString) {
-        let data = JSON.parse(dataAsString) as TransactionTypeInterface;
+    this.airConsole.onMessage = (from: any, data: TransactionTypeInterface) => {
+      if (data) {
         switch (data.transactionType) {
           case TransactionType.PlayerData:
             console.log("received player data", data);
             this.playerData = (data as PlayerUpdateData).playerData;
             break;
           case TransactionType.ObjectData:
-            console.log("received object data", data);
+            // console.log("received object data", data);
             this.objectData = (data as ObjectUpdateData).objectData;
             break;
           case TransactionType.ServerData:
-            console.log("received server data", data);
+            // console.log("received server data", data);
             this.serverData = (data as ServerUpdateData).serverData;
             this.updateServerData();
             break;
           default:
-            console.error("client onMessage switch", dataAsString);
+            console.error("client onMessage switch", data);
             break;
         }
       } else {
-        console.error("client onMessage", dataAsString);
+        console.error("client onMessage", data);
       }
     };
   }
@@ -107,7 +163,7 @@ export class Client {
   }
 
   private notifyServer(data: any) {
-    this.airConsole.message(AirConsole.SCREEN, JSON.stringify(data));
+    this.airConsole.message(AirConsole.SCREEN, data);
   }
 
   getTime(): number {
