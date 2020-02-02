@@ -66,6 +66,7 @@ class Controller {
         this.showView(Views.playscreen);
         this.joystick.start();
         this.shakeController.listen();
+        this.setTime(Views.splashscreen, 120);
         break;
       case 'end':
         this.showView(Views.endscreen);
@@ -99,7 +100,7 @@ class Controller {
   // sets the time element for an active view
   setTime(view: Views, timeUntil: number) {
     let timeUntilInterval = setInterval(() => {
-      document.querySelectorAll(Views[view] + " time")[0].innerHTML = timeUntil.toString();
+      document.querySelectorAll(Views[view] + " time")[0].innerHTML = '00:' + timeUntil.toString();
       timeUntil--;
       if (timeUntil <= 0) {
         clearInterval(timeUntilInterval);
