@@ -35,6 +35,23 @@
     }
   }
 
+  &.ggj {
+    width: 0px;
+    height: 0px;
+
+    &::before {
+      width: 40px;
+      height: 40px;
+      background: url(../assets/ggj-koblenz_100.png);
+    }
+    &.littledamage::before {
+      background: url(../assets/ggj-koblenz_050.png);
+    }
+    &.destroyed::before {
+      background: url(../assets/koblenz_000.png);
+    }
+  }
+
   &.kommode {
     width: 0px;
     height: 0px;

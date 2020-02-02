@@ -221,5 +221,14 @@
       }
     }
 
+    ,{
+      "type": "asset", "pos": [330, 5], "meta": {
+        "size": [40, 10],
+        "destructible": true,
+        "health": 100,
+        "class": ["ggj"]
+      }
+    }
+
   ]
 }
