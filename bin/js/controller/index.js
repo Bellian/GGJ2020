@@ -19160,7 +19160,7 @@ var matter_js_1 = require("matter-js");
 var gameStateEnd_1 = require("./gameStateEnd");
 var eventListener = eventListener_1.EventListener.get();
 var gameTime = 1200000;
-var forceDefault = 1;
+var forceDefault = 4;
 var tmp = gl_matrix_1.vec2.create();
 var GameStateGame = /** @class */ (function (_super) {
     __extends(GameStateGame, _super);

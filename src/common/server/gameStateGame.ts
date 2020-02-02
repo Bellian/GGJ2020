@@ -15,7 +15,7 @@ import { GameStateEnd } from "./gameStateEnd";
 
 const eventListener = EventListener.get();
 const gameTime = 1200000;
-const forceDefault = 1;
+const forceDefault = 4;
 
 let tmp = vec2.create();
 
