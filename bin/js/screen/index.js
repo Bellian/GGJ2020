@@ -19162,7 +19162,7 @@ var GameStateGame = /** @class */ (function (_super) {
                 });
             }, 1000 / 15);
             // Engine.showDebugPlayer();
-            physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
+            // PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();
         });
     };

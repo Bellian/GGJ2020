@@ -19293,7 +19293,7 @@ var GameStateGame = /** @class */ (function (_super) {
                 });
             }, 1000 / 15);
             // Engine.showDebugPlayer();
-            physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
+            // PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();
         });
     };
@@ -20216,7 +20216,11 @@ var PhysicsEngine = /** @class */ (function () {
     function PhysicsEngine() {
     }
     PhysicsEngine.init = function () {
-        this.engine = matter_js_1.Engine.create();
+        this.engine = matter_js_1.Engine.create(undefined, {
+            constraintIterations: 1,
+            positionIterations: 1,
+            velocityIterations: 1
+        });
         this.world = this.engine.world;
         this.world.gravity = {
             scale: 0,

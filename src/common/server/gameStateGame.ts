@@ -177,7 +177,7 @@ export class GameStateGame extends GameState {
 
             // Engine.showDebugPlayer();
 
-            PhysicsEngine.showDebugRenderer(level);
+            // PhysicsEngine.showDebugRenderer(level);
             PhysicsEngine.start();
         });
     }
