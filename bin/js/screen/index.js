@@ -19300,7 +19300,7 @@ var GameStateJoin = /** @class */ (function (_super) {
     };
     GameStateJoin.prototype.exit = function () {
         eventListener.off('deviceJoined', this.deviceJoinedCallback);
-        this.server.airConsole.setActivePlayers(4);
+        this.server.airConsole.setActivePlayers(20);
         _super.prototype.exit.call(this);
     };
     GameStateJoin.prototype.startTimer = function () {

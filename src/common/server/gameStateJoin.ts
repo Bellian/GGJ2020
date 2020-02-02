@@ -31,7 +31,7 @@ export class GameStateJoin extends GameState {
                 this.timerStarted = 0;
             }
         })
-        
+
         this.deviceJoinedCallback = eventListener.on('deviceJoined', (device) => {
             if(!this.timerStarted){
                 this.startTimer();
@@ -49,7 +49,7 @@ export class GameStateJoin extends GameState {
 
     exit() {
         eventListener.off('deviceJoined', this.deviceJoinedCallback);
-        this.server.airConsole.setActivePlayers(4);
+        this.server.airConsole.setActivePlayers(20);
         super.exit();
     }
 
