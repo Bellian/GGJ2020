@@ -12,8 +12,6 @@ interface EventCallbacks {
   SERVER_updateState: {
     state: string;
   };
-
-  player: Player;
 }
 
 export class EventListener {
