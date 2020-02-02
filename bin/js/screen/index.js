@@ -18529,7 +18529,7 @@ var Client = /** @class */ (function () {
                 data: _this.lastData
             };
             _this.notifyServer(controllerUpdate);
-        }, 1000 / 20);
+        }, 1000 / 15);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
@@ -19160,7 +19160,7 @@ var GameStateGame = /** @class */ (function (_super) {
                     action: "updatePlayer",
                     data: result
                 });
-            }, 1000 / 20);
+            }, 1000 / 15);
             // Engine.showDebugPlayer();
             physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();

@@ -173,7 +173,7 @@ export class GameStateGame extends GameState {
                     action: "updatePlayer",
                     data: result
                 });
-            }, 1000 / 20);
+            }, 1000 / 15);
 
             // Engine.showDebugPlayer();
 
