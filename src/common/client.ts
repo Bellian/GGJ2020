@@ -68,19 +68,23 @@ export class Client {
         let myDeviceId = this.airConsole.getDeviceId();
         Engine.init();
         const container = document.querySelector('gamecontainer') || document.querySelector('playscreen') || document.body;
-        console.log('container', container);
-        const level = new LevelMap("../level/level1.json", document.body);
+        const level = new LevelMap("../level/level1.json", container as HTMLElement);
         level.wait.then(() => {
           // Engine.showDebugPlayer();
-          Engine.showDebugRenderer(level);
+          // Engine.showDebugRenderer(level);
           Engine.start();
           getAllDevices().forEach(device => {
+            if(device.deviceId === 0){
+              return;
+            }
             if (!this.players.has(device)) {
+              console.log('create player for:',device.deviceId);
               let player = new Player(
                 level,
                 vec2.fromValues(-5000, -5000),
                 Pawn
               );
+              player.pawn.viewUpdate();
               if (device.deviceId === myDeviceId) {
                 level.setCameraPosition(player.position);
               }
@@ -99,26 +103,21 @@ export class Client {
             for (let key in data) {
               let device = getDevice(Number.parseInt(key));
               let item = data[key];
-              let p = this.players.get(device);
-              if(p === undefined || p === null) {
+              let player = this.players.get(device);
+              if(player === undefined || player === null) {
                 return;
               }
-              p.pawn.move(item.direction);
-              p.pawn.position = item.position;
-              if (key === myDeviceId) {
-                level.setCameraPosition(p.position);
+              player.pawn.move(item.direction);
+              vec2.copy(player.position, item.position);
+              vec2.copy(player.pawn.position, item.position);
+              
+              if (Number.parseInt(key) === myDeviceId) {
+                level.setCameraPosition(player.position);
               }
-              this.players.set(device, p);
+              player.pawn.viewUpdate();
             }
           }
         );
-
-        const rate = 1000/25
-        this.debugInterface = setInterval(() => {
-          const direction = vec2.random(vec2.create(), 2);
-          this.moveAndInteract(direction[0], direction[1], Math.random() > 0.5);
-        }, rate);
-
       } else {
         clearInterval(this.debugInterface);
       }

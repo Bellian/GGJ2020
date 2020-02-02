@@ -85,7 +85,7 @@ export class LevelMap {
         });
 
         // create player
-        new Player(this, vec2.fromValues(10,10), Pawn);
+        // new Player(this, vec2.fromValues(10,10), Pawn);
 
     }
 

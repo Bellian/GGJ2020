@@ -19,7 +19,7 @@ export class Player extends LevelObject {
     public pawnClass: typeof Pawn
   ) {
     super(levelMap, position);
-    this.pawn = new pawnClass(levelMap, position);
+    this.pawn = new pawnClass(levelMap, vec2.clone(position));
 
     // this.registerInput();
   }

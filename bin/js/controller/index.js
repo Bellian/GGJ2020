@@ -18441,15 +18441,19 @@ var Client = /** @class */ (function () {
                 var myDeviceId_1 = _this.airConsole.getDeviceId();
                 physicsEngine_1.default.init();
                 var container = document.querySelector('gamecontainer') || document.querySelector('playscreen') || document.body;
-                console.log('container', container);
-                var level_1 = new levelMap_1.LevelMap("../level/level1.json", document.body);
+                var level_1 = new levelMap_1.LevelMap("../level/level1.json", container);
                 level_1.wait.then(function () {
                     // Engine.showDebugPlayer();
-                    physicsEngine_1.default.showDebugRenderer(level_1);
+                    // Engine.showDebugRenderer(level);
                     physicsEngine_1.default.start();
                     connectedDevice_1.getAllDevices().forEach(function (device) {
+                        if (device.deviceId === 0) {
+                            return;
+                        }
                         if (!_this.players.has(device)) {
+                            console.log('create player for:', device.deviceId);
                             var player = new player_1.Player(level_1, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default);
+                            player.pawn.viewUpdate();
                             if (device.deviceId === myDeviceId_1) {
                                 level_1.setCameraPosition(player.position);
                             }
@@ -18461,23 +18465,19 @@ var Client = /** @class */ (function () {
                     for (var key in data) {
                         var device = connectedDevice_1.getDevice(Number.parseInt(key));
                         var item = data[key];
-                        var p = _this.players.get(device);
-                        if (p === undefined || p === null) {
+                        var player = _this.players.get(device);
+                        if (player === undefined || player === null) {
                             return;
                         }
-                        p.pawn.move(item.direction);
-                        p.pawn.position = item.position;
-                        if (key === myDeviceId_1) {
-                            level_1.setCameraPosition(p.position);
+                        player.pawn.move(item.direction);
+                        gl_matrix_1.vec2.copy(player.position, item.position);
+                        gl_matrix_1.vec2.copy(player.pawn.position, item.position);
+                        if (Number.parseInt(key) === myDeviceId_1) {
+                            level_1.setCameraPosition(player.position);
                         }
-                        _this.players.set(device, p);
+                        player.pawn.viewUpdate();
                     }
                 });
-                var rate = 1000 / 25;
-                _this.debugInterface = setInterval(function () {
-                    var direction = gl_matrix_1.vec2.random(gl_matrix_1.vec2.create(), 2);
-                    _this.moveAndInteract(direction[0], direction[1], Math.random() > 0.5);
-                }, rate);
             }
             else {
                 clearInterval(_this.debugInterface);
@@ -18984,27 +18984,35 @@ var GameStateGame = /** @class */ (function (_super) {
         });
         console.log('is angry:', this.data);
         eventListener.on('CLIENT_updateControllerData', function (data) {
-            // console.log(data.from, data.doesAction, data.moveDirection);
+            console.log(data.from, data.doesAction, data.moveDirection);
         });
         this.updateInterval = setInterval(function () {
             var result = {};
-            connectedDevice_1.getAllDevices().forEach(function (e) {
+            connectedDevice_1.getAllDevices().filter(function (e) { return e.deviceId !== 0; }).forEach(function (e) {
                 result[e.deviceId] = {
                     position: gl_matrix_1.vec2.create(),
-                    direction: 'down'
+                    direction: 'left'
                 };
             });
             _this.server.airConsole.broadcast({
                 action: 'updatePlayer',
                 data: result,
             });
-        }, 1000 / 25);
+        }, 1000 / 24);
         physicsEngine_1.PhysicsEngine.init();
         var level = new levelMap_1.LevelMap('../level/level1.json', document.body);
         level.wait.then(function () {
             // Engine.showDebugPlayer();
             physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
             physicsEngine_1.PhysicsEngine.start();
+            /*
+            const spawnpoints = level.getAllLevelObjectsByType(Spawnpoint);
+            const devices = getAllDevices();
+            for(let i = 0; i < devices.length;i++) {
+                devices.
+                spawnpoints[i].position
+            }
+            */
         });
     };
     GameStateGame.prototype.exit = function () {
@@ -19400,8 +19408,6 @@ var gl_matrix_1 = require("gl-matrix");
 var authority_1 = require("../../common/authority");
 var physicsEngine_1 = require("../physicsEngine");
 var matter_js_1 = require("matter-js");
-var pawn_1 = require("./pawn");
-var player_1 = require("./player");
 var wall_1 = require("./wall");
 var floor_1 = require("./floor");
 var placeholder_1 = require("./placeholder");
@@ -19466,7 +19472,7 @@ var LevelMap = /** @class */ (function () {
             }
         });
         // create player
-        new player_1.default(this, gl_matrix_1.vec2.fromValues(10, 10), pawn_1.default);
+        // new Player(this, vec2.fromValues(10,10), Pawn);
     };
     LevelMap.prototype.createBounds = function () {
         if (!authority_1.default.get().hasAuthority()) {
@@ -19516,7 +19522,7 @@ exports.LevelMap = LevelMap;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":34,"./asset":25,"./floor":26,"./pawn":29,"./placeholder":30,"./player":31,"./spawnpoint":32,"./wall":33,"gl-matrix":2,"matter-js":12}],28:[function(require,module,exports){
+},{"../../common/authority":13,"../physicsEngine":34,"./asset":25,"./floor":26,"./placeholder":30,"./spawnpoint":32,"./wall":33,"gl-matrix":2,"matter-js":12}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
@@ -19676,7 +19682,7 @@ var Player = /** @class */ (function (_super) {
         _this.pawnClass = pawnClass;
         _this.move = new Set();
         _this.canTick = true;
-        _this.pawn = new pawnClass(levelMap, position);
+        _this.pawn = new pawnClass(levelMap, gl_matrix_1.vec2.clone(position));
         return _this;
         // this.registerInput();
     }

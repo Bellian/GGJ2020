@@ -6,6 +6,7 @@ import { ConnectedDevice, getAllDevices } from "../connectedDevice";
 import {LevelMap} from '../../screen/map/levelMap';
 import { vec2 } from "gl-matrix";
 import { PhysicsEngine } from "../../screen/physicsEngine";
+import Spawnpoint from "../../screen/map/spawnpoint";
 
 const eventListener = EventListener.get();
 const gameTime = 120000;
@@ -45,22 +46,22 @@ export class GameStateGame extends GameState {
         console.log('is angry:', this.data);
 
         eventListener.on('CLIENT_updateControllerData', (data: any) => {
-            // console.log(data.from, data.doesAction, data.moveDirection);
+            console.log(data.from, data.doesAction, data.moveDirection);
         })
 
         this.updateInterval = setInterval(() => {
             const result: {[id: number]: any} = {};
-            getAllDevices().forEach((e) => {
+            getAllDevices().filter(e => e.deviceId !== 0).forEach((e) => {
                 result[e.deviceId] = {
                     position: vec2.create(),
-                    direction: 'down'
+                    direction: 'left'
                 }
             });
             this.server.airConsole.broadcast({
                 action: 'updatePlayer',
                 data: result,
             })
-        }, 1000 / 25);
+        }, 1000 / 24);
 
         PhysicsEngine.init();
         const level = new LevelMap('../level/level1.json', document.body);
@@ -69,6 +70,15 @@ export class GameStateGame extends GameState {
             // Engine.showDebugPlayer();
             PhysicsEngine.showDebugRenderer(level);
             PhysicsEngine.start();
+
+            /*
+            const spawnpoints = level.getAllLevelObjectsByType(Spawnpoint);
+            const devices = getAllDevices();
+            for(let i = 0; i < devices.length;i++) {
+                devices.
+                spawnpoints[i].position
+            }
+            */
 
         })
         
