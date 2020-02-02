@@ -18368,6 +18368,137 @@ var Vector = _dereq_('../geometry/Vector');
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],13:[function(require,module,exports){
+/*
+ * Author: Alex Gibson
+ * https://github.com/alexgibson/shake.js
+ * License: MIT license
+ */
+
+(function(global, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(function() {
+            return factory(global, global.document);
+        });
+    } else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory(global, global.document);
+    } else {
+        global.Shake = factory(global, global.document);
+    }
+} (typeof window !== 'undefined' ? window : this, function (window, document) {
+
+    'use strict';
+
+    function Shake(options) {
+        //feature detect
+        this.hasDeviceMotion = 'ondevicemotion' in window;
+
+        this.options = {
+            threshold: 15, //default velocity threshold for shake to register
+            timeout: 1000 //default interval between events
+        };
+
+        if (typeof options === 'object') {
+            for (var i in options) {
+                if (options.hasOwnProperty(i)) {
+                    this.options[i] = options[i];
+                }
+            }
+        }
+
+        //use date to prevent multiple shakes firing
+        this.lastTime = new Date();
+
+        //accelerometer values
+        this.lastX = null;
+        this.lastY = null;
+        this.lastZ = null;
+
+        //create custom event
+        if (typeof document.CustomEvent === 'function') {
+            this.event = new document.CustomEvent('shake', {
+                bubbles: true,
+                cancelable: true
+            });
+        } else if (typeof document.createEvent === 'function') {
+            this.event = document.createEvent('Event');
+            this.event.initEvent('shake', true, true);
+        } else {
+            return false;
+        }
+    }
+
+    //reset timer values
+    Shake.prototype.reset = function () {
+        this.lastTime = new Date();
+        this.lastX = null;
+        this.lastY = null;
+        this.lastZ = null;
+    };
+
+    //start listening for devicemotion
+    Shake.prototype.start = function () {
+        this.reset();
+        if (this.hasDeviceMotion) {
+            window.addEventListener('devicemotion', this, false);
+        }
+    };
+
+    //stop listening for devicemotion
+    Shake.prototype.stop = function () {
+        if (this.hasDeviceMotion) {
+            window.removeEventListener('devicemotion', this, false);
+        }
+        this.reset();
+    };
+
+    //calculates if shake did occur
+    Shake.prototype.devicemotion = function (e) {
+        var current = e.accelerationIncludingGravity;
+        var currentTime;
+        var timeDifference;
+        var deltaX = 0;
+        var deltaY = 0;
+        var deltaZ = 0;
+
+        if ((this.lastX === null) && (this.lastY === null) && (this.lastZ === null)) {
+            this.lastX = current.x;
+            this.lastY = current.y;
+            this.lastZ = current.z;
+            return;
+        }
+
+        deltaX = Math.abs(this.lastX - current.x);
+        deltaY = Math.abs(this.lastY - current.y);
+        deltaZ = Math.abs(this.lastZ - current.z);
+
+        if (((deltaX > this.options.threshold) && (deltaY > this.options.threshold)) || ((deltaX > this.options.threshold) && (deltaZ > this.options.threshold)) || ((deltaY > this.options.threshold) && (deltaZ > this.options.threshold))) {
+            //calculate time in milliseconds since last shake registered
+            currentTime = new Date();
+            timeDifference = currentTime.getTime() - this.lastTime.getTime();
+
+            if (timeDifference > this.options.timeout) {
+                window.dispatchEvent(this.event);
+                this.lastTime = new Date();
+            }
+        }
+
+        this.lastX = current.x;
+        this.lastY = current.y;
+        this.lastZ = current.z;
+
+    };
+
+    //event handler
+    Shake.prototype.handleEvent = function (e) {
+        if (typeof (this[e.type]) === 'function') {
+            return this[e.type](e);
+        }
+    };
+
+    return Shake;
+}));
+
+},{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Authority = /** @class */ (function () {
@@ -18393,7 +18524,7 @@ exports.default = Authority;
 
 
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("./eventListener");
@@ -18541,7 +18672,7 @@ exports.Client = Client;
 
 
 
-},{"../screen/map/pawn":29,"../screen/map/player":31,"./../screen/map/levelMap":27,"./../screen/physicsEngine":34,"./connectedDevice":15,"./eventListener":17,"gl-matrix":2}],15:[function(require,module,exports){
+},{"../screen/map/pawn":30,"../screen/map/player":32,"./../screen/map/levelMap":28,"./../screen/physicsEngine":35,"./connectedDevice":16,"./eventListener":18,"gl-matrix":2}],16:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -18614,7 +18745,7 @@ exports.ConnectedDevice = ConnectedDevice;
 
 
 
-},{"./eventListener":17}],16:[function(require,module,exports){
+},{"./eventListener":18}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Directions;
@@ -18627,7 +18758,7 @@ var Directions;
 
 
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var EventListener = /** @class */ (function () {
@@ -18671,7 +18802,7 @@ exports.EventListener = EventListener;
 
 
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -18758,7 +18889,7 @@ exports.ObjectData = ObjectData;
 
 
 
-},{"./client":14,"./server":19}],19:[function(require,module,exports){
+},{"./client":15,"./server":20}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
@@ -18837,7 +18968,7 @@ exports.Server = Server;
 
 
 
-},{"./connectedDevice":15,"./eventListener":17,"./index":18,"./server/gameStateJoin":23}],20:[function(require,module,exports){
+},{"./connectedDevice":16,"./eventListener":18,"./index":19,"./server/gameStateJoin":24}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("../eventListener");
@@ -18866,7 +18997,7 @@ exports.GameState = GameState;
 
 
 
-},{"../eventListener":17}],21:[function(require,module,exports){
+},{"../eventListener":18}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18944,7 +19075,7 @@ exports.GameStateChoose = GameStateChoose;
 
 
 
-},{"../connectedDevice":15,"../eventListener":17,"./gameState":20,"./gameStateGame":22}],22:[function(require,module,exports){
+},{"../connectedDevice":16,"../eventListener":18,"./gameState":21,"./gameStateGame":23}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19090,7 +19221,7 @@ exports.GameStateGame = GameStateGame;
 
 
 
-},{"../../screen/map/levelMap":27,"../../screen/map/pawn":29,"../../screen/map/player":31,"../../screen/map/spawnpoint":32,"../../screen/physicsEngine":34,"../connectedDevice":15,"../eventListener":17,"./gameState":20,"./gameStateChoose":21,"gl-matrix":2}],23:[function(require,module,exports){
+},{"../../screen/map/levelMap":28,"../../screen/map/pawn":30,"../../screen/map/player":32,"../../screen/map/spawnpoint":33,"../../screen/physicsEngine":35,"../connectedDevice":16,"../eventListener":18,"./gameState":21,"./gameStateChoose":22,"gl-matrix":2}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19160,12 +19291,14 @@ exports.GameStateJoin = GameStateJoin;
 
 
 
-},{"../eventListener":17,"./gameState":20,"./gameStateChoose":21}],24:[function(require,module,exports){
+},{"../eventListener":18,"./gameState":21,"./gameStateChoose":22}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../common/index");
 var gl_matrix_1 = require("gl-matrix");
 var eventListener_1 = require("../common/eventListener");
+// @ts-ignore
+var Shake = require("shake.js");
 gl_matrix_1.glMatrix.setMatrixArrayType(Array);
 var eventListener = eventListener_1.EventListener.get();
 var Views;
@@ -19178,7 +19311,7 @@ var Controller = /** @class */ (function () {
     function Controller(client) {
         this.client = client;
         this.joystick = new Joystick(client);
-        this.shake = new Shake(client);
+        this.shakeController = new ShakeController(client);
         this.onUpdateView();
         this.defaultView();
         // this.client.onUpdateServerData(this.updateView.bind(this));
@@ -19252,20 +19385,20 @@ var Controller = /** @class */ (function () {
     };
     return Controller;
 }());
-var Shake = /** @class */ (function () {
-    function Shake(client) {
+var ShakeController = /** @class */ (function () {
+    function ShakeController(client) {
         this.client = client;
         // @ts-ignore
         this.shakeEvent = new Shake({ threshold: 15, timeout: 1000 });
     }
-    Shake.prototype.listen = function () {
+    ShakeController.prototype.listen = function () {
         window.addEventListener('shake', this.onShake, false);
     };
-    Shake.prototype.onShake = function () {
+    ShakeController.prototype.onShake = function () {
         alert('you did a shake');
         this.client.moveAndInteract(0, 0, true, false);
     };
-    return Shake;
+    return ShakeController;
 }());
 var Joystick = /** @class */ (function () {
     function Joystick(client) {
@@ -19322,7 +19455,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-},{"../common/eventListener":17,"../common/index":18,"gl-matrix":2}],25:[function(require,module,exports){
+},{"../common/eventListener":18,"../common/index":19,"gl-matrix":2,"shake.js":13}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19394,7 +19527,7 @@ exports.default = Asset;
 
 
 
-},{"../physicsEngine":34,"./levelObject":28,"matter-js":12}],26:[function(require,module,exports){
+},{"../physicsEngine":35,"./levelObject":29,"matter-js":12}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19451,7 +19584,7 @@ exports.default = Floor;
 
 
 
-},{"./levelObject":28}],27:[function(require,module,exports){
+},{"./levelObject":29}],28:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -19603,7 +19736,7 @@ exports.LevelMap = LevelMap;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":34,"./asset":25,"./floor":26,"./placeholder":30,"./spawnpoint":32,"./wall":33,"gl-matrix":2,"matter-js":12}],28:[function(require,module,exports){
+},{"../../common/authority":14,"../physicsEngine":35,"./asset":26,"./floor":27,"./placeholder":31,"./spawnpoint":33,"./wall":34,"gl-matrix":2,"matter-js":12}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
@@ -19652,7 +19785,7 @@ exports.default = LevelObject;
 
 
 
-},{"../physicsEngine":34,"matter-js":12}],29:[function(require,module,exports){
+},{"../physicsEngine":35,"matter-js":12}],30:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19703,7 +19836,7 @@ exports.default = Pawn;
 
 
 
-},{"../physicsEngine":34,"./levelObject":28,"matter-js":12}],30:[function(require,module,exports){
+},{"../physicsEngine":35,"./levelObject":29,"matter-js":12}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19737,7 +19870,7 @@ exports.default = Placeholder;
 
 
 
-},{"./levelObject":28}],31:[function(require,module,exports){
+},{"./levelObject":29}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19809,7 +19942,7 @@ exports.default = Player;
 
 
 
-},{"./levelObject":28,"gl-matrix":2}],32:[function(require,module,exports){
+},{"./levelObject":29,"gl-matrix":2}],33:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19838,7 +19971,7 @@ exports.default = Spawnpoint;
 
 
 
-},{"./levelObject":28}],33:[function(require,module,exports){
+},{"./levelObject":29}],34:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19908,7 +20041,7 @@ exports.default = Wall;
 
 
 
-},{"../physicsEngine":34,"./levelObject":28,"matter-js":12}],34:[function(require,module,exports){
+},{"../physicsEngine":35,"./levelObject":29,"matter-js":12}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");
@@ -20039,6 +20172,6 @@ exports.default = PhysicsEngine;
 
 
 
-},{"../common/enums":16,"gl-matrix":2,"matter-js":12}]},{},[24]);
+},{"../common/enums":17,"gl-matrix":2,"matter-js":12}]},{},[25]);
 
 //# sourceMappingURL=index.js.map

@@ -27,10 +27,10 @@ interface JoyStickPosition{
 
 class Controller {
   private joystick:Joystick;
-  private shake:Shake;
+  private shakeController:ShakeController;
   constructor(private client: Client) {
     this.joystick = new Joystick(client);
-    this.shake = new Shake(client);
+    this.shakeController = new ShakeController(client);
     this.onUpdateView();
     this.defaultView();
     // this.client.onUpdateServerData(this.updateView.bind(this));
@@ -111,7 +111,7 @@ class Controller {
 
 }
 
-class Shake{
+class ShakeController{
   shakeEvent:any;
   constructor(private client:Client){
     // @ts-ignore
