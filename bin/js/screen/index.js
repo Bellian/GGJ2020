@@ -18440,6 +18440,8 @@ var Client = /** @class */ (function () {
                 // prepare stuff for game state
                 var myDeviceId_1 = _this.airConsole.getDeviceId();
                 physicsEngine_1.default.init();
+                var container = document.querySelector('gamecontainer') || document.querySelector('playscreen') || document.body;
+                console.log('container', container);
                 var level_1 = new levelMap_1.LevelMap("../level/level1.json", document.body);
                 level_1.wait.then(function () {
                     // Engine.showDebugPlayer();
@@ -18912,6 +18914,8 @@ var GameStateChoose = /** @class */ (function (_super) {
         else {
             angry = candidates[Math.floor(candidates.length * Math.random())];
         }
+        console.log('candidates:', candidates);
+        console.log('devices:', devices);
         console.log('and the winner is:', angry);
         _super.prototype.exit.call(this, angry);
     };
@@ -19398,7 +19402,6 @@ exports.LevelMap = LevelMap;
 },{"../../common/authority":13,"../physicsEngine":34,"./asset":25,"./floor":26,"./pawn":29,"./placeholder":30,"./player":31,"./spawnpoint":32,"./wall":33,"gl-matrix":2,"matter-js":12}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var authority_1 = require("../../common/authority");
 var matter_js_1 = require("matter-js");
 var physicsEngine_1 = require("../physicsEngine");
 var LevelObject = /** @class */ (function () {
@@ -19412,10 +19415,10 @@ var LevelObject = /** @class */ (function () {
         this.render();
     }
     LevelObject.prototype.gateCreatePhysics = function () {
-        console.log('init physics', authority_1.default.get().hasAuthority());
-        if (!authority_1.default.get().hasAuthority()) {
-            return;
-        }
+        // console.log('init physics', Authority.get().hasAuthority());
+        // if(!Authority.get().hasAuthority()){
+        //     return;
+        // }
         this.createPysics();
     };
     LevelObject.prototype.tick = function (delta) {
@@ -19445,7 +19448,7 @@ exports.default = LevelObject;
 
 
 
-},{"../../common/authority":13,"../physicsEngine":34,"matter-js":12}],29:[function(require,module,exports){
+},{"../physicsEngine":34,"matter-js":12}],29:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {

@@ -54,6 +54,8 @@ export class GameStateChoose extends GameState {
             angry = candidates[Math.floor(candidates.length * Math.random())];
         }
 
+        console.log('candidates:', candidates);
+        console.log('devices:', devices);
         console.log('and the winner is:', angry);
 
         super.exit(angry);

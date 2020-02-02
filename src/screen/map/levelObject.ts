@@ -17,10 +17,10 @@ export abstract class LevelObject {
     }
 
     private gateCreatePhysics(){
-        console.log('init physics', Authority.get().hasAuthority());
-        if(!Authority.get().hasAuthority()){
-            return;
-        }
+        // console.log('init physics', Authority.get().hasAuthority());
+        // if(!Authority.get().hasAuthority()){
+        //     return;
+        // }
         this.createPysics();
     }
 

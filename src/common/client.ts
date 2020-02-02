@@ -67,6 +67,8 @@ export class Client {
         // prepare stuff for game state
         let myDeviceId = this.airConsole.getDeviceId();
         Engine.init();
+        const container = document.querySelector('gamecontainer') || document.querySelector('playscreen') || document.body;
+        console.log('container', container);
         const level = new LevelMap("../level/level1.json", document.body);
         level.wait.then(() => {
           // Engine.showDebugPlayer();
