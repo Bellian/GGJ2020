@@ -1,7 +1,34 @@
+import { vec2 } from "gl-matrix";
+
 declare const AirConsole: any;
 
 export * from "./client";
 export * from "./server";
+
+
+
+export interface AirConsoleMessage<T extends any> {
+  action: string,
+  data: T;
+}
+
+export interface AirConsoleControllerUpdate {
+  moveDirection: vec2;
+  doesAction: boolean;
+}
+
+let a: AirConsoleMessage<AirConsoleControllerUpdate> = {
+  action: 'updateControllerData',
+  data: {
+    doesAction: false,
+    moveDirection: vec2.fromValues(23,-55)
+  }
+}
+
+
+
+
+
 
 export class PlayerData implements TransactionTypeInterface {
   constructor(public x: number, public y: number, deviceId: number) {

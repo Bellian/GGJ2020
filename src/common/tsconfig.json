@@ -3,6 +3,7 @@
       "target": "ES5",
       "module": "commonjs",
       "strict": true,
-      "lib": ["ES2015", "DOM", "DOM.Iterable"]
+      "lib": ["ES2015", "DOM", "DOM.Iterable"],
+      "downlevelIteration": true
     }
   }

@@ -7,6 +7,11 @@ Authority.get().requestAuthority();
 
 document.addEventListener('DOMContentLoaded', () => {
     Engine.init();
+
+    let server:Server = new Server();
+
+    /*
+
     const level = new LevelMap('../level/level1.json', document.body);
 
     level.wait.then(() => {
@@ -14,8 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
         Engine.showDebugRenderer(level);
         Engine.start();
 
-        let server:Server = new Server();
     })
+    
+    */
 });
 
 

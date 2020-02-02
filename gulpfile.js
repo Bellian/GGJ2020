@@ -73,7 +73,7 @@ var modules = {
         ],
     },
     uglify: {
-        use: true,
+        use: false,
         instances: [
             {
                 name: 'Screen',
