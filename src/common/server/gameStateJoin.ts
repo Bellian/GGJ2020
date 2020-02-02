@@ -4,7 +4,7 @@ import { Server } from "../server";
 import { GameStateChoose } from "./gameStateChoose";
 
 const eventListener = EventListener.get();
-
+const joinTime = 3000;
 export class GameStateJoin extends GameState {
     //nextState = undefined;
 
@@ -13,15 +13,11 @@ export class GameStateJoin extends GameState {
     timerStarted!: number;
     deviceJoinedCallback: any;
     
-    constructor(server: Server, public duration: number){
-        super(server);
-    }
-
     tick(delta: number){
         if(this.timerStarted === undefined) {
             return;
         }
-        const timeLeft = this.duration - (Date.now() - this.timerStarted);
+        const timeLeft = joinTime - (Date.now() - this.timerStarted);
         if(timeLeft <= 0){
             console.log('timer is up, next state');
             this.exit();
@@ -38,7 +34,7 @@ export class GameStateJoin extends GameState {
                 data: {
                     state: 'join',
                     timerStarted: this.timerStarted,
-                    duration: this.duration,
+                    duration: joinTime,
                 }
             })
         });

@@ -18396,19 +18396,18 @@ exports.default = Authority;
 },{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var index_1 = require("./index");
 var eventListener_1 = require("./eventListener");
 var connectedDevice_1 = require("./connectedDevice");
 var gl_matrix_1 = require("gl-matrix");
+var levelMap_1 = require("./../screen/map/levelMap");
+var physicsEngine_1 = require("./../screen/physicsEngine");
+var player_1 = require("../screen/map/player");
+var pawn_1 = require("../screen/map/pawn");
 var eventListener = eventListener_1.EventListener.get();
 var Client = /** @class */ (function () {
     function Client() {
         var _this = this;
-        this.id = 0;
-        this.playerData = [];
-        this.objectData = [];
-        this.updateServerCallbacks = new Set();
-        this.serverData = new index_1.ServerData(30, index_1.ServerState.initial);
+        this.players = new Map();
         this.airConsole = new AirConsole();
         this.initMessageHandler();
         this.airConsole.onDeviceStateChange = function (id, state) {
@@ -18420,19 +18419,56 @@ var Client = /** @class */ (function () {
                 newDevice.updateState(state);
             }
         };
-        eventListener.on('SERVER_updateState', function (state) {
-            console.log('game state changed', state.state);
-            if (state.state === 'join') {
+        eventListener.on("SERVER_updateState", function (state) {
+            console.log("game state changed", state.state);
+            if (state.state === "join") {
                 // prepare stuff for join state
             }
-            if (state.state === 'choose') {
+            if (state.state === "choose") {
                 // prepare stuff for choose state
                 _this.airConsole.setCustomDeviceState({
-                    wantAngry: Math.random() > 0.5,
+                    wantAngry: Math.random() > 0.5
                 });
             }
-            if (state.state === 'game') {
+            if (state.state === "game") {
                 // prepare stuff for game state
+                var myDeviceId_1 = _this.airConsole.getDeviceId();
+                var level_1 = new levelMap_1.LevelMap("../level/level1.json", document.body);
+                level_1.wait.then(function () {
+                    // Engine.showDebugPlayer();
+                    physicsEngine_1.default.showDebugRenderer(level_1);
+                    physicsEngine_1.default.start();
+                    connectedDevice_1.getAllDevices().forEach(function (device) {
+                        if (!_this.players.has(device)) {
+                            var player = new player_1.Player(level_1, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default);
+                            if (device.deviceId === myDeviceId_1) {
+                                level_1.setCameraPosition(player.position);
+                            }
+                            _this.players.set(device, player);
+                        }
+                    });
+                });
+                eventListener.on("SERVER_updatePlayer", function (data) {
+                    for (var key in data) {
+                        var device = connectedDevice_1.getDevice(Number.parseInt(key));
+                        var item = data[key];
+                        var p = _this.players.get(device);
+                        p.pawn.move(item.direction);
+                        p.pawn.position = item.position;
+                        if (key === myDeviceId_1) {
+                            level_1.setCameraPosition(p.position);
+                        }
+                        _this.players.set(device, p);
+                    }
+                });
+                var rate = 1000 / 25;
+                _this.debugInterface = setInterval(function () {
+                    var direction = gl_matrix_1.vec2.random(gl_matrix_1.vec2.create(), 2);
+                    _this.moveAndInteract(direction[0], direction[1], Math.random() > 0.5);
+                }, rate);
+            }
+            else {
+                clearInterval(_this.debugInterface);
             }
         });
     }
@@ -18446,51 +18482,6 @@ var Client = /** @class */ (function () {
                 else {
                     // IDK
                 }
-            }
-        };
-    };
-    Client.prototype.onUpdateServerData = function (cb) {
-        this.updateServerCallbacks.add(cb);
-    };
-    Client.prototype.updateServerData = function () {
-        var _this = this;
-        this.updateServerCallbacks.forEach(function (e) { return e(_this.serverData); });
-    };
-    Client.prototype.currentPlayerData = function () {
-        var _this = this;
-        console.table("currentPlayerData playerData", this.playerData);
-        console.table("currentPlayerData id", this.id);
-        return this.playerData.filter(function (pD) { return pD.id === _this.id; })[0];
-    };
-    Client.prototype.sendControllerData = function (controllerData) {
-        controllerData.id = this.id;
-        this.notifyServer(controllerData);
-    };
-    Client.prototype.subscribeToAirConsole = function () {
-        var _this = this;
-        this.airConsole.onMessage = function (from, data) {
-            if (data) {
-                switch (data.transactionType) {
-                    case index_1.TransactionType.PlayerData:
-                        console.log("received player data", data);
-                        _this.playerData = data.playerData;
-                        break;
-                    case index_1.TransactionType.ObjectData:
-                        // console.log("received object data", data);
-                        _this.objectData = data.objectData;
-                        break;
-                    case index_1.TransactionType.ServerData:
-                        // console.log("received server data", data);
-                        _this.serverData = data.serverData;
-                        _this.updateServerData();
-                        break;
-                    default:
-                        console.error("client onMessage switch", data);
-                        break;
-                }
-            }
-            else {
-                console.error("client onMessage", data);
             }
         };
     };
@@ -18517,23 +18508,24 @@ var Client = /** @class */ (function () {
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
     };
-    Client.prototype.getTime = function () {
-        return this.serverData.timerValueInSeconds;
-    };
     return Client;
 }());
 exports.Client = Client;
 
 
 
-},{"./connectedDevice":15,"./eventListener":17,"./index":18,"gl-matrix":2}],15:[function(require,module,exports){
+},{"../screen/map/pawn":29,"../screen/map/player":31,"./../screen/map/levelMap":27,"./../screen/physicsEngine":34,"./connectedDevice":15,"./eventListener":17,"gl-matrix":2}],15:[function(require,module,exports){
 "use strict";
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("./eventListener");
@@ -18547,7 +18539,22 @@ function getDevice(deviceId) {
 }
 exports.getDevice = getDevice;
 function getAllDevices() {
-    return __spreadArrays(deviceLib.values());
+    var e_1, _a;
+    var result = [];
+    try {
+        for (var _b = __values(deviceLib.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var a = _c.value;
+            result.push(a);
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    return result;
 }
 exports.getAllDevices = getAllDevices;
 var internalID = 0;
@@ -18614,6 +18621,10 @@ var EventListener = /** @class */ (function () {
         return callback;
     };
     EventListener.prototype.off = function (event, callback) {
+        if (callback === undefined) {
+            delete this.listener[event];
+            return;
+        }
         if (this.listener[event] !== undefined) {
             var index = this.listener[event].indexOf(callback);
             if (index !== -1) {
@@ -18757,7 +18768,7 @@ var Server = /** @class */ (function () {
     Server.prototype.initMessageHandler = function () {
         this.airConsole.onMessage = function (from, data) {
             if (data) {
-                if (from === 0) {
+                if (from !== 0) {
                     var event_1 = 'CLIENT_' + data.action;
                     data.data.from = from;
                     eventListener.trigger(event_1, data.data);
@@ -18805,8 +18816,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("../eventListener");
 var eventListener = eventListener_1.EventListener.get();
 var GameState = /** @class */ (function () {
-    function GameState(server) {
+    function GameState(server, data) {
         this.server = server;
+        this.data = data;
         this.enter();
     }
     GameState.prototype.tick = function (delta) {
@@ -18814,8 +18826,8 @@ var GameState = /** @class */ (function () {
     GameState.prototype.enter = function () {
     };
     ;
-    GameState.prototype.exit = function () {
-        var newState = new this.nextState(this.server);
+    GameState.prototype.exit = function (data) {
+        var newState = new this.nextState(this.server, data);
         eventListener.trigger('newGameState', newState);
     };
     GameState.prototype.onExit = function (cb) {
@@ -18882,7 +18894,7 @@ var GameStateChoose = /** @class */ (function (_super) {
     GameStateChoose.prototype.exit = function () {
         var angry = undefined;
         var devices = connectedDevice_1.getAllDevices();
-        var candidates = devices.filter(function (e) { return e.customStateData.wantAngry; });
+        var candidates = devices.filter(function (e) { return e.customStateData && e.customStateData.wantAngry; });
         if (candidates.length === 0) {
             // fuck u all and pick random
             angry = devices[Math.floor(devices.length * Math.random())];
@@ -18890,11 +18902,8 @@ var GameStateChoose = /** @class */ (function (_super) {
         else {
             angry = candidates[Math.floor(candidates.length * Math.random())];
         }
-        console.log('and the winner is:', angry, devices, candidates);
-        connectedDevice_1.getAllDevices().forEach(function (e) {
-            console.log(e.customStateData);
-        });
-        _super.prototype.exit.call(this);
+        console.log('and the winner is:', angry);
+        _super.prototype.exit.call(this, angry);
     };
     GameStateChoose.prototype.startTimer = function () {
         console.log('player joined, starting timer');
@@ -18925,13 +18934,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
+var connectedDevice_1 = require("../connectedDevice");
+var levelMap_1 = require("../../screen/map/levelMap");
+var gl_matrix_1 = require("gl-matrix");
+var physicsEngine_1 = require("../../screen/physicsEngine");
 var eventListener = eventListener_1.EventListener.get();
 var gameTime = 120000;
 var GameStateGame = /** @class */ (function (_super) {
     __extends(GameStateGame, _super);
-    function GameStateGame(server, duration) {
-        var _this = _super.call(this, server) || this;
-        _this.duration = duration;
+    function GameStateGame(server, data) {
+        var _this = _super.call(this, server, data) || this;
         _this.nextState = gameStateChoose_1.GameStateChoose;
         return _this;
     }
@@ -18946,17 +18958,43 @@ var GameStateGame = /** @class */ (function (_super) {
         }
     };
     GameStateGame.prototype.enter = function () {
+        var _this = this;
         this.startTimer();
         this.server.airConsole.broadcast({
             action: 'updateState',
             data: {
-                state: 'choose',
+                state: 'game',
                 timerStarted: this.timerStarted,
                 duration: gameTime,
             }
         });
+        console.log('is angry:', this.data);
+        eventListener.on('CLIENT_updateControllerData', function (data) {
+            // console.log(data.from, data.doesAction, data.moveDirection);
+        });
+        this.updateInterval = setInterval(function () {
+            var result = {};
+            connectedDevice_1.getAllDevices().forEach(function (e) {
+                result[e.deviceId] = {
+                    position: gl_matrix_1.vec2.create(),
+                    direction: 'down'
+                };
+            });
+            _this.server.airConsole.broadcast({
+                action: 'updatePlayer',
+                data: result,
+            });
+        }, 1000 / 25);
+        var level = new levelMap_1.LevelMap('../level/level1.json', document.body);
+        level.wait.then(function () {
+            // Engine.showDebugPlayer();
+            physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
+            physicsEngine_1.PhysicsEngine.start();
+        });
     };
     GameStateGame.prototype.exit = function () {
+        eventListener.off('CLIENT_updateControllerData');
+        clearInterval(this.updateInterval);
         _super.prototype.exit.call(this);
     };
     GameStateGame.prototype.startTimer = function () {
@@ -18969,7 +19007,7 @@ exports.GameStateGame = GameStateGame;
 
 
 
-},{"../eventListener":17,"./gameState":20,"./gameStateChoose":21}],23:[function(require,module,exports){
+},{"../../screen/map/levelMap":27,"../../screen/physicsEngine":34,"../connectedDevice":15,"../eventListener":17,"./gameState":20,"./gameStateChoose":21,"gl-matrix":2}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18989,12 +19027,12 @@ var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
 var eventListener = eventListener_1.EventListener.get();
+var joinTime = 3000;
 var GameStateJoin = /** @class */ (function (_super) {
     __extends(GameStateJoin, _super);
-    function GameStateJoin(server, duration) {
-        var _this = _super.call(this, server) || this;
-        _this.duration = duration;
+    function GameStateJoin() {
         //nextState = undefined;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.nextState = gameStateChoose_1.GameStateChoose;
         return _this;
     }
@@ -19002,7 +19040,7 @@ var GameStateJoin = /** @class */ (function (_super) {
         if (this.timerStarted === undefined) {
             return;
         }
-        var timeLeft = this.duration - (Date.now() - this.timerStarted);
+        var timeLeft = joinTime - (Date.now() - this.timerStarted);
         if (timeLeft <= 0) {
             console.log('timer is up, next state');
             this.exit();
@@ -19019,7 +19057,7 @@ var GameStateJoin = /** @class */ (function (_super) {
                 data: {
                     state: 'join',
                     timerStarted: _this.timerStarted,
-                    duration: _this.duration,
+                    duration: joinTime,
                 }
             });
         });
@@ -19065,7 +19103,595 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-},{"../common/authority":13,"../common/server":19,"./physicsEngine":25}],25:[function(require,module,exports){
+},{"../common/authority":13,"../common/server":19,"./physicsEngine":34}],25:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
+var Asset = /** @class */ (function (_super) {
+    __extends(Asset, _super);
+    function Asset() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Asset.prototype.createPysics = function () {
+        this.hitBox = matter_js_1.Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
+            isStatic: true,
+        });
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
+    };
+    ;
+    Asset.prototype.render = function () {
+        var _a;
+        var classes = this.meta.class ? this.meta.class : [];
+        var view = _super.prototype.render.call(this);
+        (_a = view.classList).add.apply(_a, __spread(['asset'], classes));
+        return view;
+    };
+    Object.defineProperty(Asset.prototype, "isDestructable", {
+        get: function () {
+            return !!this.meta.destructible;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Asset;
+}(levelObject_1.default));
+exports.Asset = Asset;
+exports.default = Asset;
+
+
+
+},{"../physicsEngine":34,"./levelObject":28,"matter-js":12}],26:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var Floor = /** @class */ (function (_super) {
+    __extends(Floor, _super);
+    function Floor() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Floor.prototype.render = function () {
+        var _a;
+        var view = _super.prototype.render.call(this);
+        (_a = view.classList).add.apply(_a, __spread(['floor', 'center'], this.meta.class));
+        view.style.width = this.meta.size[0] + 'px';
+        view.style.height = this.meta.size[1] + 'px';
+        return view;
+    };
+    return Floor;
+}(levelObject_1.default));
+exports.Floor = Floor;
+exports.default = Floor;
+
+
+
+},{"./levelObject":28}],27:[function(require,module,exports){
+"use strict";
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var gl_matrix_1 = require("gl-matrix");
+var authority_1 = require("../../common/authority");
+var physicsEngine_1 = require("../physicsEngine");
+var matter_js_1 = require("matter-js");
+var pawn_1 = require("./pawn");
+var player_1 = require("./player");
+var wall_1 = require("./wall");
+var floor_1 = require("./floor");
+var placeholder_1 = require("./placeholder");
+var asset_1 = require("./asset");
+var spawnpoint_1 = require("./spawnpoint");
+var LevelMap = /** @class */ (function () {
+    function LevelMap(url, mainContainer) {
+        var _this = this;
+        this.url = url;
+        this.mainContainer = mainContainer;
+        this.objects = [];
+        this.lastTimestamp = 0;
+        this.wait = fetch(url).then(function (result) {
+            return result.json();
+        }).then(function (json) {
+            _this.parse(json);
+        });
+    }
+    LevelMap.prototype.parse = function (json) {
+        var _this = this;
+        this.size = gl_matrix_1.vec2.fromValues(json.size[0], json.size[1]);
+        this.createBounds();
+        this.createContainer();
+        // parse levelObjects
+        json.objectData.forEach(function (data) {
+            switch (data.type) {
+                case 'wall':
+                    new wall_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
+                    break;
+                case 'floor':
+                    new floor_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
+                    break;
+                case 'asset':
+                    new asset_1.Asset(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
+                    break;
+                case 'spawnpoint':
+                    new spawnpoint_1.default(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
+                    break;
+                default:
+                    new placeholder_1.Placeholder(_this, gl_matrix_1.vec2.fromValues.apply(gl_matrix_1.vec2, __spread(data.pos)), data.meta);
+                    break;
+            }
+        });
+        matter_js_1.Events.on(physicsEngine_1.default.engine, 'beforeUpdate', function (event) {
+            var e_1, _a;
+            var delta = (event.timestamp - _this.lastTimestamp) / 1000; // convert to sec
+            _this.lastTimestamp = event.timestamp;
+            try {
+                for (var _b = __values(_this.objects), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var object = _c.value;
+                    if (object.canTick) {
+                        object.tick(delta);
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        });
+        // create player
+        new player_1.default(this, gl_matrix_1.vec2.fromValues(10, 10), pawn_1.default);
+    };
+    LevelMap.prototype.createBounds = function () {
+        if (!authority_1.default.get().hasAuthority()) {
+            return;
+        }
+        var width = this.size[0];
+        var height = this.size[1];
+        matter_js_1.World.add(physicsEngine_1.default.world, [
+            matter_js_1.Bodies.rectangle(width / 2, -50, width, 100, { isStatic: true }),
+            matter_js_1.Bodies.rectangle(width / 2, height + 50, width, 100, { isStatic: true }),
+            matter_js_1.Bodies.rectangle(width + 50, height / 2, 100, height + 200, { isStatic: true }),
+            matter_js_1.Bodies.rectangle(-50, height / 2, 100, height + 200, { isStatic: true })
+        ]);
+    };
+    LevelMap.prototype.createContainer = function () {
+        this.gameContainer = document.createElement('div');
+        this.gameContainer.classList.add('game-container');
+        this.cameraElement = document.createElement('div');
+        this.cameraElement.classList.add('camera');
+        this.sceneContainer = document.createElement('div');
+        this.sceneContainer.classList.add('scene');
+        this.mapContainer = document.createElement('div');
+        this.mapContainer.classList.add('map');
+        this.mapContainer.style.width = this.size[0] + 'px';
+        this.mapContainer.style.height = this.size[1] + 'px';
+        this.mainContainer.append(this.gameContainer);
+        this.gameContainer.append(this.cameraElement);
+        this.cameraElement.append(this.sceneContainer);
+        this.sceneContainer.append(this.mapContainer);
+        this.setCameraPosition(gl_matrix_1.vec2.scale(gl_matrix_1.vec2.create(), this.size, 0.5));
+    };
+    LevelMap.prototype.setCameraPosition = function (position) {
+        this.mapContainer.style.transform = "translateX(" + -position[0] + "px) translateY(" + -position[1] + "px)";
+    };
+    LevelMap.prototype.addLevelObject = function (object) {
+        this.objects.push(object);
+    };
+    LevelMap.prototype.getAllLevelObjects = function () {
+        return this.objects.slice();
+    };
+    LevelMap.prototype.getAllLevelObjectsByType = function (type) {
+        return this.objects.filter(function (e) { return e instanceof type; });
+    };
+    return LevelMap;
+}());
+exports.LevelMap = LevelMap;
+
+
+
+},{"../../common/authority":13,"../physicsEngine":34,"./asset":25,"./floor":26,"./pawn":29,"./placeholder":30,"./player":31,"./spawnpoint":32,"./wall":33,"gl-matrix":2,"matter-js":12}],28:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var authority_1 = require("../../common/authority");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
+var LevelObject = /** @class */ (function () {
+    function LevelObject(levelMap, position, meta) {
+        this.levelMap = levelMap;
+        this.position = position;
+        this.meta = meta;
+        this.canTick = false;
+        levelMap.addLevelObject(this);
+        this.gateCreatePhysics();
+        this.render();
+    }
+    LevelObject.prototype.gateCreatePhysics = function () {
+        console.log('init physics', authority_1.default.get().hasAuthority());
+        if (!authority_1.default.get().hasAuthority()) {
+            return;
+        }
+        this.createPysics();
+    };
+    LevelObject.prototype.tick = function (delta) {
+    };
+    LevelObject.prototype.createPysics = function () { };
+    ;
+    LevelObject.prototype.destroy = function () {
+        if (this.hitBox) {
+            matter_js_1.World.remove(physicsEngine_1.default.world, this.hitBox);
+        }
+    };
+    LevelObject.prototype.viewUpdate = function () {
+        this.view.style.left = this.position[0] + 'px';
+        this.view.style.top = this.position[1] + 'px';
+    };
+    LevelObject.prototype.render = function () {
+        this.view = document.createElement('div');
+        this.levelMap.mapContainer.append(this.view);
+        this.viewUpdate();
+        this.view.classList.add('level-object');
+        return this.view;
+    };
+    return LevelObject;
+}());
+exports.LevelObject = LevelObject;
+exports.default = LevelObject;
+
+
+
+},{"../../common/authority":13,"../physicsEngine":34,"matter-js":12}],29:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
+var Pawn = /** @class */ (function (_super) {
+    __extends(Pawn, _super);
+    function Pawn() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.radius = 10;
+        return _this;
+    }
+    Pawn.prototype.createPysics = function () {
+        this.hitBox = matter_js_1.Bodies.circle(5, 5, 10, {
+            frictionStatic: 1,
+            frictionAir: 0.4
+        });
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
+    };
+    ;
+    Pawn.prototype.move = function (direction) {
+        this.view.classList.remove('up', 'down', 'left', 'right');
+        this.view.classList.add(direction);
+    };
+    Pawn.prototype.render = function () {
+        var view = _super.prototype.render.call(this);
+        view.classList.add('pawn', 'heinzel');
+        return view;
+    };
+    return Pawn;
+}(levelObject_1.default));
+exports.Pawn = Pawn;
+exports.default = Pawn;
+
+
+
+},{"../physicsEngine":34,"./levelObject":28,"matter-js":12}],30:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var Placeholder = /** @class */ (function (_super) {
+    __extends(Placeholder, _super);
+    function Placeholder() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Placeholder.prototype.render = function () {
+        var view = _super.prototype.render.call(this);
+        view.classList.add('placeholder');
+        return view;
+    };
+    return Placeholder;
+}(levelObject_1.default));
+exports.Placeholder = Placeholder;
+exports.default = Placeholder;
+
+
+
+},{"./levelObject":28}],31:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var gl_matrix_1 = require("gl-matrix");
+var tmp = gl_matrix_1.vec2.create();
+var forceDefault = 0.001;
+var Player = /** @class */ (function (_super) {
+    __extends(Player, _super);
+    function Player(levelMap, position, pawnClass) {
+        var _this = _super.call(this, levelMap, position) || this;
+        _this.pawnClass = pawnClass;
+        _this.move = new Set();
+        _this.canTick = true;
+        _this.pawn = new pawnClass(levelMap, position);
+        return _this;
+        // this.registerInput();
+    }
+    Player.prototype.tick = function (delta) {
+        // if(this.move.size !== 0){
+        //     vec2.set(tmp, 0,0);
+        //     this.move.forEach(e => {
+        //         switch(e){
+        //             case Directions.LEFT:
+        //                 this.pawn.move('left');
+        //                 vec2.add(tmp, tmp, [-1,0]);
+        //                 break;
+        //             case Directions.RIGHT:
+        //                 this.pawn.move('right');
+        //                 vec2.add(tmp, tmp, [1,0]);
+        //                 break;
+        //             case Directions.UP:
+        //                 vec2.add(tmp, tmp, [0,-1]);
+        //                 this.pawn.move('up');
+        //                 break;
+        //             case Directions.DOWN:
+        //                 this.pawn.move('down');
+        //                 vec2.add(tmp, tmp, [0,1]);
+        //                 break;
+        //         }
+        //     });
+        //     vec2.normalize(tmp, tmp);
+        //     Body.applyForce(this.pawn.hitBox!, this.pawn.hitBox!.position, {
+        //         x: tmp[0] * forceDefault,
+        //         y: tmp[1] * forceDefault
+        //     });
+        // }
+        // this.position = vec2.fromValues(this.pawn.hitBox!.position.x, this.pawn.hitBox!.position.y);
+        // vec2.copy(this.pawn.position, this.position);
+        // this.levelMap.setCameraPosition(this.position);
+        this.pawn.viewUpdate();
+    };
+    return Player;
+}(levelObject_1.default));
+exports.Player = Player;
+exports.default = Player;
+
+
+
+},{"./levelObject":28,"gl-matrix":2}],32:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var Spawnpoint = /** @class */ (function (_super) {
+    __extends(Spawnpoint, _super);
+    function Spawnpoint() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return Spawnpoint;
+}(levelObject_1.default));
+exports.Spawnpoint = Spawnpoint;
+exports.default = Spawnpoint;
+
+
+
+},{"./levelObject":28}],33:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var levelObject_1 = require("./levelObject");
+var matter_js_1 = require("matter-js");
+var physicsEngine_1 = require("../physicsEngine");
+var Wall = /** @class */ (function (_super) {
+    __extends(Wall, _super);
+    function Wall() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Wall.prototype.createPysics = function () {
+        this.hitBox = matter_js_1.Bodies.rectangle(this.position[0], this.position[1], this.meta.size[0], this.meta.size[1], {
+            isStatic: true,
+        });
+        matter_js_1.World.add(physicsEngine_1.default.world, [this.hitBox]);
+    };
+    ;
+    Wall.prototype.render = function () {
+        var _a;
+        var classes = this.meta.class ? this.meta.class : [];
+        var view = _super.prototype.render.call(this);
+        (_a = view.classList).add.apply(_a, __spread(['wall', 'center'], classes));
+        var side = document.createElement('div');
+        side.classList.add('side');
+        view.append(side);
+        view.style.width = this.meta.size[0] + 'px';
+        view.style.height = this.meta.size[1] + 'px';
+        return view;
+    };
+    return Wall;
+}(levelObject_1.default));
+exports.Wall = Wall;
+exports.default = Wall;
+
+
+
+},{"../physicsEngine":34,"./levelObject":28,"matter-js":12}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var matter_js_1 = require("matter-js");

@@ -11,6 +11,7 @@ import Wall from "./wall";
 import Floor from "./floor";
 import { Placeholder } from "./placeholder";
 import { Asset } from "./asset";
+import Spawnpoint from "./spawnpoint";
 
 interface LevelObjectData {
     type: string;
@@ -62,15 +63,17 @@ export class LevelMap {
                 case 'asset':
                     new Asset(this, vec2.fromValues(... data.pos) as vec2, data.meta);
                     break;
+                case 'spawnpoint':
+                    new Spawnpoint(this, vec2.fromValues(... data.pos) as vec2, data.meta);
+                    break;
                 default:
-                    new Placeholder(this, vec2.fromValues(... data.pos) as vec2);
+                    new Placeholder(this, vec2.fromValues(... data.pos) as vec2, data.meta);
                     break;
             }
         });
 
 
         Events.on(PhysicsEngine.engine, 'beforeUpdate', (event) => {
-            // console.log('tick');
             const delta = (event.timestamp - this.lastTimestamp) / 1000; // convert to sec
             this.lastTimestamp = event.timestamp;
 
@@ -79,7 +82,6 @@ export class LevelMap {
                     object.tick(delta);
                 }
             }
-            // console.debug(event.timestamp);
         });
 
         // create player

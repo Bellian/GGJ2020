@@ -9,7 +9,7 @@ export class GameState {
     nextState!: typeof GameState;
     callback!: GameStateDoneCallback;
 
-    constructor(public server: Server){
+    constructor(public server: Server, public data?: any){
         this.enter();
     }
 
@@ -22,8 +22,8 @@ export class GameState {
     };
 
 
-    exit(){
-        const newState = new this.nextState(this.server);
+    exit(data?: any){
+        const newState = new this.nextState(this.server, data);
         eventListener.trigger('newGameState', newState);
     }
 

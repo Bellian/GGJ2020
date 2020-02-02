@@ -27,6 +27,7 @@ class Controller {
     this.joystick = new Joystick(client);
     this.onUpdateView();
     this.defaultView();
+    // this.client.onUpdateServerData(this.updateView.bind(this));
   }
 
   private onUpdateView(){

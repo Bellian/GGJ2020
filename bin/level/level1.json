@@ -64,6 +64,10 @@
       }
     }
 
+
+
+
+
     ,{
       "type": "floor", "pos": [250, 250], "meta": {
         "size": [500, 500],
@@ -91,24 +95,21 @@
     }
 
 
+
+
     ,{
-      "type": "floor", "pos": [100, 250], "meta": {
-        "size": [50, 50],
-        "class": ["weave", "round", "carpet"]
-      }
+      "type": "spawnpoint", "pos": [20, 20]
     }
     ,{
-      "type": "floor", "pos": [150, 250], "meta": {
-        "size": [50, 50],
-        "class": ["checker"]
-      }
+      "type": "spawnpoint", "pos": [20, 420]
     }
     ,{
-      "type": "floor", "pos": [200, 250], "meta": {
-        "size": [50, 50],
-        "class": ["checker-diagonal", "base-red"]
-      }
+      "type": "spawnpoint", "pos": [420, 20]
     }
+    ,{
+      "type": "spawnpoint", "pos": [420, 420]
+    }
+    
 
 
     ,{

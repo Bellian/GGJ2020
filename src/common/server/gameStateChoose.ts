@@ -46,7 +46,7 @@ export class GameStateChoose extends GameState {
     exit() {
         let angry = undefined;
         const devices = getAllDevices();
-        const candidates = devices.filter(e => e.customStateData.wantAngry);
+        const candidates = devices.filter(e => e.customStateData && e.customStateData.wantAngry);
         if(candidates.length === 0) {
             // fuck u all and pick random
             angry = devices[Math.floor(devices.length * Math.random())];
@@ -54,12 +54,9 @@ export class GameStateChoose extends GameState {
             angry = candidates[Math.floor(candidates.length * Math.random())];
         }
 
-        console.log('and the winner is:', angry, devices, candidates);
+        console.log('and the winner is:', angry);
 
-        getAllDevices().forEach((e) => {
-            console.log(e.customStateData);
-        })
-        super.exit();
+        super.exit(angry);
     }
 
     startTimer(){

@@ -68,7 +68,7 @@ export class Server {
   private initMessageHandler() {
     this.airConsole.onMessage = (from: number, data: any) => {
       if (data) {
-        if(from === 0){
+        if(from !== 0){
           const event = 'CLIENT_'+data.action;
           data.data.from = from;
           eventListener.trigger(event as any, data.data);

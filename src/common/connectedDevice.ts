@@ -12,7 +12,11 @@ export function getDevice(deviceId: number){
     return deviceLib.get(deviceId)!;
 }
 export function getAllDevices(){
-    return [... deviceLib.values()];
+    const result = [];
+    for(let a of deviceLib.values()){
+        result.push(a);
+    }
+    return result;
 }
 
 

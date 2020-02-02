@@ -1,5 +1,6 @@
 import { ConnectedDeviceData, ConnectedDevice } from "./connectedDevice";
 import { GameState } from "./server/gameState";
+import { vec2 } from "gl-matrix";
 
 interface EventCallbacks {
   deviceJoined: ConnectedDevice;
@@ -11,6 +12,17 @@ interface EventCallbacks {
 
   SERVER_updateState: {
     state: string;
+  };
+  SERVER_updatePlayer: {
+    [id: number]: {
+      position: vec2;
+      direction: 'up'|'down'|'left'|'right'
+    }
+  };
+  CLIENT_updateControllerData: {
+    from: number;
+    doesAction: boolean;
+    moveDirection: vec2;
   };
 }
 
@@ -38,8 +50,12 @@ export class EventListener {
 
   off<T extends keyof EventCallbacks>(
     event: T,
-    callback: (arg: EventCallbacks[T]) => void
+    callback?: (arg: EventCallbacks[T]) => void
   ) {
+    if(callback === undefined){
+      delete this.listener[event];
+      return;
+    }
     if (this.listener[event] !== undefined) {
       const index = this.listener[event].indexOf(callback);
       if (index !== -1) {

@@ -101,9 +101,19 @@ export class Client {
             }
           }
         );
+
+        const rate = 1000/25
+        this.debugInterface = setInterval(() => {
+          const direction = vec2.random(vec2.create(), 2);
+          this.moveAndInteract(direction[0], direction[1], Math.random() > 0.5);
+        }, rate);
+        
+      } else {
+        clearInterval(this.debugInterface);
       }
     });
   }
+  debugInterface: any;
 
   private initMessageHandler() {
     this.airConsole.onMessage = (
