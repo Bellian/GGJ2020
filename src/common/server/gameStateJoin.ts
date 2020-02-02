@@ -4,7 +4,7 @@ import { Server } from "../server";
 import { GameStateChoose } from "./gameStateChoose";
 
 const eventListener = EventListener.get();
-const joinTime = 5000;
+const joinTime = 30000;
 export class GameStateJoin extends GameState {
     //nextState = undefined;
 

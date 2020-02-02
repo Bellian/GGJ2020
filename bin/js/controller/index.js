@@ -19025,7 +19025,7 @@ var eventListener_1 = require("../eventListener");
 var connectedDevice_1 = require("../connectedDevice");
 var gameStateGame_1 = require("./gameStateGame");
 var eventListener = eventListener_1.EventListener.get();
-var chooseTime = 5000;
+var chooseTime = 15000;
 var GameStateChoose = /** @class */ (function (_super) {
     __extends(GameStateChoose, _super);
     function GameStateChoose(server) {
@@ -19377,7 +19377,7 @@ var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
 var eventListener = eventListener_1.EventListener.get();
-var joinTime = 5000;
+var joinTime = 30000;
 var GameStateJoin = /** @class */ (function (_super) {
     __extends(GameStateJoin, _super);
     function GameStateJoin() {
@@ -19977,13 +19977,13 @@ var Pawn = /** @class */ (function (_super) {
         return _this;
     }
     Pawn.prototype.createPysics = function () {
-        this.killHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 15, {
+        this.killHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 12, {
             isSensor: true,
             collisionFilter: {
                 category: levelObject_1.CollisionChannel.PLAYER,
             }
         });
-        this.interactionHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 15, {
+        this.interactionHitbox = matter_js_1.Bodies.circle(this.position[0], this.position[1], 12, {
             isSensor: true,
             collisionFilter: {
                 category: levelObject_1.CollisionChannel.PLAYER,
