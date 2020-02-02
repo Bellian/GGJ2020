@@ -2,7 +2,7 @@ import { GameState } from "./gameState";
 import { EventListener } from "../eventListener";
 import { Server } from "../server";
 import { GameStateChoose } from "./gameStateChoose";
-import { ConnectedDevice, getAllDevices } from "../connectedDevice";
+import { ConnectedDevice, getAllDevices, getDevice } from "../connectedDevice";
 import { LevelMap } from "../../screen/map/levelMap";
 import { vec2 } from "gl-matrix";
 import { PhysicsEngine } from "../../screen/physicsEngine";
@@ -10,97 +10,122 @@ import Spawnpoint from "../../screen/map/spawnpoint";
 import Player from "../../screen/map/player";
 import Pawn from "../../screen/map/pawn";
 import LevelObject from "../../screen/map/levelObject";
+import { Body } from "matter-js";
 
 const eventListener = EventListener.get();
-const gameTime = 120000;
+const gameTime = 1200000;
 
 export class GameStateGame extends GameState {
-  nextState = GameStateChoose as any;
-  timerStarted!: number;
-  updateInterval: any;
+    nextState = GameStateChoose as any;
+    timerStarted!: number;
+    updateInterval: any;
+    players!: Map<ConnectedDevice, Player>;
 
-  constructor(server: Server, data: ConnectedDevice) {
-    super(server, data);
-  }
-
-  tick(delta: number) {
-    if (this.timerStarted === undefined) {
-      return;
+    constructor(server: Server, data: ConnectedDevice) {
+        super(server, data);
     }
-    const timeLeft = gameTime - (Date.now() - this.timerStarted);
-    if (timeLeft <= 0) {
-      console.log("game is over, angry man won");
-      this.exit();
-    }
-  }
 
-  players: Map<ConnectedDevice, Player> = new Map();
-  enter() {
-    this.startTimer();
-    this.server.airConsole.broadcast({
-      action: "updateState",
-      data: {
-        state: "game",
-        timerStarted: this.timerStarted,
-        duration: gameTime
-      }
-    });
-
-    console.log("is angry:", this.data);
-
-    eventListener.on("CLIENT_updateControllerData", (data: any) => {
-      console.log(data.from, data.doesAction, data.moveDirection);
-    });
-
-    getAllDevices()
-      .filter(e => e.deviceId !== 0)
-      .forEach(e => {
-        if (!this.players.has(e)) {
-          console.log("create player for:", e.deviceId);
-          let player = new Player(level, vec2.fromValues(-5000, -5000), Pawn);
-          player.pawn.viewUpdate();
-          this.players.set(e, player);
+    tick(delta: number) {
+        if (this.timerStarted === undefined) {
+            return;
         }
-      });
+        const timeLeft = gameTime - (Date.now() - this.timerStarted);
+        if (timeLeft <= 0) {
+            console.log("game is over, angry man won");
+            this.exit();
+        }
+    }
 
-    this.updateInterval = setInterval(() => {
-      const result: { [id: number]: any } = {};
-      getAllDevices()
-        .filter(e => e.deviceId !== 0)
-        .forEach(e => {
-          let player = this.players.get(e);
-          result[e.deviceId] = {
-            position: player!.pawn!.position,
-            direction: player!.pawn!.direction
-          };
+    enter() {
+        this.server.airConsole.broadcast({
+            action: "updateState",
+            data: {
+                state: "game",
+                timerStarted: this.timerStarted,
+                duration: gameTime
+            }
         });
-      this.server.airConsole.broadcast({
-        action: "updatePlayer",
-        data: result
-      });
-    }, 1000 / 24);
 
-    PhysicsEngine.init();
-    const level = new LevelMap("../level/level1.json", document.body);
+        PhysicsEngine.init();
+        const level = new LevelMap("../level/level1.json", document.body);
 
-    level.wait.then(() => {
-      // Engine.showDebugPlayer();
-      PhysicsEngine.showDebugRenderer(level);
-      PhysicsEngine.start();
+        level.wait.then(() => {
+            this.players = new Map();
+            this.startTimer();
 
-      const spawnpoints = level.getAllLevelObjectsByType(Spawnpoint);
-      this.shuffle(spawnpoints);
-      this.shuffle(spawnpoints);
-      this.shuffle(spawnpoints);
+            console.log("is angry:", this.data);
 
-      let index = 0;
-      for (let key of this.players.keys()) {
-        let player = this.players.get(key)!;
-        player.position = spawnpoints[index].position;
-        this.players.set(key, player);
-        index++;
-      }
-    });
+            const forceDefault = 0.000001;
+            let tmp = vec2.create();
+
+            eventListener.on("CLIENT_updateControllerData", (data) => {
+                const device = getDevice(data.from);
+                if (device === undefined) { return; }
+                const player = this.players.get(device);
+                if (player === undefined) { return; }
+
+                vec2.copy(tmp, data.moveDirection);
+                vec2.normalize(tmp, tmp);
+
+                console.log("apply force", tmp);
+                Body.applyForce(player.pawn.hitBox!, player.pawn.hitBox!.position, {
+                    x: tmp[0] * forceDefault,
+                    y: tmp[1] * forceDefault
+                });
+
+                player.position = vec2.fromValues(player.pawn.hitBox!.position.x, player.pawn.hitBox!.position.y);
+                console.log("position", player.position);
+
+                vec2.copy(player.pawn.position, player.position);
+                player.pawn.viewUpdate();
+
+                if(device === this.data){
+                    level.setCameraPosition(player.pawn.position);
+                }
+            });
+
+            const spawnpoints = level.getAllLevelObjectsByType(Spawnpoint);
+            this.shuffle(spawnpoints);
+            this.shuffle(spawnpoints);
+            this.shuffle(spawnpoints);
+
+            let index = 0;
+            getAllDevices()
+                .filter(e => e.deviceId !== 0)
+                .forEach(e => {
+                    if (!this.players.has(e)) {
+                        console.log("create player for:", e.deviceId);
+                        let player = new Player(level, vec2.clone(spawnpoints[index].position), Pawn);
+                        this.players.set(e, player);
+                        if(e === this.data){
+                            level.setCameraPosition(player.pawn.position);
+                        }
+                        index++;
+                    }
+                });
+
+            this.updateInterval = setInterval(() => {
+                const result: { [id: number]: any } = {};
+                getAllDevices()
+                    .filter(e => e.deviceId !== 0)
+                    .forEach(e => {
+                        let player = this.players.get(e);
+                        result[e.deviceId] = {
+                            position: player!.pawn!.position,
+                            direction: player!.pawn!.direction
+                        };
+                    });
+                this.server.airConsole.broadcast({
+                    action: "updatePlayer",
+                    data: result
+                });
+            }, 1000 / 24);
+
+            // Engine.showDebugPlayer();
+
+            PhysicsEngine.showDebugRenderer(level);
+            PhysicsEngine.start();
+        });
   }
 
   exit() {

@@ -18524,10 +18524,7 @@ var Client = /** @class */ (function () {
             _this.moveTimeout = undefined;
             var controllerUpdate = {
                 action: "updateControllerData",
-                data: {
-                    doesAction: isInteracting,
-                    moveDirection: gl_matrix_1.vec2.fromValues(x, y)
-                }
+                data: _this.lastData,
             };
             _this.notifyServer(controllerUpdate);
         }, 1000 / 25);
@@ -18887,7 +18884,7 @@ var eventListener_1 = require("../eventListener");
 var connectedDevice_1 = require("../connectedDevice");
 var gameStateGame_1 = require("./gameStateGame");
 var eventListener = eventListener_1.EventListener.get();
-var chooseTime = 3000;
+var chooseTime = 5000;
 var GameStateChoose = /** @class */ (function (_super) {
     __extends(GameStateChoose, _super);
     function GameStateChoose(server) {
@@ -18959,17 +18956,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
@@ -18981,14 +18967,14 @@ var physicsEngine_1 = require("../../screen/physicsEngine");
 var spawnpoint_1 = require("../../screen/map/spawnpoint");
 var player_1 = require("../../screen/map/player");
 var pawn_1 = require("../../screen/map/pawn");
+var matter_js_1 = require("matter-js");
 var eventListener = eventListener_1.EventListener.get();
-var gameTime = 120000;
+var gameTime = 1200000;
 var GameStateGame = /** @class */ (function (_super) {
     __extends(GameStateGame, _super);
     function GameStateGame(server, data) {
         var _this = _super.call(this, server, data) || this;
         _this.nextState = gameStateChoose_1.GameStateChoose;
-        _this.players = new Map();
         return _this;
     }
     GameStateGame.prototype.tick = function (delta) {
@@ -19003,7 +18989,6 @@ var GameStateGame = /** @class */ (function (_super) {
     };
     GameStateGame.prototype.enter = function () {
         var _this = this;
-        this.startTimer();
         this.server.airConsole.broadcast({
             action: "updateState",
             data: {
@@ -19012,64 +18997,75 @@ var GameStateGame = /** @class */ (function (_super) {
                 duration: gameTime
             }
         });
-        console.log("is angry:", this.data);
-        eventListener.on("CLIENT_updateControllerData", function (data) {
-            console.log(data.from, data.doesAction, data.moveDirection);
-        });
-        connectedDevice_1.getAllDevices()
-            .filter(function (e) { return e.deviceId !== 0; })
-            .forEach(function (e) {
-            if (!_this.players.has(e)) {
-                console.log("create player for:", e.deviceId);
-                var player = new player_1.default(level, gl_matrix_1.vec2.fromValues(-5000, -5000), pawn_1.default);
-                player.pawn.viewUpdate();
-                _this.players.set(e, player);
-            }
-        });
-        this.updateInterval = setInterval(function () {
-            var result = {};
-            connectedDevice_1.getAllDevices()
-                .filter(function (e) { return e.deviceId !== 0; })
-                .forEach(function (e) {
-                var player = _this.players.get(e);
-                result[e.deviceId] = {
-                    position: player.pawn.position,
-                    direction: player.pawn.direction
-                };
-            });
-            _this.server.airConsole.broadcast({
-                action: "updatePlayer",
-                data: result
-            });
-        }, 1000 / 24);
         physicsEngine_1.PhysicsEngine.init();
         var level = new levelMap_1.LevelMap("../level/level1.json", document.body);
         level.wait.then(function () {
-            var e_1, _a;
-            // Engine.showDebugPlayer();
-            physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
-            physicsEngine_1.PhysicsEngine.start();
+            _this.players = new Map();
+            _this.startTimer();
+            console.log("is angry:", _this.data);
+            var forceDefault = 0.000001;
+            var tmp = gl_matrix_1.vec2.create();
+            eventListener.on("CLIENT_updateControllerData", function (data) {
+                var device = connectedDevice_1.getDevice(data.from);
+                if (device === undefined) {
+                    return;
+                }
+                var player = _this.players.get(device);
+                if (player === undefined) {
+                    return;
+                }
+                gl_matrix_1.vec2.copy(tmp, data.moveDirection);
+                gl_matrix_1.vec2.normalize(tmp, tmp);
+                console.log("apply force", tmp);
+                matter_js_1.Body.applyForce(player.pawn.hitBox, player.pawn.hitBox.position, {
+                    x: tmp[0] * forceDefault,
+                    y: tmp[1] * forceDefault
+                });
+                player.position = gl_matrix_1.vec2.fromValues(player.pawn.hitBox.position.x, player.pawn.hitBox.position.y);
+                console.log("position", player.position);
+                gl_matrix_1.vec2.copy(player.pawn.position, player.position);
+                player.pawn.viewUpdate();
+                if (device === _this.data) {
+                    level.setCameraPosition(player.pawn.position);
+                }
+            });
             var spawnpoints = level.getAllLevelObjectsByType(spawnpoint_1.default);
             _this.shuffle(spawnpoints);
             _this.shuffle(spawnpoints);
             _this.shuffle(spawnpoints);
             var index = 0;
-            try {
-                for (var _b = __values(_this.players.keys()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var key = _c.value;
-                    var player = _this.players.get(key);
-                    player.position = spawnpoints[index].position;
-                    _this.players.set(key, player);
+            connectedDevice_1.getAllDevices()
+                .filter(function (e) { return e.deviceId !== 0; })
+                .forEach(function (e) {
+                if (!_this.players.has(e)) {
+                    console.log("create player for:", e.deviceId);
+                    var player = new player_1.default(level, gl_matrix_1.vec2.clone(spawnpoints[index].position), pawn_1.default);
+                    _this.players.set(e, player);
+                    if (e === _this.data) {
+                        level.setCameraPosition(player.pawn.position);
+                    }
                     index++;
                 }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
+            });
+            _this.updateInterval = setInterval(function () {
+                var result = {};
+                connectedDevice_1.getAllDevices()
+                    .filter(function (e) { return e.deviceId !== 0; })
+                    .forEach(function (e) {
+                    var player = _this.players.get(e);
+                    result[e.deviceId] = {
+                        position: player.pawn.position,
+                        direction: player.pawn.direction
+                    };
+                });
+                _this.server.airConsole.broadcast({
+                    action: "updatePlayer",
+                    data: result
+                });
+            }, 1000 / 24);
+            // Engine.showDebugPlayer();
+            physicsEngine_1.PhysicsEngine.showDebugRenderer(level);
+            physicsEngine_1.PhysicsEngine.start();
         });
     };
     GameStateGame.prototype.exit = function () {
@@ -19090,7 +19086,7 @@ exports.GameStateGame = GameStateGame;
 
 
 
-},{"../../screen/map/levelMap":27,"../../screen/map/pawn":29,"../../screen/map/player":31,"../../screen/map/spawnpoint":32,"../../screen/physicsEngine":34,"../connectedDevice":15,"../eventListener":17,"./gameState":20,"./gameStateChoose":21,"gl-matrix":2}],23:[function(require,module,exports){
+},{"../../screen/map/levelMap":27,"../../screen/map/pawn":29,"../../screen/map/player":31,"../../screen/map/spawnpoint":32,"../../screen/physicsEngine":34,"../connectedDevice":15,"../eventListener":17,"./gameState":20,"./gameStateChoose":21,"gl-matrix":2,"matter-js":12}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -19110,7 +19106,7 @@ var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var gameStateChoose_1 = require("./gameStateChoose");
 var eventListener = eventListener_1.EventListener.get();
-var joinTime = 3000;
+var joinTime = 7000;
 var GameStateJoin = /** @class */ (function (_super) {
     __extends(GameStateJoin, _super);
     function GameStateJoin() {
