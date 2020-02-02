@@ -8008,6 +8008,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
 var eventListener_1 = require("./eventListener");
 var connectedDevice_1 = require("./connectedDevice");
+var gl_matrix_1 = require("gl-matrix");
 var eventListener = eventListener_1.EventListener.get();
 var Client = /** @class */ (function () {
     function Client() {
@@ -8017,40 +8018,38 @@ var Client = /** @class */ (function () {
         this.objectData = [];
         this.updateServerCallbacks = new Set();
         this.serverData = new index_1.ServerData(30, index_1.ServerState.initial);
-        this.awaitReady = new Promise(function (resolve) {
-            _this.airConsole = new AirConsole();
-            _this.initMessageHandler();
-            _this.airConsole.onDeviceStateChange = function (id, state) {
-                try {
-                    connectedDevice_1.getDevice(id).updateState(state);
-                }
-                catch (e) {
-                    var newDevice = new connectedDevice_1.ConnectedDevice(id);
-                    newDevice.updateState(state);
-                }
-            };
-            eventListener.on('SERVER_updateState', function (state) {
-                console.log('game state changed', state.state);
-                if (state.state === 'join') {
-                    // prepare stuff for join state
-                }
-                if (state.state === 'choose') {
-                    // prepare stuff for choose state
-                    _this.airConsole.setCustomDeviceState({
-                        wantAngry: Math.random() > 0.5,
-                    });
-                }
-                if (state.state === 'game') {
-                    // prepare stuff for game state
-                }
-            });
+        this.airConsole = new AirConsole();
+        this.initMessageHandler();
+        this.airConsole.onDeviceStateChange = function (id, state) {
+            try {
+                connectedDevice_1.getDevice(id).updateState(state);
+            }
+            catch (e) {
+                var newDevice = new connectedDevice_1.ConnectedDevice(id);
+                newDevice.updateState(state);
+            }
+        };
+        eventListener.on('SERVER_updateState', function (state) {
+            console.log('game state changed', state.state);
+            if (state.state === 'join') {
+                // prepare stuff for join state
+            }
+            if (state.state === 'choose') {
+                // prepare stuff for choose state
+                _this.airConsole.setCustomDeviceState({
+                    wantAngry: Math.random() > 0.5,
+                });
+            }
+            if (state.state === 'game') {
+                // prepare stuff for game state
+            }
         });
     }
     Client.prototype.initMessageHandler = function () {
         this.airConsole.onMessage = function (from, data) {
             if (data) {
                 if (from === 0) {
-                    var event_1 = 'SERVER_' + data.action;
+                    var event_1 = "SERVER_" + data.action;
                     eventListener.trigger(event_1, data.data);
                 }
                 else {
@@ -8104,30 +8103,25 @@ var Client = /** @class */ (function () {
             }
         };
     };
-    Client.prototype.toggleAngryDad = function () {
-        console.table("toggleAngryDad playerData", this.playerData);
-        console.table("toggleAngryDad id", this.id);
-        var currentPlayer = this.currentPlayerData();
-        if (currentPlayer.isAngryDad === undefined) {
-            currentPlayer.isAngryDad = false;
-        }
-        else {
-            currentPlayer.isAngryDad = !currentPlayer.isAngryDad;
-        }
-        this.notifyServer(currentPlayer);
-        return currentPlayer.isAngryDad;
-    };
-    Client.prototype.changeAppearance = function (appearance) {
-        var currentPlayer = this.currentPlayerData();
-        currentPlayer.characterAppearanceType = appearance;
-        this.notifyServer(currentPlayer);
-        return currentPlayer.characterAppearanceType;
-    };
-    Client.prototype.interacting = function (playerState) {
-        var currentPlayer = this.currentPlayerData();
-        currentPlayer.playerState = playerState;
-        this.notifyServer(currentPlayer);
-        return currentPlayer.playerState;
+    //todo
+    // changeAppearance(
+    //   appearance: CharacterAppearanceType
+    // ): CharacterAppearanceType {
+    //   let currentPlayer = this.currentPlayerData();
+    //   currentPlayer.characterAppearanceType = appearance;
+    //   this.notifyServer(currentPlayer);
+    //   return currentPlayer.characterAppearanceType;
+    // }
+    Client.prototype.moveAndInteracting = function (x, y, isInteracting) {
+        if (isInteracting === void 0) { isInteracting = false; }
+        var controllerUpdate = {
+            action: "updateControllerData",
+            data: {
+                doesAction: isInteracting,
+                moveDirection: gl_matrix_1.vec2.fromValues(x, y)
+            }
+        };
+        this.notifyServer(controllerUpdate);
     };
     Client.prototype.notifyServer = function (data) {
         this.airConsole.message(AirConsole.SCREEN, data);
@@ -8141,7 +8135,7 @@ exports.Client = Client;
 
 
 
-},{"./connectedDevice":13,"./eventListener":14,"./index":15}],13:[function(require,module,exports){
+},{"./connectedDevice":13,"./eventListener":14,"./index":15,"gl-matrix":2}],13:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -8254,16 +8248,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-var gl_matrix_1 = require("gl-matrix");
 __export(require("./client"));
 __export(require("./server"));
-var a = {
-    action: 'updateControllerData',
-    data: {
-        doesAction: false,
-        moveDirection: gl_matrix_1.vec2.fromValues(23, -55)
-    }
-};
 var PlayerData = /** @class */ (function () {
     function PlayerData(x, y, deviceId) {
         this.x = x;
@@ -8343,7 +8329,7 @@ exports.ObjectData = ObjectData;
 
 
 
-},{"./client":12,"./server":16,"gl-matrix":2}],16:[function(require,module,exports){
+},{"./client":12,"./server":16}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("./index");
@@ -8422,7 +8408,7 @@ exports.Server = Server;
 
 
 
-},{"./connectedDevice":13,"./eventListener":14,"./index":15,"./server/gameStateJoin":19}],17:[function(require,module,exports){
+},{"./connectedDevice":13,"./eventListener":14,"./index":15,"./server/gameStateJoin":20}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventListener_1 = require("../eventListener");
@@ -8469,15 +8455,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var gameState_1 = require("./gameState");
 var eventListener_1 = require("../eventListener");
 var connectedDevice_1 = require("../connectedDevice");
+var gameStateGame_1 = require("./gameStateGame");
 var eventListener = eventListener_1.EventListener.get();
-var duration = 3000;
+var chooseTime = 3000;
 var GameStateChoose = /** @class */ (function (_super) {
     __extends(GameStateChoose, _super);
     function GameStateChoose(server) {
         var _this = _super.call(this, server) || this;
         //nextState = undefined;
-        _this.duration = duration;
-        _this.nextState = gameState_1.GameState;
+        _this.duration = chooseTime;
+        _this.nextState = gameStateGame_1.GameStateGame;
         return _this;
     }
     GameStateChoose.prototype.enter = function () {
@@ -8487,7 +8474,7 @@ var GameStateChoose = /** @class */ (function (_super) {
             data: {
                 state: 'choose',
                 timerStarted: this.timerStarted,
-                duration: duration,
+                duration: chooseTime,
             }
         });
     };
@@ -8495,7 +8482,7 @@ var GameStateChoose = /** @class */ (function (_super) {
         if (this.timerStarted === undefined) {
             return;
         }
-        var timeLeft = this.duration - (Date.now() - this.timerStarted);
+        var timeLeft = chooseTime - (Date.now() - this.timerStarted);
         if (timeLeft <= 0) {
             console.log('timer is up, next state');
             this.exit();
@@ -8528,7 +8515,70 @@ exports.GameStateChoose = GameStateChoose;
 
 
 
-},{"../connectedDevice":13,"../eventListener":14,"./gameState":17}],19:[function(require,module,exports){
+},{"../connectedDevice":13,"../eventListener":14,"./gameState":17,"./gameStateGame":19}],19:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var gameState_1 = require("./gameState");
+var eventListener_1 = require("../eventListener");
+var gameStateChoose_1 = require("./gameStateChoose");
+var eventListener = eventListener_1.EventListener.get();
+var gameTime = 120000;
+var GameStateGame = /** @class */ (function (_super) {
+    __extends(GameStateGame, _super);
+    function GameStateGame(server, duration) {
+        var _this = _super.call(this, server) || this;
+        _this.duration = duration;
+        _this.nextState = gameStateChoose_1.GameStateChoose;
+        return _this;
+    }
+    GameStateGame.prototype.tick = function (delta) {
+        if (this.timerStarted === undefined) {
+            return;
+        }
+        var timeLeft = gameTime - (Date.now() - this.timerStarted);
+        if (timeLeft <= 0) {
+            console.log('game is over, angry man won');
+            this.exit();
+        }
+    };
+    GameStateGame.prototype.enter = function () {
+        this.startTimer();
+        this.server.airConsole.broadcast({
+            action: 'updateState',
+            data: {
+                state: 'choose',
+                timerStarted: this.timerStarted,
+                duration: gameTime,
+            }
+        });
+    };
+    GameStateGame.prototype.exit = function () {
+        _super.prototype.exit.call(this);
+    };
+    GameStateGame.prototype.startTimer = function () {
+        console.log('game started');
+        this.timerStarted = Date.now();
+    };
+    return GameStateGame;
+}(gameState_1.GameState));
+exports.GameStateGame = GameStateGame;
+
+
+
+},{"../eventListener":14,"./gameState":17,"./gameStateChoose":18}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -8598,7 +8648,7 @@ exports.GameStateJoin = GameStateJoin;
 
 
 
-},{"../eventListener":14,"./gameState":17,"./gameStateChoose":18}],20:[function(require,module,exports){
+},{"../eventListener":14,"./gameState":17,"./gameStateChoose":18}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../common/index");
@@ -8712,6 +8762,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-},{"../common/index":15}]},{},[20]);
+},{"../common/index":15}]},{},[21]);
 
 //# sourceMappingURL=index.js.map

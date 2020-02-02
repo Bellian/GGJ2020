@@ -29,42 +29,39 @@ export class Client {
   objectData: ObjectData[] = [];
   serverData: ServerData;
 
-  awaitReady: Promise<number>;
-
   constructor() {
     this.serverData = new ServerData(30, ServerState.initial);
 
-    this.awaitReady = new Promise(resolve => {
-      this.airConsole = new AirConsole();
-      this.initMessageHandler();
+    this.airConsole = new AirConsole();
+    this.initMessageHandler();
 
-      this.airConsole.onDeviceStateChange = (id: number, state: any) => {
-        try {
-          getDevice(id).updateState(state);
-        } catch (e) {
-          const newDevice = new ConnectedDevice(id);
-          newDevice.updateState(state);
-        }
-      };
+    this.airConsole.onDeviceStateChange = (id: number, state: any) => {
+      try {
+        getDevice(id).updateState(state)
+      } catch(e) {
+        const newDevice = new ConnectedDevice(id);
+        newDevice.updateState(state);
+      }
+    };
 
-      eventListener.on("SERVER_updateState", (state: any) => {
-        console.log("game state changed", state.state);
+    eventListener.on('SERVER_updateState', (state: any) => {
+      console.log('game state changed', state.state);
 
-        if (state.state === "join") {
-          // prepare stuff for join state
-        }
+      if(state.state === 'join') {
+        // prepare stuff for join state
+      }
 
-        if (state.state === "choose") {
-          // prepare stuff for choose state
-          this.airConsole.setCustomDeviceState({
-            wantAngry: Math.random() > 0.5
-          });
-        }
+      if(state.state === 'choose') {
+        // prepare stuff for choose state
+        this.airConsole.setCustomDeviceState({
+          wantAngry: Math.random() > 0.5,
+        })
+      }
 
-        if (state.state === "game") {
-          // prepare stuff for game state
-        }
-      });
+      if(state.state === 'game') {
+        // prepare stuff for game state
+      }
+
     });
   }
 
